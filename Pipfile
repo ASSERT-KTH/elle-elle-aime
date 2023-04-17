@@ -11,12 +11,12 @@ pytest='7.2.0'
 python-dotenv = "0.21.0"
 sets = "0.3.2"
 sqlalchemy = "1.4.45"
-tensorflow = "2.11.0"
-transformers = "4.25.1"
 whatthepatch='1.0.3'
+transformers = "*"
+langchain = "*"
 
 [dev-packages]
 autopep8 = "2.0.1"
 
 [requires]
-python_version = "3.9"
+python_version = "3"

@@ -15,9 +15,10 @@ from core.tools.prompt import generate_prompt
 from core.tools.tokenizer import calculate_request_counter, number_of_tokens
 from core.utils import get_benchmark
 
+from langchain import PromptTemplate, LLMChain
+from langchain.llms.huggingface_pipeline import HuggingFacePipeline
+from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
 
-config = dotenv_values(".env")
-openai.api_key = config.get('OPENAI_API_KEY')
 
 CODE_TOO_LONG = "Code is too long"
 CODEX_MODEL = "text-davinci-003"
@@ -38,18 +39,23 @@ def load_code_node(fixed_file_path, buggy_file_path, countable_diffs):
 
 
 def request_codex_code_complition(prompt, request_params):
-    # https://beta.openai.com/docs/api-reference/completions/create
-    response = openai.Completion.create(
-        prompt=prompt,
-        model=request_params['model'],
-        temperature=request_params['temperature'],
-        max_tokens=request_params['max_tokens'],
-        top_p=request_params['top_p'],
-        frequency_penalty=request_params['frequency_penalty'],
-        presence_penalty=request_params['presence_penalty'],
-        stop=request_params['stop'],
-        n=request_params['n'],
-    )
+    model_id = "gpt2"
+    tokenizer = AutoTokenizer.from_pretrained(model_id)
+    model = AutoModelForCausalLM.from_pretrained(model_id)
+    pipe = pipeline("text-generation",
+                    model=model,
+                    tokenizer=tokenizer,
+                    device=0,
+                    max_new_tokens=int(request_params['max_tokens']),
+                    )
+    hf = HuggingFacePipeline(pipeline=pipe)
+
+    template = "{prompt}"
+    prompt_template = PromptTemplate(template=template, input_variables=["prompt"])
+    llm_chain = LLMChain(prompt=prompt_template, llm=hf)
+
+    response = llm_chain.run(prompt)
+
     printlog('--->', response)
     return response
 
@@ -320,67 +326,13 @@ def ask_codex_for_single_bug(args, bug_id, fixa_config):
         result_template, request_counter = build_request_params(
             result_template, fixa_config)
 
-        # send requests to Codex
-        sample_number = 0
-        curr_request_counter = 0
-        openai_error_counter = 0
-        max_openai_error_counter = int(
-            config.get('MAX_OPENAI_ERROR_COUNTER') or 2)
-        if request_counter >= 200:
-            printlog('request_counter is too large, will reset to 1')
-            request_counter = 1
+        # send request to model
+        response = request_codex_code_complition(result_template.prompt_text, result_template.request_params)
 
-        while curr_request_counter < request_counter and openai_error_counter < max_openai_error_counter:
-            current_time = int(time.time())
-            try:
-                response = request_codex_code_complition(
-                    result_template.prompt_text, result_template.request_params)
-                curr_request_counter += 1
-                current_time = int(time.time())
-                openai_error_counter = 0  # reset the error counter
-            except Exception as e:
-                if 'Rate limit reached for' in str(e):
-                    # this bug can not be solved by Codex due to rate limit
-                    printlog('Rate limit reached for this bug, will skip', str(e))
-                    time.sleep(60)
-                elif 'Error communicating with OpenAI' in str(e):
-                    # sometimes OpenAI will return error, we will retry
-                    printlog('OpenAI server error, will retry', str(e))
-                    time.sleep(60)
-                else:
-                    printlog('Something went wrong when requesting codex', str(e))
-                    time.sleep(60)
-                openai_error_counter += 1
-                if openai_error_counter >= max_openai_error_counter:
-                    raise e
-                continue
-
-            for choice in response.choices:  # type: ignore
-                sample_result = copy.deepcopy(result_template)
-                sample_number += 1
-                sample_result.sample_number = sample_number
-                printlog('processing sample_number: ', sample_number)
-
-                if choice.finish_reason == 'length':
-                    sample_result.result_type = 'EXCEED_MAX_LENGTH'
-                elif choice.finish_reason == 'stop':
-                    sample_result.result_type = 'RESPONDED'
-                    response_text = sanitize_choice_text(choice.text)
-                    sample_result.respond_origin_code_chunk = choice.text
-                    sample_result.respond_clean_code_chunk = response_text
-                else:
-                    # finish_reason is None, save it, have the choice text anyway
-                    sample_result.result_type = 'RESPONDED_NULL'
-                    response_text = sanitize_choice_text(choice.text)
-                    sample_result.respond_origin_code_chunk = choice.text
-                    sample_result.respond_clean_code_chunk = response_text
-                save(sample_result)
-                time.sleep(1)  # prevent postgres error
-            time_gap = int(time.time()) - current_time
-            if time_gap < 12:
-                time.sleep(12 - time_gap)
-    except Exception as e:
-        result_template.result_type = 'TEMPLATE_ERROR'
-        result_template.error_message = str(e)
-        save(result_template)
-        time.sleep(12)
+        sample_result = copy.deepcopy(result_template) 
+        sample.result_type = "LANG_CHAIN_SUCCESS"
+        response_text = sanitize_choice_text(response)
+        sample_result.respond_origin_code_chunk = response
+        sample_result.respond_clean_code_chunk = response_text
+        save(sample_result)
+        time.sleep(1)  # prevent postgres error

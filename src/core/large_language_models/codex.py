@@ -18,7 +18,7 @@ config = dotenv_values(".env")
 openai.api_key = config.get('OPENAI_API_KEY')
 
 CODE_TOO_LONG = "Code is too long"
-CODEX_MODEL = "code-davinci-002"
+CODEX_MODEL = "text-davinci-003"
 EXAMPLE_BUGGY_FILEPATH = 'data/example/codex_prompt_example_buggy.source'
 EXAMPLE_FIXED_FILEPATH = 'data/example/codex_prompt_example_fixed.source'
 PROJECT_EXAMPLE_BUGGY_PATH_FORMAT = 'data/example/codex_project_example_{}_buggy.source'
