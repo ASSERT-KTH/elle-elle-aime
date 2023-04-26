@@ -20,7 +20,7 @@ config = dotenv_values(".env")
 openai.api_key = config.get('OPENAI_API_KEY')
 
 CODE_TOO_LONG = "Code is too long"
-CODEX_MODEL = "text-davinci-003"
+CODEX_MODEL = "gpt-3.5-turbo"
 EXAMPLE_BUGGY_FILEPATH = 'data/example/codex_prompt_example_buggy.source'
 EXAMPLE_FIXED_FILEPATH = 'data/example/codex_prompt_example_fixed.source'
 PROJECT_EXAMPLE_BUGGY_PATH_FORMAT = 'data/example/codex_project_example_{}_buggy.source'
@@ -38,12 +38,13 @@ def load_code_node(fixed_file_path, buggy_file_path, countable_diffs):
 
 
 def request_codex_code_complition(prompt, request_params):
-    # https://beta.openai.com/docs/api-reference/completions/create
-    response = openai.Completion.create(
-        prompt=prompt,
-        model=request_params['model'],
+    # https://platform.openai.com/docs/api-reference/chat/create
+    response = openai.ChatCompletion.create(
+        model = request_params["model"],
+        messages = [
+            {"role": "user", "content" : prompt}
+        ],
         temperature=request_params['temperature'],
-        max_tokens=request_params['max_tokens'],
         top_p=request_params['top_p'],
         frequency_penalty=request_params['frequency_penalty'],
         presence_penalty=request_params['presence_penalty'],
@@ -149,7 +150,7 @@ def build_result_template(args, bug_id):
     result_template.model = args.model
     result_template.benchmark = args.benchmark
     result_template.project = args.project
-    result_template.bug_id = bug_id
+    result_template.bug_id = int(bug_id)
     result_template.request_type = 'SINGLE_FUNCTION'
     result_template.sample_number = 0
     return result_template
@@ -365,14 +366,14 @@ def ask_codex_for_single_bug(args, bug_id, fixa_config):
                     sample_result.result_type = 'EXCEED_MAX_LENGTH'
                 elif choice.finish_reason == 'stop':
                     sample_result.result_type = 'RESPONDED'
-                    response_text = sanitize_choice_text(choice.text)
-                    sample_result.respond_origin_code_chunk = choice.text
+                    response_text = sanitize_choice_text(choice.message.content)
+                    sample_result.respond_origin_code_chunk = choice.message.content
                     sample_result.respond_clean_code_chunk = response_text
                 else:
                     # finish_reason is None, save it, have the choice text anyway
                     sample_result.result_type = 'RESPONDED_NULL'
-                    response_text = sanitize_choice_text(choice.text)
-                    sample_result.respond_origin_code_chunk = choice.text
+                    response_text = sanitize_choice_text(choice.message.content)
+                    sample_result.respond_origin_code_chunk = choice.message.content
                     sample_result.respond_clean_code_chunk = response_text
                 save(sample_result)
                 time.sleep(1)  # prevent postgres error

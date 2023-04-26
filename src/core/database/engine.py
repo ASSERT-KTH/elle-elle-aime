@@ -1,5 +1,3 @@
-import copy
-import datetime
 from dotenv import dotenv_values
 from sqlalchemy import create_engine
 from sqlalchemy.engine import URL
@@ -11,7 +9,7 @@ RDS_USERNAME = config.get('RDS_USERNAME')
 RDS_PASSWORD = config.get('RDS_PASSWORD')
 RDS_HOSTNAME = config.get('RDS_HOSTNAME')
 RDS_DATABASE = config.get('RDS_DATABASE')
-RDS_URL = 'postgresql://{}:{}@{}/{}'.format(
+RDS_URL = 'postgresql+psycopg://{}:{}@{}/{}'.format(
     RDS_USERNAME, RDS_PASSWORD, RDS_HOSTNAME, RDS_DATABASE)
 
 

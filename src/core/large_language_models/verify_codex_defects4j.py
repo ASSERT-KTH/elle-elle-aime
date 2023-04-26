@@ -77,7 +77,7 @@ def checkout_buggy_version(benchmark, working_directory, project, bug_id):
 
 
 def verify_response(record, buggy_bug_path, buggy_bug):
-    if record.result_type == 'RESPONDED' or record.result_type == 'SAMPLE_ERROR':
+    if record.result_type == 'RESPONDED' or record.result_type == 'SAMPLE_ERROR' or record.result_type == 'SUCCESS':
         # apply the choice to the code
         applied, error = apply_text_to_buggy_version(buggy_bug_path, record)
         if applied:
@@ -114,14 +114,15 @@ def verify_single_sample(id, working_directory):
     record = get_result_by_id(id)
 
     # Only support Codex with Defects4J for now
-    if record.model != 'Codex' or record.benchmark != 'Defects4J':
-        printlog('Only support Codex with Defects4J for now')
-        exit(1)
+    # if record.model != 'Codex' or record.benchmark != 'Defects4J':
+    #     printlog('Only support Codex with Defects4J for now')
+    #     exit(1)
 
     benchmark = get_benchmark(record.benchmark)
 
     printlog('Verifying bug {} {}: sample {}-------\n'.format(record.project,
-                                                              record.bug_id, record.sample_number))
+                                                              record.bug_id,
+                                                              record.sample_number))
 
     # Run buggy version to get the test output
     buggy_bug = checkout_buggy_version(

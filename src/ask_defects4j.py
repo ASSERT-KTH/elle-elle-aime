@@ -59,10 +59,9 @@ if __name__ == "__main__":
     dry_run = args.type == 'dryrun'
 
     match args.model:
-        case "hf":
-            ask_hf_for_single_bug(args, args.id)
-        case "codex":
-        case _:
+        case "HF":
+            ask_hf_for_single_bug(args, args.id, FIXA_CONFIG)
+        case _: # Codex
             if args.project != None and args.id == None:
                 # fix all bugs from a project
                 bug_size = DEFECTS4J_BUG_SIZE[args.project]

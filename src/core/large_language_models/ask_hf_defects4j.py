@@ -1,10 +1,11 @@
 import copy
-import math
+import paramiko
+import uuid
 import os
 import shutil
+import json
 import time
 from dotenv import dotenv_values
-import openai
 from core.database.engine import count_collected_samples_by_conditions, save
 from core.database.schema import Result
 from core.tools.java_lang import get_node_by_position, load_ast_nodes, load_origin_code_node
@@ -14,20 +15,97 @@ from core.tools.persist import write_to_file
 from core.tools.prompt import generate_prompt
 from core.tools.tokenizer import calculate_request_counter, number_of_tokens
 from core.utils import get_benchmark
+from typing import List
 
-from langchain import PromptTemplate, LLMChain
-from langchain.llms.huggingface_pipeline import HuggingFacePipeline
-from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
+config = dotenv_values(".env")
 
-
-CODE_TOO_LONG = "Code is too long"
-CODEX_MODEL = "text-davinci-003"
+CODEX_MODEL = "HF"
 EXAMPLE_BUGGY_FILEPATH = 'data/example/codex_prompt_example_buggy.source'
 EXAMPLE_FIXED_FILEPATH = 'data/example/codex_prompt_example_fixed.source'
 PROJECT_EXAMPLE_BUGGY_PATH_FORMAT = 'data/example/codex_project_example_{}_buggy.source'
 PROJECT_EXAMPLE_FIXED_PATH_FORMAT = 'data/example/codex_project_example_{}_fixed.source'
 
-STOP_SIGN = "###"
+STOP_SIGN = "//"
+
+class ClusterInference:
+
+    def __init__(self):
+        self.hostname = config.get("hostname")
+        self.username = config.get("username")
+        self.keyfile_path = config.get("keyfile_path")
+        self.passphrase = config.get("passphrase")
+        
+
+    def generate(self, prompt, request_params) -> List[str]:
+        # Generate unique id
+        unique_id = str(uuid.uuid4())
+
+        # Connect to remote cluster using paramiko
+        ssh = paramiko.SSHClient()
+        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        ssh.connect(self.hostname, username=self.username, key_filename=self.keyfile_path, passphrase=self.passphrase)
+
+        # Create scripts and test data on the remote cluster
+        self._create_scripts(ssh, prompt, unique_id, request_params)
+
+        # Submit job to Slurm on the remote cluster and wait for its conclusion
+        self._submit_job(ssh, unique_id)
+
+        # Retrieve the results
+        results = self._retrieve_results(ssh, unique_id)
+
+        # Close the SSH connection
+        ssh.close()
+
+        return results
+
+
+    def _create_scripts(self, ssh, prompt, unique_id, request_params):
+        # Write the test samples file to a file on the remote cluster
+        with ssh.open_sftp() as sftp:
+            with sftp.open(f"/cephyr/users/andreafo/Alvis/llms/jobs/{unique_id}_inputs.txt", "w+") as f:
+                f.write(prompt)
+
+        # Write the HuggingFace script to a file on the remote cluster
+        with ssh.open_sftp() as sftp:
+            with sftp.open(f"/cephyr/users/andreafo/Alvis/llms/jobs/{unique_id}_inference.py", "w+") as f:
+                with open('./resources/scripts/inference.py', 'r') as lf:
+                    script = lf.read().format(model="Salesforce/codegen-2B-multi", 
+                                              num_return_sequences=request_params["n"],
+                                              unique_id=unique_id)
+                    f.write(script)
+
+        # Write the jobscript to a file on the remote cluster
+        with ssh.open_sftp() as sftp:
+            with sftp.open(f'/cephyr/users/andreafo/Alvis/llms/jobs/{unique_id}_jobscript', 'w+') as f:
+                with open('./resources/scripts/jobscript', 'r') as lf:
+                    script = lf.read().format(job_name="llm-repair-them-all",
+                                              gpu_type="A100",
+                                              gpu_number="4",
+                                              job_time="01:00:00",
+                                              script=f"/cephyr/users/andreafo/Alvis/llms/jobs/{unique_id}_inference.py")
+                    f.write(script)
+
+
+    def _submit_job(self, ssh, unique_id):
+        # Submit job to Slurm
+        command = f'cd llms && source setup_env.sh && cd jobs && sbatch --wait {unique_id}_jobscript && wait'
+        stdin, stdout, stderr = ssh.exec_command(command)
+        stdout.channel.recv_exit_status()
+        stderr.channel.recv_exit_status()
+        print(stdout.readlines())
+        print(stderr.readlines())
+
+
+    def _retrieve_results(self, ssh, unique_id):
+        with ssh.open_sftp() as sftp:
+            sftp.get(f'/cephyr/users/andreafo/Alvis/llms/jobs/{unique_id}_predictions.txt', f'{unique_id}_predictions.txt')
+
+        # Read the output file and return the results as a string
+        with open(f'{unique_id}_predictions.txt', 'r') as f:
+            results = json.loads(f.read())
+
+        return results
 
 
 def load_code_node(fixed_file_path, buggy_file_path, countable_diffs):
@@ -39,24 +117,8 @@ def load_code_node(fixed_file_path, buggy_file_path, countable_diffs):
 
 
 def request_codex_code_complition(prompt, request_params):
-    model_id = "gpt2"
-    tokenizer = AutoTokenizer.from_pretrained(model_id)
-    model = AutoModelForCausalLM.from_pretrained(model_id)
-    pipe = pipeline("text-generation",
-                    model=model,
-                    tokenizer=tokenizer,
-                    device=0,
-                    max_new_tokens=int(request_params['max_tokens']),
-                    )
-    hf = HuggingFacePipeline(pipeline=pipe)
-
-    template = "{prompt}"
-    prompt_template = PromptTemplate(template=template, input_variables=["prompt"])
-    llm_chain = LLMChain(prompt=prompt_template, llm=hf)
-
-    response = llm_chain.run(prompt)
-
-    printlog('--->', response)
+    cluster = ClusterInference()
+    response = cluster.generate(prompt, request_params)
     return response
 
 
@@ -231,12 +293,13 @@ def build_prompt(result_template, fixed_bug, buggy_node, fixa_config, bug_dir):
 
 def build_request_params(result_template, fixa_config):
     temperature = float(config.get('CODEX_TEMPERATURE') or 0.8)
-    finished_sample_counter = count_collected_samples_by_conditions(
-        result_template.project, result_template.bug_id, temperature)
-    real_sample_counter = max(
-        fixa_config['sample'] - finished_sample_counter, 0)
-    printlog('Project {} bug {} finished_sample_counter: {}, need to request {} more'.format(
-        result_template.project, result_template.bug_id, finished_sample_counter, real_sample_counter))
+    # finished_sample_counter = count_collected_samples_by_conditions(
+    #     result_template.project, result_template.bug_id, temperature)
+    real_sample_counter = fixa_config['sample']
+    # max(
+    #      - finished_sample_counter, 0)
+    # printlog('Project {} bug {} finished_sample_counter: {}, need to request {} more'.format(
+    #     result_template.project, result_template.bug_id, finished_sample_counter, real_sample_counter))
     request_counter, n_value, max_completion_size = calculate_request_counter(
         real_sample_counter, fixa_config['completion_ratio'], result_template.prompt_size, result_template.buggy_code_token)
     printlog('request_counter: ', request_counter)
@@ -270,12 +333,7 @@ def sanitize_choice_text(choice_text):
     return '\n'.join(cleaned_text)
 
 
-def ask_codex_for_single_bug(args, bug_id, fixa_config):
-    # Only support Codex with Defects4J for now
-    if args.model != 'Codex' or args.benchmark != 'Defects4J':
-        printlog('Only support Codex with Defects4J for now')
-        exit(1)
-
+def ask_hf_for_single_bug(args, bug_id, fixa_config):
     benchmark = get_benchmark(args.benchmark)
 
     # build a result template that will be used to save the result
@@ -293,46 +351,46 @@ def ask_codex_for_single_bug(args, bug_id, fixa_config):
     if buggy_bug is None:
         return
 
-    try:
-        # read patch file
-        patch_file_path = 'benchmarks/defects4j/framework/projects/{}/patches/{}.src.patch'.format(
-            args.project, bug_id)
-        countable_diffs, patch_text = read_patch_file(patch_file_path)
-        result_template.patch = patch_text
-        if len(countable_diffs) > 1:
-            result_template.result_type = 'ERROR'
-            result_template.error_message = str(
-                "Skip, more than one file changed")
-            save(result_template)
-            return
+    # read patch file
+    patch_file_path = 'benchmarks/defects4j/framework/projects/{}/patches/{}.src.patch'.format(
+        args.project, bug_id)
+    countable_diffs, patch_text = read_patch_file(patch_file_path)
+    result_template.patch = patch_text
+    if len(countable_diffs) > 1:
+        result_template.result_type = 'ERROR'
+        result_template.error_message = str(
+            "Skip, more than one file changed")
+        save(result_template)
+        return
 
-        result_template.buggy_file_path = countable_diffs[0].file_path
+    result_template.buggy_file_path = countable_diffs[0].file_path
 
-        # location of checkout bug dir
-        bug_dir = os.path.join(args.working_directory, "%s_%s_%s" %
-                               (fixed_bug.benchmark, fixed_bug.project, bug_id))
+    # location of checkout bug dir
+    bug_dir = os.path.join(args.working_directory, "%s_%s_%s" %
+                            (fixed_bug.benchmark, fixed_bug.project, bug_id))
 
-        # prepare fixed and buggy code ast node
-        # run original fixed version unit tests
-        # run buggy code against fixed unit tests, then revert the source to the fixed code
-        result_template, fixed_node, buggy_node = load_buggy_fixed_code_nodes(
-            result_template, args.working_directory, countable_diffs, fixed_bug, bug_id)
+    # prepare fixed and buggy code ast node
+    # run original fixed version unit tests
+    # run buggy code against fixed unit tests, then revert the source to the fixed code
+    result_template, fixed_node, buggy_node = load_buggy_fixed_code_nodes(
+        result_template, args.working_directory, countable_diffs, fixed_bug, bug_id)
 
-        # build prompt
-        result_template = build_prompt(
-            result_template, fixed_bug, buggy_node, fixa_config, bug_dir)
+    # build prompt
+    result_template = build_prompt(
+        result_template, fixed_bug, buggy_node, fixa_config, bug_dir)
 
-        # calculate number of requests
-        result_template, request_counter = build_request_params(
-            result_template, fixa_config)
+    # calculate number of requests
+    result_template, request_counter = build_request_params(
+        result_template, fixa_config)
 
-        # send request to model
-        response = request_codex_code_complition(result_template.prompt_text, result_template.request_params)
+    # send request to model
+    response = request_codex_code_complition(result_template.prompt_text, result_template.request_params)
 
+    for text in response:
         sample_result = copy.deepcopy(result_template) 
-        sample.result_type = "LANG_CHAIN_SUCCESS"
-        response_text = sanitize_choice_text(response)
-        sample_result.respond_origin_code_chunk = response
-        sample_result.respond_clean_code_chunk = response_text
+        sample_result.result_type = "SUCCESS"
+        response_text = sanitize_choice_text(text)
+        sample_result.respond_origin_code_chunk = text
+        sample_result.respond_clean_code_chunk = text
         save(sample_result)
         time.sleep(1)  # prevent postgres error
