@@ -12,9 +12,6 @@ authors = [
 repository = "https://github.com/ASSERT-KTH/llm-repair-them-all"
 homepage = "https://github.com/ASSERT-KTH/llm-repair-them-all"
 
-readme = ["README.md"]
-keywords = ["packaging", "poetry"]
-
 [tool.poetry.dependencies]
 python = "^3.9"
 
@@ -28,12 +25,3 @@ paramiko = "^3.1.0"
 transformers = {git = "https://github.com/huggingface/transformers"}
 torch = "^2.0.0"
 psycopg = {extras = ["binary", "pool"], version = "^3.1.8"}
-
-[tool.poetry.group.dev.dependencies]
-pytest = "^7.2.0"
-pytest-cov = "^3.0"
-
-[tool.poetry.group.docs]
-optional = true
-[tool.poetry.group.docs.dependencies]
-Sphinx = "^5.1.1"
