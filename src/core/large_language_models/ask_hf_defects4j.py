@@ -32,8 +32,7 @@ class ClusterInference:
     def __init__(self):
         self.hostname = config.get("hostname")
         self.username = config.get("username")
-        self.keyfile_path = config.get("keyfile_path")
-        self.passphrase = config.get("passphrase")
+        self.password = config.get("password")
         
 
     def generate(self, prompt, request_params) -> List[str]:
@@ -43,7 +42,7 @@ class ClusterInference:
         # Connect to remote cluster using paramiko
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        ssh.connect(self.hostname, username=self.username, key_filename=self.keyfile_path, passphrase=self.passphrase)
+        ssh.connect(hostname=self.hostname, username=self.username, password=self.password)
 
         # Create scripts and test data on the remote cluster
         self._create_scripts(ssh, prompt, unique_id, request_params)
