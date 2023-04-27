@@ -79,9 +79,9 @@ class ClusterInference:
             with sftp.open(f'/cephyr/users/andreafo/Alvis/llms/jobs/{unique_id}_jobscript', 'w+') as f:
                 with open('./resources/scripts/jobscript', 'r') as lf:
                     script = lf.read().format(job_name="llm-repair-them-all",
-                                              gpu_type="A100",
-                                              gpu_number="4",
-                                              job_time="01:00:00",
+                                              gpu_type="A100fat",
+                                              gpu_number="1",
+                                              job_time="00:10:00",
                                               script=f"/cephyr/users/andreafo/Alvis/llms/jobs/{unique_id}_inference.py")
                     f.write(script)
 

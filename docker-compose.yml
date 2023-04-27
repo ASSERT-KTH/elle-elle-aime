@@ -22,6 +22,12 @@ services:
     ports:
       - "5050:80"
 
+  llm-repair-them-all:
+    image: andre15silva/llm-repair-them-all
+    restart: no
+    # keeps the container waiting forever, so that we can exec a shell into it
+    entrypoint: tail -F anything
+
 volumes:
   db:
     driver: local

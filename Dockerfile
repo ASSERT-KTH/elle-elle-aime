@@ -18,7 +18,7 @@ COPY benchmarks ./benchmarks
 COPY data ./data
 COPY src ./src
 COPY resources ./resources
-COPY .env ./.env
+COPY .env.docker ./.env
 COPY .git ./.git
 COPY .gitmodules ./.gitmodules
 COPY README.md ./README.md
