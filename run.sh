@@ -1,9 +1,11 @@
 python3 src/run_chatgpt.py \
 -m gpt-3.5-turbo \
--s 2 \
+-s 1 \
 -b Defects4J \
 -p Lang \
+-bi 1 \
 -ns 1 \
 -nr 1 \
+-pl Java \
 -pml advanced \
 -w test
