@@ -1,7 +1,7 @@
 # Setup
 
 ## Overview
-This repo extends from [RepairThemAll](https://github.com/program-repair/RepairThemAll) and [LLM-RTA-CodeX](https://github.com/ASSERT-KTH/llm-repair-them-all), focuses on exploring the potential of ChataGPT and its improved version for program repair. We currently can support Defects4J and Refactory. You can contribute your prompt by submitting PR. You can add your prompt to [src/core/chatgpt/config/prompt_config.py](https://github.com/TomasAndersonFang/ChatGPT-Repair/blob/main/src/core/chatgpt/config/prompt_config.py).
+This repo extends from [RepairThemAll](https://github.com/program-repair/RepairThemAll) and [LLM-RTA-CodeX](https://github.com/ASSERT-KTH/llm-repair-them-all), focuses on exploring the potential of ChataGPT and its improved version for program repair. We currently can support Defects4J and Refactory. You can contribute your prompt by submitting PR. You can add your prompt to [src/core/chatgpt/config/prompt_config.py](https://github.com/ASSERT-KTH/llm-repair-them-all/blob/chatgpt/src/core/chatgpt/config/prompt_config.py).
 
 ## Prerequisite
   * git
