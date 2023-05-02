@@ -1,1 +1,0 @@
-contains_unique_day("July", tuple_of_possible_birthdays)

@@ -1,7 +1,0 @@
-def remove_extras(lst):
-    lst.sort()
-    result = []
-    for i in lst:
-        if i not in result:
-            result = result + [i]
-    return result
