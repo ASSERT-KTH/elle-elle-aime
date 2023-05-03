@@ -2,9 +2,9 @@ from math import ceil, floor
 from transformers import GPT2TokenizerFast
 import os
 
-MAX_TOKEN_LENGTH = 8000
-MAX_COMPLETION_TOKEN_LENGTH = 4000
-completion_ratio = 1.2
+MAX_TOKEN_LENGTH = 2048
+MAX_COMPLETION_TOKEN_LENGTH = 2048
+completion_ratio = 1
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 
@@ -12,7 +12,8 @@ def number_of_tokens(text):
     if text is None:
         return 0
     tokenizer = GPT2TokenizerFast.from_pretrained("gpt2")
-    return len(tokenizer(text)['input_ids'])
+    inputs = tokenizer(text, return_tensors="pt")
+    return inputs.input_ids.size(1)
 
 
 def get_max_completion_size(completion_ratio, prompt_size, bug_size):

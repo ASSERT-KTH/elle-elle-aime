@@ -69,8 +69,9 @@ class ClusterInference:
         with ssh.open_sftp() as sftp:
             with sftp.open(f"/cephyr/users/andreafo/Alvis/llms/jobs/{unique_id}_inference.py", "w+") as f:
                 with open('./resources/scripts/inference.py', 'r') as lf:
-                    script = lf.read().format(model="Salesforce/codegen-2B-multi", 
-                                              num_return_sequences=request_params["n"],
+                    script = lf.read().format(model="Salesforce/codegen-2B-multi",
+                                              max_new_tokens=request_params["max_tokens"],
+                                              num_return_sequences=10,
                                               unique_id=unique_id)
                     f.write(script)
 
@@ -79,7 +80,7 @@ class ClusterInference:
             with sftp.open(f'/cephyr/users/andreafo/Alvis/llms/jobs/{unique_id}_jobscript', 'w+') as f:
                 with open('./resources/scripts/jobscript', 'r') as lf:
                     script = lf.read().format(job_name="llm-repair-them-all",
-                                              gpu_type="A100fat",
+                                              gpu_type="A40",
                                               gpu_number="1",
                                               job_time="00:10:00",
                                               script=f"/cephyr/users/andreafo/Alvis/llms/jobs/{unique_id}_inference.py")

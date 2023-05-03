@@ -60,7 +60,22 @@ if __name__ == "__main__":
 
     match args.model:
         case "HF":
-            ask_hf_for_single_bug(args, args.id, FIXA_CONFIG)
+            if args.project != None and args.id == None:
+                # fix all bugs from a project
+                bug_size = DEFECTS4J_BUG_SIZE[args.project]
+                starts_from = int(args.start) if args.start != None else 1
+                for bug_id in range(starts_from, bug_size + 1):
+                    ask_hf_for_single_bug(args, str(bug_id), FIXA_CONFIG)
+                    time.sleep(12)
+            elif args.project == None and args.id == None:
+                # fix all bugs from all projects
+                for project, bug_size in DEFECTS4J_BUG_SIZE.items():
+                    args.project = project
+                    for bug_id in range(1, bug_size + 1):
+                        ask_hf_for_single_bug(args, str(bug_id), FIXA_CONFIG)
+                        time.sleep(12)
+            else:
+                ask_hf_for_single_bug(args, args.id, FIXA_CONFIG)
         case _: # Codex
             if args.project != None and args.id == None:
                 # fix all bugs from a project
