@@ -351,46 +351,52 @@ def ask_hf_for_single_bug(args, bug_id, fixa_config):
     if buggy_bug is None:
         return
 
-    # read patch file
-    patch_file_path = 'benchmarks/defects4j/framework/projects/{}/patches/{}.src.patch'.format(
-        args.project, bug_id)
-    countable_diffs, patch_text = read_patch_file(patch_file_path)
-    result_template.patch = patch_text
-    if len(countable_diffs) > 1:
-        result_template.result_type = 'ERROR'
-        result_template.error_message = str(
-            "Skip, more than one file changed")
+    try:
+        # read patch file
+        patch_file_path = 'benchmarks/defects4j/framework/projects/{}/patches/{}.src.patch'.format(
+            args.project, bug_id)
+        countable_diffs, patch_text = read_patch_file(patch_file_path)
+        result_template.patch = patch_text
+        if len(countable_diffs) > 1:
+            result_template.result_type = 'ERROR'
+            result_template.error_message = str(
+                "Skip, more than one file changed")
+            save(result_template)
+            return
+
+        result_template.buggy_file_path = countable_diffs[0].file_path
+
+        # location of checkout bug dir
+        bug_dir = os.path.join(args.working_directory, "%s_%s_%s" %
+                                (fixed_bug.benchmark, fixed_bug.project, bug_id))
+
+        # prepare fixed and buggy code ast node
+        # run original fixed version unit tests
+        # run buggy code against fixed unit tests, then revert the source to the fixed code
+        result_template, fixed_node, buggy_node = load_buggy_fixed_code_nodes(
+            result_template, args.working_directory, countable_diffs, fixed_bug, bug_id)
+
+        # build prompt
+        result_template = build_prompt(
+            result_template, fixed_bug, buggy_node, fixa_config, bug_dir)
+
+        # calculate number of requests
+        result_template, request_counter = build_request_params(
+            result_template, fixa_config)
+
+        # send request to model
+        response = request_codex_code_complition(result_template.prompt_text, result_template.request_params)
+
+        for text in response:
+            sample_result = copy.deepcopy(result_template) 
+            sample_result.result_type = "SUCCESS"
+            response_text = sanitize_choice_text(text)
+            sample_result.respond_origin_code_chunk = text
+            sample_result.respond_clean_code_chunk = text
+            save(sample_result)
+            time.sleep(1)  # prevent postgres error
+    except Exception as e:
+        result_template.result_type = 'TEMPLATE_ERROR'
+        result_template.error_message = str(e)
         save(result_template)
-        return
-
-    result_template.buggy_file_path = countable_diffs[0].file_path
-
-    # location of checkout bug dir
-    bug_dir = os.path.join(args.working_directory, "%s_%s_%s" %
-                            (fixed_bug.benchmark, fixed_bug.project, bug_id))
-
-    # prepare fixed and buggy code ast node
-    # run original fixed version unit tests
-    # run buggy code against fixed unit tests, then revert the source to the fixed code
-    result_template, fixed_node, buggy_node = load_buggy_fixed_code_nodes(
-        result_template, args.working_directory, countable_diffs, fixed_bug, bug_id)
-
-    # build prompt
-    result_template = build_prompt(
-        result_template, fixed_bug, buggy_node, fixa_config, bug_dir)
-
-    # calculate number of requests
-    result_template, request_counter = build_request_params(
-        result_template, fixa_config)
-
-    # send request to model
-    response = request_codex_code_complition(result_template.prompt_text, result_template.request_params)
-
-    for text in response:
-        sample_result = copy.deepcopy(result_template) 
-        sample_result.result_type = "SUCCESS"
-        response_text = sanitize_choice_text(text)
-        sample_result.respond_origin_code_chunk = text
-        sample_result.respond_clean_code_chunk = text
-        save(sample_result)
-        time.sleep(1)  # prevent postgres error
+        time.sleep(12)
