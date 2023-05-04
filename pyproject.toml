@@ -25,3 +25,4 @@ paramiko = "^3.1.0"
 transformers = {git = "https://github.com/huggingface/transformers"}
 torch = "^2.0.0"
 psycopg = {extras = ["binary", "pool"], version = "^3.1.8"}
+pytest = "^7.3.1"
