@@ -1,20 +1,20 @@
 import subprocess
 import re
-from elleelleaime.core.benchmarks.benchmark import Benchmark
+from core.benchmarks.benchmark import Benchmark
 
-from elleelleaime.core.benchmarks.bug import Bug
-from elleelleaime.core.benchmarks.test_result import TestResult
-from elleelleaime.core.benchmarks.compile_result import CompileResult
+from core.benchmarks.bug import Bug
+from core.benchmarks.test_result import TestResult
+from core.benchmarks.compile_result import CompileResult
 
 class Defects4JBug(Bug):
     """
     The class for representing Defects4J bugs
     """
 
-    def __init__(self, benchmark: Benchmark, pid: str, bid: str) -> None:
+    def __init__(self, benchmark: Benchmark, pid: str, bid: str, ground_truth: str) -> None:
         self.pid = pid
         self.bid = bid
-        super().__init__(benchmark, f"{pid}-{bid}")
+        super().__init__(benchmark, f"{pid}-{bid}", ground_truth)
 
     def checkout(self, path: str, fixed: bool = False) -> bool:
         run = subprocess.run(f"{self.benchmark.get_bin()} checkout -p {self.pid} -v {self.bid}{'f' if fixed else 'b'} -w {path}", 

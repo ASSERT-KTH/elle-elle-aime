@@ -1,8 +1,7 @@
-from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from elleelleaime.core.utils.utils import get_benchmark
-from elleelleaime.core.utils.jsonl import write_jsonl
-from elleelleaime.sample.sample_generation import generate_sample
+from core.utils.utils import get_benchmark
+from core.utils.jsonl import write_jsonl
+from sample_generation import generate_sample
 
 import fire
 import sys
@@ -37,7 +36,8 @@ def entry_point(
         for bug in benchmark_obj.get_bugs():
             args = (bug, prompt_strategy)
             futures.append(executor.submit(generate_sample, *args))
-            break
+            # TODO: debug
+            # break
 
         # Check that all bugs are being processed
         #assert len(futures) == len(benchmark_obj.get_bugs()), "Some bugs are not being processed"

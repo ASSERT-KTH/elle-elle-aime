@@ -1,12 +1,13 @@
-import pathlib
 from abc import ABC, abstractmethod
 
 # prevent circular import
 class Benchmark(ABC):
     pass
 
+import pathlib
+
 from typing import Set
-from elleelleaime.core.benchmarks.bug import Bug
+from core.benchmarks.bug import Bug
 
 class Benchmark(ABC):
     """
