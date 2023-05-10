@@ -68,11 +68,9 @@ def entry_point(
         for bug in benchmark_obj.get_bugs():
             args = (bug, prompt_strategy)
             futures.append(executor.submit(generate_sample, *args))
-            # TODO: debug
-            # break
 
         # Check that all bugs are being processed
-        #assert len(futures) == len(benchmark_obj.get_bugs()), "Some bugs are not being processed"
+        assert len(futures) == len(benchmark_obj.get_bugs()), "Some bugs are not being processed"
 
         # Wait for the results
         for future in tqdm.tqdm(as_completed(futures), total=len(futures)):
