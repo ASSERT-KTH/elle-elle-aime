@@ -9,7 +9,7 @@ This directory contains scripts that request ChatGPT to perform automated progra
   * `cp .env_chatgpt .env` and finish setting in .env
 
 ## Process
-You can run by the command `bash run.sh`. You can also specific your requirments by changing the parameters in `run.sh`. We describe some key parameters in the following.
+You can run by the command `bash run.sh`. You can also specific your requirments by changing the parameters in `run.sh`. We describe some key parameters in the following. For Defects4J, we use a json file to store all the results for each bug. For Refactory, we use a json file to store all the results for bugs in each question.
 ### Parameters
 #### General parameters
 - `-m`: The version of ChatGPT you want to use. There are 3 different version of ChatGPT you can choose: "gpt-3.5-turbo", "gpt-4", "gpt-4-32k".
