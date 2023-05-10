@@ -12,5 +12,3 @@ def get_benchmark(benchmark: str) -> Optional[Benchmark]:
         if benchmark.lower() == b.lower():
             return benchmarks[b]()
     return None
-
-
