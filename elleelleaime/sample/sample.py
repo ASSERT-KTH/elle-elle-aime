@@ -1,12 +1,44 @@
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from core.utils.utils import get_benchmark
+from core.utils.benchmarks import get_benchmark
 from core.utils.jsonl import write_jsonl
-from sample_generation import generate_sample
+from core.benchmarks.bug import Bug
+from strategies.zero_shot_single_hunk import ZeroShotSingleHunkPrompting
+from typing import Optional, Union
 
 import fire
 import sys
 import tqdm
 import logging
+
+def generate_sample(bug: Bug, prompt_strategy: str) -> dict[str, Optional[Union[str, Bug]]]:
+    """
+    Generates the sample for the given bug with the given prompt strategy.
+    """
+
+    # TODO: We only support single-hunk bugs for now
+    prompt_strategy_obj = ZeroShotSingleHunkPrompting()
+    prompt = prompt_strategy_obj.prompt(bug)
+    # Check if prompt was generated
+    if prompt is None:
+        return {
+            "identifier": bug.get_identifier(),
+            "buggy_code": None,
+            "fixed_code": None,
+            "prompt_strategy": prompt_strategy,
+            "prompt": None,
+            "ground_truth": bug.get_ground_truth()
+        }
+    
+    # Unpack the prompt
+    buggy_code, fixed_code, prompt = prompt
+    return {
+        "identifier": bug.get_identifier(),
+        "buggy_code": buggy_code,
+        "fixed_code": fixed_code,
+        "prompt_strategy": prompt_strategy,
+        "prompt": prompt,
+        "ground_truth": bug.get_ground_truth()
+    }
 
 
 def entry_point(
