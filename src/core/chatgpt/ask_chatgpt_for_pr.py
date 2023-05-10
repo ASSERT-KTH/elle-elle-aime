@@ -4,6 +4,7 @@ import json
 from core.chatgpt.request_chatgpt import ask_chatgpt
 from core.chatgpt.verify_chatgpt_defects4j import verify_single_sample
 from core.chatgpt.chat import request_chatgpt_pr
+from core.chatgpt.config.defs4j_config import ObjectView
 from core.tools.prompt import chatgpt_prompt_generation
 from core.tools.extract_code import extract_code
 
@@ -32,6 +33,7 @@ def ask_chatgpt_for_defect4j(args, defects4j_config, fixa_config):
         dir_path = os.path.join(args.working_directory, args.benchmark, args.project, args.bug_id)
         with open(os.path.join(dir_path, "defects4j_config.json"), "r") as f:
             defects4j_config = json.load(f)
+        defects4j_config = ObjectView(defects4j_config)
         response_dict = defects4j_config["respond_code_chunk"]
         for res_id in range(1, args.num_requests+1):
             defects4j_config["respond_code_chunk"] = response_dict[str(res_id)]
@@ -80,7 +82,7 @@ def ask_chatgpt_for_defect4j(args, defects4j_config, fixa_config):
         defects4j_config.respond_type = None
 
 
-def ask_chatgpt_for_refactory(args, result_list, buggy_code_path):
+def ask_chatgpt_for_refactory(args, result_dict, buggy_code_path):
     """Ask ChatGPT for a single bug."""
     request_params = {
         'model': args.model,
@@ -94,18 +96,16 @@ def ask_chatgpt_for_refactory(args, result_list, buggy_code_path):
     with open(buggy_code_path, "r") as f:
         buggy_code = f.read()
     prompt, prompt_size, bug_size = chatgpt_prompt_generation(args, buggy_code)
-    result_list.append(prompt)
-    result_list.append(prompt_size)
-    result_list.append(bug_size)
-    result_list.append([])
-    result_list.append([])
+    result_dict.prompt = prompt
+    result_dict.prompt_size = prompt_size
+    result_dict.bug_size = bug_size
     # breakpoint()
     for num in range(args.num_requests):
         response = request_chatgpt_pr(prompt, request_params, args)
         respond_text = response['choices'][0]['message']['content']
         fixed_code = extract_code(respond_text)
-        result_list[3].append(respond_text)
-        result_list[4].append(fixed_code)
-    return result_list
+        result_dict.response.append(respond_text)
+        result_dict.patches.append(fixed_code)
+    return result_dict
 
     

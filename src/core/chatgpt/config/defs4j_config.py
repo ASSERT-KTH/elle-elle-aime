@@ -71,8 +71,13 @@ class AttrDict(dict):
                                     'include_document': False,
                                     'include_comments': False,
                                     'compile': True,
-                                    'sample': None,
-                                    'completion_ratio': 1.2,
                                  }
         self.defects4j_projects: list = ['Chart', 'Cli', 'Closure', 'Codec', 'Collections', 'Compress', 'Csv', 'Gson',
                                          'JacksonCore', 'JacksonDatabind', 'JacksonXml', 'Jsoup', 'JxPath', 'Lang', 'Math', 'Mockito', 'Time']
+
+
+class ObjectView(dict):
+    def __init__(self, d):
+        self.__dict__ = self
+        for k, v in d.items():
+            self[k] = ObjectView(v) if isinstance(v, dict) else v
