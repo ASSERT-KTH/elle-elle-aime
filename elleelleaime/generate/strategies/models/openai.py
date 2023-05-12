@@ -17,7 +17,7 @@ class OpenAIChatCompletionModels(PatchGenerationStrategy):
     def _completions_with_backoff(**kwargs):
         return openai.ChatCompletion.create(**kwargs)
   
-    def generate(self, prompt: str) -> Any:
+    def _generate_impl(self, prompt: str) -> Any:
         load_dotenv()
         
         openai.organization = os.getenv("OPENAI_ORG")

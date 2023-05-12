@@ -23,7 +23,7 @@ def generate_candidate(sample: dict, model_name: str) -> dict:
 def entry_point(
     samples_path: str,
     model_name: str,
-    n_workers: int = 1
+    n_workers: int = 4
 ):
     """
     Generates the candidate patches given the samples and the model,
@@ -36,12 +36,7 @@ def entry_point(
         
         logging.info("Reading samples...")
         for sample in tqdm.tqdm(stream_jsonl(samples_path)):
-            if sample["prompt"] != None:
-                futures.append(executor.submit(generate_candidate, sample, model_name))
-            else:
-                logging.warning(f"Skipping sample {sample['identifier']} because prompt does not exist")
-                sample["completion"] = None
-                results.append(sample)
+            futures.append(executor.submit(generate_candidate, sample, model_name))
         
         logging.info("Generating candidates...")
         for future in tqdm.tqdm(futures):
