@@ -1,5 +1,6 @@
 from concurrent.futures import ThreadPoolExecutor
 from core.utils.jsonl import stream_jsonl, write_jsonl
+from strategies.registry import PatchGenerationStrategyRegistry
 
 import fire
 import sys
@@ -11,13 +12,18 @@ def generate_candidate(sample: dict, model_name: str) -> dict:
     """
     Generates the candidate patch for the given sample and model.
     """
-    return {}
+    
+    generation_strategy = PatchGenerationStrategyRegistry().get_generation(model_name)
+    generation = generation_strategy.generate(sample["prompt"])
+    sample["generation"] = generation
+
+    return sample
 
 
 def entry_point(
     samples_path: str,
     model_name: str,
-    n_workers: int = 4
+    n_workers: int = 1
 ):
     """
     Generates the candidate patches given the samples and the model,
@@ -30,7 +36,12 @@ def entry_point(
         
         logging.info("Reading samples...")
         for sample in tqdm.tqdm(stream_jsonl(samples_path)):
-            futures.append(executor.submit(generate_candidate, sample, model_name))
+            if sample["prompt"] != None:
+                futures.append(executor.submit(generate_candidate, sample, model_name))
+            else:
+                logging.warning(f"Skipping sample {sample['identifier']} because prompt does not exist")
+                sample["completion"] = None
+                results.append(sample)
         
         logging.info("Generating candidates...")
         for future in tqdm.tqdm(futures):
