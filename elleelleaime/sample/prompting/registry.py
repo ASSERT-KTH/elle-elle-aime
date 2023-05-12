@@ -1,8 +1,8 @@
-from sample.prompting.prompting_strategy import PromptingStrategy
-from sample.prompting.strategies.zero_shot_single_hunk import ZeroShotSingleHunkPrompting
+from .strategy import PromptingStrategy
+from .strategies.zero_shot_single_hunk import ZeroShotSingleHunkPrompting
 
 
-class PromptingRegistry():
+class PromptStrategyRegistry():
     """
     Class for storing and retrieving prompting strategies based on their name.
     """
@@ -13,4 +13,6 @@ class PromptingRegistry():
         }
 
     def get_strategy(self, name: str) -> PromptingStrategy:
+        if name.lower().strip() not in self._strategies:
+            raise ValueError(f"Unknown prompting strategy {name}")
         return self._strategies[name.lower().strip()]
