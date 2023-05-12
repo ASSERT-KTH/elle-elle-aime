@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 
 # prevent circular import
+# Benchmark imports Bug -> Bug imports Benchmark -> Benchmark imports Bug -> ...
 class Benchmark(ABC):
     pass
 
