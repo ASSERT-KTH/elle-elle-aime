@@ -44,7 +44,7 @@ def entry_point(
 
     # Write results to jsonl file
     dataset = samples_path.split("_")[1]
-    prompt_strategy = samples_path.split("_")[2]
+    prompt_strategy = samples_path.split("_")[2].split(".")[0]
     write_jsonl(f"candidates_{dataset}_{prompt_strategy}_{model_name}.jsonl.gz", results)
 
 
