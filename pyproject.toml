@@ -1,16 +1,13 @@
 [tool.poetry]
-name = "llm-repair-them-all"
+name = "elleelleaime"
 version = "0.0.1"
 description = "Automatic Program Repair with Large Language Models"
-
 license = "MIT"
-
 authors = [
     "Pengyu Zhao <pengyu@kth.se>"
 ]
-
-repository = "https://github.com/ASSERT-KTH/llm-repair-them-all"
-homepage = "https://github.com/ASSERT-KTH/llm-repair-them-all"
+repository = "https://github.com/ASSERT-KTH/elle-elle-aime"
+homepage = "https://github.com/ASSERT-KTH/elle-elle-aime"
 
 [tool.poetry.dependencies]
 python = "^3.9"

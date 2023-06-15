@@ -1,6 +1,6 @@
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from core.utils.jsonl import stream_jsonl, write_jsonl
-from strategies.registry import PatchGenerationStrategyRegistry
+from generate.strategies.registry import PatchGenerationStrategyRegistry
 
 import fire
 import sys
