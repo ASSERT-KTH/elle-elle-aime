@@ -1,5 +1,29 @@
 # elle-elle-aime ❤️
 
+## How to use the new codebase
+
+Requires python3.10 (or latest) and python-poetry
+
+How to setup:
+```bash
+cd elle-elle-aime
+poetry shell # initializes poetry env
+poetry install # installs dependencies
+```
+
+How to run:
+```bash
+cd elle-elle-aime
+poetry shell
+cd elleelleaime # Note: this is mandatory due to hard-coded paths for now
+# Example on how to call sample.py to generate samples for Defects4J using the zero-shot-single-hunk strategy
+python sample.py defects4j zero-shot-single-hunk 
+# Example on how to call generate.py to generate patches for the previously generated samples using gpt-3.5-turbo (note: need to setup .env file or export env variables)
+python generate.py samples_defects4j_zero-shot-single-hunk.jsonl.gz gpt-3.5-turbo 
+```
+
+----
+
 ## Overview
 Framework to use LLMs for automated program repair.
 Based on [RepairThemAll](https://github.com/program-repair/RepairThemAll),
