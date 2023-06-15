@@ -1,4 +1,4 @@
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from core.utils.jsonl import stream_jsonl, write_jsonl
 from strategies.registry import PatchGenerationStrategyRegistry
 
@@ -27,7 +27,7 @@ def entry_point(
 ):
     """
     Generates the candidate patches given the samples and the model,
-    and writes the results to f"candidates_{dataset}_{prompt_strategy}_{model_name}.jsonl.gz"
+    and writes the results to f"candidates_{benchmark}_{prompt_strategy}_{model_name}.jsonl.gz"
     """
     results = []
     
@@ -39,13 +39,13 @@ def entry_point(
             futures.append(executor.submit(generate_candidate, sample, model_name))
         
         logging.info("Generating candidates...")
-        for future in tqdm.tqdm(futures):
+        for future in tqdm.tqdm(as_completed(futures), total=len(futures)):
             results.append(future.result())
 
     # Write results to jsonl file
-    dataset = samples_path.split("_")[1]
+    benchmark = samples_path.split("_")[1]
     prompt_strategy = samples_path.split("_")[2].split(".")[0]
-    write_jsonl(f"candidates_{dataset}_{prompt_strategy}_{model_name}.jsonl.gz", results)
+    write_jsonl(f"candidates_{benchmark}_{prompt_strategy}_{model_name}.jsonl.gz", results)
 
 
 def main():
