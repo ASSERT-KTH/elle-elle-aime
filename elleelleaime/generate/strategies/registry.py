@@ -1,5 +1,6 @@
-from .strategy import PatchGenerationStrategy
-from .models.openai import OpenAIChatCompletionModels
+from generate.strategies.strategy import PatchGenerationStrategy
+from generate.strategies.models.openai import OpenAIChatCompletionModels
+from generate.strategies.models.alvis import AlvisHFModels
 
 class PatchGenerationStrategyRegistry():
     """
@@ -9,6 +10,8 @@ class PatchGenerationStrategyRegistry():
     def __init__(self):
         self._models: dict[str, PatchGenerationStrategy] = {
             "gpt-3.5-turbo": OpenAIChatCompletionModels("gpt-3.5-turbo"),
+            "incoder-1B-alvis": AlvisHFModels("incoder-1B"),
+            "incoder-6B-alvis": AlvisHFModels("incoder-6B"),
         }
         
     def get_generation(self, name: str) -> PatchGenerationStrategy:
