@@ -11,13 +11,24 @@ import tqdm
 import logging
 
 
-def generate_sample(bug: Bug, prompt_strategy: str) -> dict[str, Optional[Union[str, Bug]]]:
+MASK_DICT = {
+    "incoder": "<mask>",
+    "plbart": "<mask>",
+    "codet5": "<extra_id_0>",
+    # Add the model you want to use here
+}
+
+
+def generate_sample(bug: Bug, prompt_strategy: str, model_name: str=None, strict_one_hunk: bool=None) -> dict[str, Optional[Union[str, Bug]]]:
     """
     Generates the sample for the given bug with the given prompt strategy.
     """
 
+    if model_name is not None:
+        assert model_name in MASK_DICT.keys(), f"Unknown model name: {model_name}"
+
     prompt_strategy_obj = PromptStrategyRegistry().get_strategy(prompt_strategy)
-    prompt = prompt_strategy_obj.prompt(bug)
+    prompt = prompt_strategy_obj.prompt(bug) if model_name == None else prompt_strategy_obj.prompt(bug, MASK_DICT[model_name.lower().strip()], strict_one_hunk)
 
     # Check if prompt was generated
     if prompt is None:
@@ -45,7 +56,9 @@ def generate_sample(bug: Bug, prompt_strategy: str) -> dict[str, Optional[Union[
 def entry_point(
     benchmark: str,
     prompt_strategy: str,
-    n_workers: int = 4
+    model_name: str=None,
+    strict_one_hunk: bool=None,
+    n_workers: int = 1
 ):
     """
     Generates the test samples for the bugs of the given benchmark with the given
@@ -67,7 +80,7 @@ def entry_point(
 
         # Launch a thread for each bug
         for bug in benchmark_obj.get_bugs():
-            args = (bug, prompt_strategy)
+            args = (bug, prompt_strategy, model_name, strict_one_hunk)
             futures.append(executor.submit(generate_sample, *args))
 
         # Check that all bugs are being processed

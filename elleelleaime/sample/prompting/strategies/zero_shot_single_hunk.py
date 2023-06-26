@@ -24,7 +24,6 @@ class ZeroShotSingleHunkPrompting(PromptingStrategy):
         :return: A tuple of the form (buggy_code, fixed_code, prompt) or None if the prompt cannot be generated.
         """
         diff = PatchSet(bug.get_ground_truth())
-
         # This strategy only supports single-hunk bugs
         if len(diff) != 1 or len(diff[0]) != 1:
             return None
