@@ -136,8 +136,8 @@ def cloze_prompt(bug: Bug, mask_token: str, strict_one_hunk: bool) -> Optional[T
     bug.checkout(buggy_path, fixed=False)
     bug.checkout(fixed_path, fixed=True)
 
-    buggy_bug_path = buggy_path + '/' + countable_diffs[0].file_path
-    fixed_bug_path = fixed_path + '/' + countable_diffs[0].file_path
+    buggy_bug_path = os.path.join(buggy_path, countable_diffs[0].file_path)
+    fixed_bug_path = os.path.join(fixed_path, countable_diffs[0].file_path)
 
     # Get the buggy and fixed code nodes
     fixed_node, buggy_node = load_code_node(fixed_bug_path, buggy_bug_path, countable_diffs)
