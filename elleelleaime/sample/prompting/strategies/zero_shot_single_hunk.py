@@ -16,7 +16,7 @@ class ZeroShotSingleHunkPrompting(PromptingStrategy):
         // This is the fixed code
         """
 
-    def prompt(self, bug: Bug) -> Optional[Tuple[str, str, str]]:
+    def prompt(self, bug: Bug, *args) -> Optional[Tuple[str, str, str]]:
         """
         Returns the prompt for the given bug.
 

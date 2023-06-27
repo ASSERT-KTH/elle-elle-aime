@@ -131,21 +131,19 @@ def cloze_prompt(bug: Bug, mask_token: str, strict_one_hunk: bool) -> Optional[T
     diff_text = bug.get_ground_truth()
     countable_diffs = read_patch(diff_text)
 
-    buggy_path = os.path.join(tempfile.gettempdir(), "elleelleaime", bug.get_identifier(), uuid.uuid4())
-    fixed_path = os.path.join(tempfile.gettempdir(), "elleelleaime", bug.get_identifier(), uuid.uuid4())
+    buggy_path = './tmp/' + bug.get_identifier() + '/' + 'b'
+    fixed_path = './tmp/' + bug.get_identifier() + '/' + 'f'
     bug.checkout(buggy_path, fixed=False)
     bug.checkout(fixed_path, fixed=True)
 
-    buggy_bug_path = os.path.join(buggy_path, countable_diffs[0].file_path)
-    fixed_bug_path = os.path.join(fixed_path, countable_diffs[0].file_path)
+    buggy_bug_path = buggy_path + '/' + countable_diffs[0].file_path
+    fixed_bug_path = fixed_path + '/' + countable_diffs[0].file_path
 
     # Get the buggy and fixed code nodes
     fixed_node, buggy_node = load_code_node(fixed_bug_path, buggy_bug_path, countable_diffs)
     # Get the buggy and fixed code without comments
     buggy_code, fixed_code = buggy_node.code_lines_str(include_comment_line=False), fixed_node.code_lines_str(include_comment_line=False)
-# Remove the checked-out bugs so we don't pollute the system
-shutil.rmtree(buggy_bug_path, ignore_errors=True)
-shutil.rmtree(fixed_bug_path, ignore_errors=True)
+
     buggy_code_lines = buggy_code.split('\n')
     fixed_code_lines = fixed_code.split('\n')
 

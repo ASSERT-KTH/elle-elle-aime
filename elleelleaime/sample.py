@@ -11,24 +11,13 @@ import tqdm
 import logging
 
 
-MASK_DICT = {
-    "incoder": "<mask>",
-    "plbart": "<mask>",
-    "codet5": "<extra_id_0>",
-    # Add the model you want to use here
-}
-
-
 def generate_sample(bug: Bug, prompt_strategy: str, model_name: str=None, strict_one_hunk: bool=None) -> dict[str, Optional[Union[str, Bug]]]:
     """
     Generates the sample for the given bug with the given prompt strategy.
     """
 
-    if model_name is not None:
-        assert model_name in MASK_DICT.keys(), f"Unknown model name: {model_name}"
-
     prompt_strategy_obj = PromptStrategyRegistry().get_strategy(prompt_strategy)
-    prompt = prompt_strategy_obj.prompt(bug) if model_name == None else prompt_strategy_obj.prompt(bug, MASK_DICT[model_name.lower().strip()], strict_one_hunk)
+    prompt = prompt_strategy_obj.prompt(bug, model_name, strict_one_hunk)
 
     # Check if prompt was generated
     if prompt is None:
@@ -57,8 +46,8 @@ def entry_point(
     benchmark: str,
     prompt_strategy: str,
     model_name: str = None,
-    strict_one_hunk: bool = False,
-    n_workers: int = 1
+    strict_one_hunk: bool = None,
+    n_workers: int = 4
 ):
     """
     Generates the test samples for the bugs of the given benchmark with the given
