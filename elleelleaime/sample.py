@@ -57,7 +57,7 @@ def entry_point(
     benchmark: str,
     prompt_strategy: str,
     model_name: str = None,
-    strict_one_hunk: bool=None,
+    strict_one_hunk: bool = False,
     n_workers: int = 1
 ):
     """
