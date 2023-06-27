@@ -56,7 +56,7 @@ def generate_sample(bug: Bug, prompt_strategy: str, model_name: str=None, strict
 def entry_point(
     benchmark: str,
     prompt_strategy: str,
-    model_name: str=None,
+    model_name: str = None,
     strict_one_hunk: bool=None,
     n_workers: int = 1
 ):
