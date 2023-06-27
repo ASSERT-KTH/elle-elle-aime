@@ -131,8 +131,8 @@ def cloze_prompt(bug: Bug, mask_token: str, strict_one_hunk: bool) -> Optional[T
     diff_text = bug.get_ground_truth()
     countable_diffs = read_patch(diff_text)
 
-    buggy_path = './tmp/' + bug.get_identifier() + '/' + 'b'
-    fixed_path = './tmp/' + bug.get_identifier() + '/' + 'f'
+    buggy_path = os.path.join(tempfile.gettempdir(), "elleelleaime", bug.get_identifier(), uuid.uuid4())
+    fixed_path = os.path.join(tempfile.gettempdir(), "elleelleaime", bug.get_identifier(), uuid.uuid4())
     bug.checkout(buggy_path, fixed=False)
     bug.checkout(fixed_path, fixed=True)
 
