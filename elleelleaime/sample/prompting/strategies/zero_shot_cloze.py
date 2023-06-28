@@ -23,27 +23,34 @@ class ZeroShotClozePrompting(PromptingStrategy):
     def __init__(self):
         super().__init__()
 
-    def sinfle_diff_file_prompt(self, buggy_hunks: list, fixed_hunks: list, buggy_code_lines: list, fixed_code_lines: list, mask_token: str=None) -> str:
+    def single_diff_file_prompt(self, buggy_hunks: dict, fixed_hunks: dict, buggy_code_lines: list, fixed_code_lines: list, mask_token: str=None) -> str:
         """Generate prompt by replacing all hunks with mask token."""
+        pre_hunk = list()
         if len(fixed_hunks) != 0:
-            for hunk in fixed_hunks:
-                fixed_code_lines = self.one_hunk_prompt([], hunk, '', fixed_code_lines, mask_token).split('\n')
+            for distance, hunk in fixed_hunks.items():
+                fixed_code_lines = self.one_hunk_prompt([], hunk, '', fixed_code_lines, mask_token, distance, pre_hunk).split('\n')
+                pre_hunk = hunk
             return '\n'.join(fixed_code_lines)
         else:
             for hunk in buggy_hunks:
                 buggy_code_lines = self.one_hunk_prompt(hunk, [], buggy_code_lines, '', mask_token).split('\n')
             return '\n'.join(buggy_code_lines)
 
-    def one_hunk_prompt(self, buggy_hunk: list, fixed_hunk: list, buggy_code_lines: list, fixed_code_lines: list, mask_token: str=None) -> str:
+    def one_hunk_prompt(self, buggy_hunk: list, fixed_hunk: list, buggy_code_lines: list, fixed_code_lines: list, mask_token: str=None, distance: int=None, pre_hunk: list=None) -> str:
         """Generate prompt by replacing one hunk with mask token."""
         prompt = []
         end_number = 0
+        mask_token = mask_token.format(0) if '{}' in mask_token else mask_token
         if len(fixed_hunk) != 0:
             for idx, line in enumerate(fixed_code_lines):
                 # The length of fixed_hunk is 1
                 if line.lstrip() == fixed_hunk[0].lstrip() and len(fixed_hunk) == 1:
-                    prompt.append(self.generate_masking_prompt(line, mask_token))
-                    continue
+                    if distance is None or distance == 0:
+                        prompt.append(self.generate_masking_prompt(line, mask_token))
+                    else:
+                        located_index = idx - distance - 1
+                        if fixed_code_lines[located_index].lstrip() == pre_hunk[-1].lstrip():
+                            prompt.append(self.generate_masking_prompt(line, mask_token))
                 # The length of fixed_hunk is greater than 1, use the current line and the next line to assure the corret matching
                 elif line.lstrip() == fixed_hunk[0].lstrip() and fixed_code_lines[idx+1].lstrip() == fixed_hunk[1].lstrip():
                     prompt.append(self.generate_masking_prompt(line, mask_token))
@@ -79,42 +86,41 @@ class ZeroShotClozePrompting(PromptingStrategy):
         # Build the masking prompt
         return leading_spaces + mask_token
     
-    def load_code_node(self, fixed_file_path, buggy_file_path, countable_diffs):
-        fixed_node, i = load_origin_code_node(
-            fixed_file_path, countable_diffs[0].sorted_changes())
-        buggy_nodes = load_ast_nodes(buggy_file_path)
-        buggy_node = get_node_by_position(buggy_nodes, fixed_node, i)
-        return fixed_node, buggy_node
-    
-    def find_all_diff_hunks(self, diff_text: str, sign: str) -> list:
+    def find_all_diff_hunks(self, diff_lines: list, sign: str) -> list:
         """Find all the diff hunks in the diff text."""
 
-        lines = diff_text.split('\n')
+        inverse_sign = '-' if sign == '+' else '+'
+        diff_lines = [line for line in diff_lines if not line.startswith(inverse_sign)]
+        # Remove comment lines
+        diff_lines = [re.sub('//.*', '', line) for line in diff_lines]
 
-        diff_hunks = []
+        # The key is the distance between hunks, which is the number of lines between two hunks
+        diff_hunks = {}
+        distance = 0
         current_diff_hunk = []
 
-        for line in lines:
+        for line in diff_lines:
             if line.startswith(sign) and not line.startswith(sign * 2):
                 current_diff_hunk.append(line[1:])
             else:
                 if len(current_diff_hunk) != 0:
-                    diff_hunks.append(current_diff_hunk)
-                current_diff_hunk = []
+                    diff_hunks[distance] = current_diff_hunk
+                    current_diff_hunk = []
+                    distance = 0
+                if len(diff_hunks) != 0:
+                    distance += 1
         
         return diff_hunks
     
-    def find_longest_diff_hunk(self, diff_text: str, sign: str) -> str:
+    def find_longest_diff_hunk(self, diff_lines: list, sign: str) -> str:
         """Find the longest diff hunk in the diff text."""
-
-        lines = diff_text.split('\n')
 
         max_len = 0
         current_len = 0
         longest_diff_hunk = []
         current_diff_hunk = []
 
-        for line in lines:
+        for line in diff_lines:
             if line.startswith(sign) and not line.startswith(sign * 2):
                 current_len += 1
                 current_diff_hunk.append(line)
@@ -126,6 +132,13 @@ class ZeroShotClozePrompting(PromptingStrategy):
                 current_diff_hunk = []
         
         return longest_diff_hunk
+    
+    def load_code_node(self, fixed_file_path, buggy_file_path, countable_diffs):
+        fixed_node, i = load_origin_code_node(
+            fixed_file_path, countable_diffs[0].sorted_changes())
+        buggy_nodes = load_ast_nodes(buggy_file_path)
+        buggy_node = get_node_by_position(buggy_nodes, fixed_node, i)
+        return fixed_node, buggy_node
     
     def cloze_prompt(self, bug: Bug, mask_token: str, strict_one_hunk: bool) -> Optional[Tuple[str, str, str]]:
         """
@@ -143,8 +156,8 @@ class ZeroShotClozePrompting(PromptingStrategy):
         diff_text = bug.get_ground_truth()
         countable_diffs = read_patch(diff_text)
 
-        buggy_path = os.path.join(tempfile.gettempdir(), "elleelleaime", bug.get_identifier(), uuid4())
-        fixed_path = os.path.join(tempfile.gettempdir(), "elleelleaime", bug.get_identifier(), uuid4())
+        buggy_path = os.path.join(tempfile.gettempdir(), "elleelleaime", bug.get_identifier(), str(uuid4()))
+        fixed_path = os.path.join(tempfile.gettempdir(), "elleelleaime", bug.get_identifier(), str(uuid4()))
         bug.checkout(buggy_path, fixed=False)
         bug.checkout(fixed_path, fixed=True)
 
@@ -162,15 +175,16 @@ class ZeroShotClozePrompting(PromptingStrategy):
 
         buggy_code_lines = buggy_code.split('\n')
         fixed_code_lines = fixed_code.split('\n')
+        diff_lines = [line for line in diff_text.split('\n') if re.sub('//.*', '', line).strip() != '']
 
         if strict_one_hunk:
-            buggy_hunk = [code_line[1:] for code_line in self.find_longest_diff_hunk(diff_text, '+')]
-            fixed_hunk = [code_line[1:] for code_line in self.find_longest_diff_hunk(diff_text, '-')]
+            buggy_hunk = [code_line[1:] for code_line in self.find_longest_diff_hunk(diff_lines, '+')]
+            fixed_hunk = [code_line[1:] for code_line in self.find_longest_diff_hunk(diff_lines, '-')]
             prompt = self.one_hunk_prompt(buggy_hunk, fixed_hunk, buggy_code_lines, fixed_code_lines, mask_token)
         else:
-            buggy_hunks = self.find_all_diff_hunks(diff_text, '+')
-            fixed_hunks = self.find_all_diff_hunks(diff_text, '-')
-            prompt = self.sinfle_diff_file_prompt(buggy_hunks, fixed_hunks, buggy_code_lines, fixed_code_lines, mask_token)
+            buggy_hunks = self.find_all_diff_hunks(diff_lines, '+')
+            fixed_hunks = self.find_all_diff_hunks(diff_lines, '-')
+            prompt = self.single_diff_file_prompt(buggy_hunks, fixed_hunks, buggy_code_lines, fixed_code_lines, mask_token)
 
         return buggy_code, fixed_code, prompt
 

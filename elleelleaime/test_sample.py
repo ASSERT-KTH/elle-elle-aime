@@ -66,11 +66,12 @@ def entry_point(
 
     with ThreadPoolExecutor(max_workers=n_workers) as executor:
         futures = []
-
+        breakpoint()
         # Launch a thread for each bug
         for bug in benchmark_obj.get_bugs():
-            args = (bug, prompt_strategy, model_name, strict_one_hunk)
-            futures.append(executor.submit(generate_sample, *args))
+            if bug.get_identifier() == "Lang_3":
+                args = (bug, prompt_strategy, model_name, strict_one_hunk)
+                futures.append(executor.submit(generate_sample, *args))
 
         # Check that all bugs are being processed
         assert len(futures) == len(benchmark_obj.get_bugs()), "Some bugs are not being processed"
