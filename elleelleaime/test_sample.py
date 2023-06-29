@@ -64,21 +64,31 @@ def entry_point(
     logging.info("Building the prompts...")
     results = []
 
-    with ThreadPoolExecutor(max_workers=n_workers) as executor:
-        futures = []
-        breakpoint()
-        # Launch a thread for each bug
-        for bug in benchmark_obj.get_bugs():
-            if bug.get_identifier() == "Lang_3":
-                args = (bug, prompt_strategy, model_name, strict_one_hunk)
-                futures.append(executor.submit(generate_sample, *args))
+    futures = []
+    # breakpoint()
+    # Launch a thread for each bug
+    """ I have tested the following bugs:
+            Lang-3 : four hunk, each hunk only contains one line, only add code lines
+            Lang-10: two hunks, one contains multiple lines and another contains one line, only delete code lines; Error from java_lang.py: Node with name not found
+            Lang-12: three hunks, two contians multiple lines, the other contains one line, only add code lines
+            Lang-18: two hunks, one contians multiple lines, the other contains one line, both add and delete code lines            
+            Lang-44: one hunks, contains multiple lines, only add code lines
+            Lang-48: two hunks, one contians multiple lines, the other contains one line, only add code lines
+            Chart-1: one hunk, only contains one line, both delete and add code line
+           Chart-23: One hunk, add a whole new method. Error from java_lang.py: Node with name equals not found
+    """
+    for bug in benchmark_obj.get_bugs():
+        if bug.get_identifier() == "Chart-23":
+            futures.append(generate_sample(bug, prompt_strategy, model_name, strict_one_hunk))
+            # args = (bug, prompt_strategy, model_name, strict_one_hunk)
+            # futures.append(executor.submit(generate_sample, *args))
 
-        # Check that all bugs are being processed
-        assert len(futures) == len(benchmark_obj.get_bugs()), "Some bugs are not being processed"
+    # Check that all bugs are being processed
+    assert len(futures) == len(benchmark_obj.get_bugs()), "Some bugs are not being processed"
 
-        # Wait for the results
-        for future in tqdm.tqdm(as_completed(futures), total=len(futures)):
-            results.append(future.result())
+    # Wait for the results
+    for future in tqdm.tqdm(as_completed(futures), total=len(futures)):
+        results.append(future.result())
 
     # Write results to jsonl file
     write_jsonl(f"samples_{benchmark}_{prompt_strategy}.jsonl.gz", results)
