@@ -1,5 +1,5 @@
-from core.benchmarks.benchmark import Benchmark
-from core.benchmarks.defects4j.defects4j import Defects4J
+from elleelleaime.core.benchmarks.benchmark import Benchmark
+from elleelleaime.core.benchmarks.defects4j.defects4j import Defects4J
 
 from typing import Optional
 

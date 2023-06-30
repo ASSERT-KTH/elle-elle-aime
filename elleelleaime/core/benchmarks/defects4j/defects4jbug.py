@@ -1,10 +1,10 @@
 import subprocess
 import re
-from core.benchmarks.benchmark import Benchmark
+from elleelleaime.core.benchmarks.benchmark import Benchmark
 
-from core.benchmarks.bug import Bug
-from core.benchmarks.test_result import TestResult
-from core.benchmarks.compile_result import CompileResult
+from elleelleaime.core.benchmarks.bug import Bug
+from elleelleaime.core.benchmarks.test_result import TestResult
+from elleelleaime.core.benchmarks.compile_result import CompileResult
 
 class Defects4JBug(Bug):
     """

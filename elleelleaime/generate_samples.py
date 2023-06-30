@@ -1,9 +1,9 @@
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from core.utils.benchmarks import get_benchmark
-from core.utils.jsonl import write_jsonl
-from core.benchmarks.bug import Bug
+from elleelleaime.core.utils.benchmarks import get_benchmark
+from elleelleaime.core.utils.jsonl import write_jsonl
+from elleelleaime.core.benchmarks.bug import Bug
 from typing import Optional, Union
-from sample.prompting.registry import PromptStrategyRegistry
+from elleelleaime.sample.prompting.registry import PromptStrategyRegistry
 
 import fire
 import sys
@@ -90,5 +90,10 @@ def main():
     logging.getLogger().setLevel(logging.INFO)
     fire.Fire(entry_point)
 
+<<<<<<< HEAD:elleelleaime/sample.py
 
 sys.exit(main())
+=======
+if __name__ == "__main__":
+    sys.exit(main())
+>>>>>>> ac50fef (initial commit):elleelleaime/generate_samples.py

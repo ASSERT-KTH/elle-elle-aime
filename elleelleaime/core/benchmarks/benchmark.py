@@ -7,8 +7,8 @@ class Benchmark(ABC):
 
 import pathlib
 
-from typing import Set
-from core.benchmarks.bug import Bug
+from typing import Dict, Optional
+from elleelleaime.core.benchmarks.bug import Bug
 
 class Benchmark(ABC):
     """
@@ -16,9 +16,9 @@ class Benchmark(ABC):
     """
 
     def __init__(self, identifier: str, path: pathlib.Path) -> None:
-        self.identifier = identifier
-        self.path = path.absolute()
-        self.bugs = set()
+        self.identifier: str = identifier
+        self.path: pathlib.Path = path.absolute()
+        self.bugs: Dict[str, Bug] = dict()
 
     def get_identifier(self) -> str:
         return self.identifier
@@ -30,11 +30,15 @@ class Benchmark(ABC):
     def get_bin(self) -> pathlib.Path:
         pass
 
-    def get_bugs(self) -> Set[Bug]:
+    def get_bugs(self) -> Dict[str, Bug]:
         return self.bugs
 
+    def get_bug(self, identifier) -> Optional[Bug]:
+        return self.bugs[identifier]
+
     def add_bug(self, bug: Bug) -> None:
-        self.bugs.add(bug)
+        assert bug.get_identifier() not in self.bugs
+        self.bugs[bug.get_identifier()] = bug        
 
     @abstractmethod
     def initialize(self) -> None:
