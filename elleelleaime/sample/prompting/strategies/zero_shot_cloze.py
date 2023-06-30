@@ -1,10 +1,10 @@
-from core.benchmarks.bug import Bug
+from elleelleaime.core.benchmarks.bug import Bug
 from ..strategy import PromptingStrategy
 from typing import Optional, Tuple
 from unidiff import PatchSet
 from uuid import uuid4
-from core.utils.java_tools.patch import read_patch
-from core.utils.java_tools.java_lang import get_node_by_position, load_ast_nodes, load_origin_code_node
+from elleelleaime.core.utils.java_tools.patch import read_patch
+from elleelleaime.core.utils.java_tools.java_lang import get_node_by_position, load_ast_nodes, load_origin_code_node
 import re, os, tempfile, shutil
 
 

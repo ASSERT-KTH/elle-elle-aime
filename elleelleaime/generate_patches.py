@@ -1,5 +1,5 @@
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from core.utils.jsonl import stream_jsonl, write_jsonl
+from elleelleaime.core.utils.jsonl import stream_jsonl, write_jsonl
 from generate.strategies.registry import PatchGenerationStrategyRegistry
 
 import fire
@@ -52,5 +52,5 @@ def main():
     logging.getLogger().setLevel(logging.INFO)
     fire.Fire(entry_point)
 
-
-sys.exit(main())
+if __name__ == "__main__":
+    sys.exit(main())

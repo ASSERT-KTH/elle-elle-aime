@@ -1,6 +1,6 @@
 import copy
 import javalang
-from core.utils.java_tools.java_ast_node import JavaAstNode
+from elleelleaime.core.utils.java_tools.java_ast_node import JavaAstNode
 
 ACCEPTED_NODE_TYPES = ['MethodDeclaration', 'ConstructorDeclaration',
                        'ClassDeclaration', 'EnumDeclaration', 'InterfaceDeclaration']

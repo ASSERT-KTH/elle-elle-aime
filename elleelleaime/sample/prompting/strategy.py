@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from core.benchmarks.bug import Bug
+from elleelleaime.core.benchmarks.bug import Bug
 
 from typing import Tuple, Optional
 

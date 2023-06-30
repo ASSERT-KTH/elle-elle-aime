@@ -55,9 +55,9 @@ def getGridTime(timeout, overhead=0.33):
     return timestring
 
 
-import core.benchmarks.Bears
-import core.benchmarks.BugDotJar
-import core.benchmarks.Defects4J
+import elleelleaime.core.benchmarks.Bears
+import elleelleaime.core.benchmarks.BugDotJar
+import elleelleaime.core.benchmarks.Defects4J
 
 # import core.repair_tools.Astor
 # import core.repair_tools.Nopol
