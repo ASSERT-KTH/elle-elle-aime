@@ -90,10 +90,5 @@ def main():
     logging.getLogger().setLevel(logging.INFO)
     fire.Fire(entry_point)
 
-<<<<<<< HEAD:elleelleaime/sample.py
-
-sys.exit(main())
-=======
 if __name__ == "__main__":
     sys.exit(main())
->>>>>>> ac50fef (initial commit):elleelleaime/generate_samples.py
