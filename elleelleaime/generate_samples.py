@@ -11,7 +11,7 @@ import tqdm
 import logging
 
 
-def generate_sample(bug: Bug, prompt_strategy: str, model_name: str = "None", strict_one_hunk: bool = False) -> dict[str, Optional[Union[str, Bug]]]:
+def generate_sample(bug: Bug, prompt_strategy: str, model_name: str = "", strict_one_hunk: bool = False) -> dict[str, Optional[Union[str, Bug]]]:
     """
     Generates the sample for the given bug with the given prompt strategy.
     """
