@@ -8,3 +8,7 @@
 [submodule "benchmarks/bugs-dot-jar/repositories"]
 	path = benchmarks/bugs-dot-jar/repositories
 	url = https://github.com/bugs-dot-jar/bugs-dot-jar.git
+[submodule "benchmarks/GrowingBugRepository"]
+        path = benchmarks/GrowingBugRepository
+	url = https://github.com/liuhuigmail/GrowingBugRepository.git
+	branch = v6
