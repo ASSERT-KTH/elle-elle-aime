@@ -8,12 +8,12 @@ import tqdm
 import logging
 
 
-def generate_candidate(sample: dict, model_name: str) -> dict:
+def generate_candidate(sample: dict, model_name: str, **kwargs) -> dict:
     """
     Generates the candidate patch for the given sample and model.
     """
     
-    generation_strategy = PatchGenerationStrategyRegistry().get_generation(model_name)
+    generation_strategy = PatchGenerationStrategyRegistry(**kwargs).get_generation(model_name)
     generation = generation_strategy.generate(sample["prompt"])
     sample["generation"] = generation
 
@@ -23,7 +23,8 @@ def generate_candidate(sample: dict, model_name: str) -> dict:
 def entry_point(
     samples_path: str,
     model_name: str,
-    n_workers: int = 4
+    n_workers: int = 4,
+    **kwargs,
 ):
     """
     Generates the candidate patches given the samples and the model,
@@ -36,7 +37,7 @@ def entry_point(
         
         logging.info("Reading samples...")
         for sample in tqdm.tqdm(stream_jsonl(samples_path)):
-            futures.append(executor.submit(generate_candidate, sample, model_name))
+            futures.append(executor.submit(generate_candidate, sample, model_name, **kwargs))
         
         logging.info("Generating candidates...")
         for future in tqdm.tqdm(as_completed(futures), total=len(futures)):
