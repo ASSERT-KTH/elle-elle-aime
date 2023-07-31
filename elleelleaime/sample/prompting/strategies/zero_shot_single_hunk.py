@@ -1,5 +1,5 @@
 from core.benchmarks.bug import Bug
-from ..strategy import PromptingStrategy
+from sample.prompting.strategy import PromptingStrategy
 from typing import Optional, Tuple
 from unidiff import PatchSet
 
@@ -29,8 +29,8 @@ class ZeroShotSingleHunkPrompting(PromptingStrategy):
         if len(diff) != 1 or len(diff[0]) != 1:
             return None
         
-        buggy_code = "".join([x.value for x in list(diff[0][0].source_lines())])
-        fixed_code = "".join([x.value for x in list(diff[0][0].target_lines())])
+        buggy_code = "".join([x.value for x in list(diff[0][0].target_lines())])
+        fixed_code = "".join([x.value for x in list(diff[0][0].source_lines())])
         prompt = self.template.format(buggy_code=buggy_code)
 
         return buggy_code, fixed_code, prompt

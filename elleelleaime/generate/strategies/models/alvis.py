@@ -66,7 +66,6 @@ class AlvisHFModels(PatchGenerationStrategy):
                 f.write(prompt)
 
             # Write the HuggingFace script to a file on the remote cluster
-            # FIXME: get parameters from cli
             with sftp.open(
                 f"/cephyr/users/{self.username}/Alvis/elleelleaime-{unique_id}/inference.py",
                 "w+",
