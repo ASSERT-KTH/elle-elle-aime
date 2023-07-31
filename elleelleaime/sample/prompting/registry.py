@@ -3,15 +3,15 @@ from .strategies.zero_shot_single_hunk import ZeroShotSingleHunkPrompting
 from .strategies.zero_shot_cloze import ZeroShotClozePrompting
 
 
-class PromptStrategyRegistry():
+class PromptStrategyRegistry:
     """
     Class for storing and retrieving prompting strategies based on their name.
     """
-    
-    def __init__(self):
+
+    def __init__(self, **kwargs):
         self._strategies: dict[str, PromptingStrategy] = {
-            "zero-shot-single-hunk": ZeroShotSingleHunkPrompting(),
-            "zero-shot-cloze": ZeroShotClozePrompting(),
+            "zero-shot-single-hunk": ZeroShotSingleHunkPrompting(**kwargs),
+            "zero-shot-cloze": ZeroShotClozePrompting(**kwargs),
         }
 
     def get_strategy(self, name: str) -> PromptingStrategy:

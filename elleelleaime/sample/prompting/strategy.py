@@ -3,7 +3,10 @@ from core.benchmarks.bug import Bug
 
 from typing import Tuple, Optional
 
+
 class PromptingStrategy(ABC):
+    def __init__(self, **kwargs):
+        pass
 
     @abstractmethod
     def prompt(self, bug: Bug) -> Optional[Tuple[str, str, str]]:
