@@ -2,15 +2,15 @@ from abc import ABC, abstractmethod
 
 from typing import Any, final
 
+
 class PatchGenerationStrategy(ABC):
-    
     @abstractmethod
     def _generate_impl(self, prompt: str) -> Any:
         """
         Implemenation method for the generation strategy.
         """
         pass
-    
+
     @final
     def _handle_none_prompt(self) -> Any:
         """
@@ -29,5 +29,5 @@ class PatchGenerationStrategy(ABC):
         # Implements the logic common to all generation strategies
         if prompt is None:
             return self._handle_none_prompt()
-        
+
         return self._generate_impl(prompt)
