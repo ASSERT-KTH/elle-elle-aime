@@ -9,8 +9,9 @@ import backoff
 
 
 class OpenAIChatCompletionModels(PatchGenerationStrategy):
-    def __init__(self, model: str) -> None:
+    def __init__(self, model: str, **kwargs) -> None:
         self.model = model
+        self.temperature = kwargs["temperature"] if "temperature" in kwargs else 0.0
         load_dotenv()
         openai.organization = os.getenv("OPENAI_ORG")
         openai.api_key = os.getenv("OPENAI_API_KEY")
@@ -21,10 +22,9 @@ class OpenAIChatCompletionModels(PatchGenerationStrategy):
         return openai.ChatCompletion.create(**kwargs)
 
     def _generate_impl(self, prompt: str) -> Any:
-        # FIXME: get parameters from cli
         completion = self._completions_with_backoff(
             model=self.model,
             messages=[{"role": "user", "content": prompt}],
-            temperature=0.0,
+            temperature=self.temperature,
         )
         return completion

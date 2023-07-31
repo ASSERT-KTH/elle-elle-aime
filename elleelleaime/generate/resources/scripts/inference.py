@@ -35,11 +35,7 @@ def main():
     # cache_dir = "/mimer/NOBACKUP/groups/snic2021-7-150/llms"
 
     # Load the model and tokenizer
-    # tokenizer = AutoTokenizer.from_pretrained("{model}", cache_dir=cache_dir, device_map="auto")
-    # tokenizer = AutoTokenizer.from_pretrained("{model}", device_map="auto")
     tokenizer = AutoTokenizer.from_pretrained("{model}")
-    # model = AutoModelForCausalLM.from_pretrained("{model}", cache_dir=cache_dir, device_map="auto")
-    # model = AutoModelForCausalLM.from_pretrained("{model}", device_map="auto")
     model = AutoModelForCausalLM.from_pretrained("{model}").to(device)
     # Read the buggy code file
     td_file = open("inputs.txt")

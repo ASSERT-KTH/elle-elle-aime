@@ -3,15 +3,23 @@ from dotenv import load_dotenv
 from typing import Any
 
 import os
-import traceback
 import uuid
 import paramiko
 import json
 
 
 class AlvisHFModels(PatchGenerationStrategy):
-    def __init__(self, model: str) -> None:
+    def __init__(self, model: str, **kwargs) -> None:
         self.model = model
+        self.max_new_tokens = (
+            kwargs["max_new_tokens"] if "max_new_tokens" in kwargs else 512
+        )
+        self.num_return_sequences = (
+            kwargs["num_return_sequences"] if "num_return_sequences" in kwargs else 10
+        )
+        self.gpu_type = kwargs["gpu_type"] if "gpu_type" in kwargs else "A40"
+        self.gpu_number = kwargs["gpu_number"] if "gpu_number" in kwargs else "1"
+        self.job_time = kwargs["job_time"] if "job_time" in kwargs else "00:10:00"
         load_dotenv()
         self.hostname = os.getenv("ALVIS_HOSTNAME") or "alvis"
         self.username = os.getenv("ALVIS_USERNAME")
@@ -58,7 +66,6 @@ class AlvisHFModels(PatchGenerationStrategy):
                 f.write(prompt)
 
             # Write the HuggingFace script to a file on the remote cluster
-            # FIXME: get parameters from cli
             with sftp.open(
                 f"/cephyr/users/{self.username}/Alvis/elleelleaime-{unique_id}/inference.py",
                 "w+",
@@ -66,14 +73,13 @@ class AlvisHFModels(PatchGenerationStrategy):
                 with open("./generate/resources/scripts/inference.py", "r") as lf:
                     script = lf.read().format(
                         model=self.model,
-                        max_new_tokens=512,
-                        num_return_sequences=10,
+                        max_new_tokens=self.max_new_tokens,
+                        num_return_sequences=self.num_return_sequences,
                         unique_id=unique_id,
                     )
                     f.write(script)
 
             # Write the jobscript to a file on the remote cluster
-            # FIXME: get parameters from cli
             with sftp.open(
                 f"/cephyr/users/{self.username}/Alvis/elleelleaime-{unique_id}/jobscript",
                 "w+",
@@ -81,9 +87,9 @@ class AlvisHFModels(PatchGenerationStrategy):
                 with open("./generate/resources/scripts/jobscript", "r") as lf:
                     script = lf.read().format(
                         job_name="elleelleaime",
-                        gpu_type="A40",
-                        gpu_number="1",
-                        job_time="00:10:00",
+                        gpu_type=self.gpu_type,
+                        gpu_number=self.gpu_number,
+                        job_time=self.job_time,
                         script=f"/cephyr/users/{self.username}/Alvis/elleelleaime-{unique_id}/inference.py",
                     )
                     f.write(script)

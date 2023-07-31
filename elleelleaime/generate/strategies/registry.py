@@ -8,10 +8,10 @@ class PatchGenerationStrategyRegistry:
     Class for storing and retrieving models based on their name.
     """
 
-    def __init__(self):
+    def __init__(self, **kwargs):
         self._models: dict[str, PatchGenerationStrategy] = {
-            "gpt-3.5-turbo": OpenAIChatCompletionModels("gpt-3.5-turbo"),
-            "codegen-2b-multi": AlvisHFModels("Salesforce/codegen-2B-multi"),
+            "gpt-3.5-turbo": OpenAIChatCompletionModels("gpt-3.5-turbo", **kwargs),
+            "codegen-2b-multi": AlvisHFModels("Salesforce/codegen-2B-multi", **kwargs),
         }
 
     def get_generation(self, name: str) -> PatchGenerationStrategy:
