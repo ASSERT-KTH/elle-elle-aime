@@ -11,17 +11,13 @@ import json
 class AlvisHFModels(PatchGenerationStrategy):
     def __init__(self, model: str, **kwargs) -> None:
         self.model = model
-        self.max_new_tokens = (
-            kwargs["max_new_tokens"] if "max_new_tokens" in kwargs else 512
-        )
-        self.num_return_sequences = (
-            kwargs["num_return_sequences"] if "num_return_sequences" in kwargs else 10
-        )
-        self.gpu_type = kwargs["gpu_type"] if "gpu_type" in kwargs else "A40"
-        self.gpu_number = kwargs["gpu_number"] if "gpu_number" in kwargs else "1"
-        self.job_time = kwargs["job_time"] if "job_time" in kwargs else "00:10:00"
+        self.max_new_tokens = kwargs.get("max_new_tokens", 512)
+        self.num_return_sequences = kwargs.get("num_return_sequences", 10)
+        self.gpu_type = kwargs.get("gpu_type", "A40")
+        self.gpu_number = kwargs.get("gpu_number", "1")
+        self.job_time = kwargs.get("job_time", "00:10:00")
         load_dotenv()
-        self.hostname = os.getenv("ALVIS_HOSTNAME") or "alvis"
+        self.hostname = os.getenv("ALVIS_HOSTNAME", "alvis")
         self.username = os.getenv("ALVIS_USERNAME")
         self.password = os.getenv("ALVIS_PASSWORD")
 

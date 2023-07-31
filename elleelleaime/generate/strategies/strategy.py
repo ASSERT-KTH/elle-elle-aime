@@ -4,6 +4,9 @@ from typing import Any, final
 
 
 class PatchGenerationStrategy(ABC):
+    def __init__(self, **kwargs):
+        pass
+
     @abstractmethod
     def _generate_impl(self, prompt: str) -> Any:
         """

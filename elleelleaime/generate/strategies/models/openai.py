@@ -11,7 +11,7 @@ import backoff
 class OpenAIChatCompletionModels(PatchGenerationStrategy):
     def __init__(self, model: str, **kwargs) -> None:
         self.model = model
-        self.temperature = kwargs["temperature"] if "temperature" in kwargs else 0.0
+        self.temperature = kwargs.get("temperature", 0.0)
         load_dotenv()
         openai.organization = os.getenv("OPENAI_ORG")
         openai.api_key = os.getenv("OPENAI_API_KEY")
