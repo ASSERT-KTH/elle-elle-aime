@@ -1,9 +1,9 @@
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from core.utils.benchmarks import get_benchmark
-from core.utils.jsonl import write_jsonl
-from core.benchmarks.bug import Bug
+from elleelleaime.core.utils.benchmarks import get_benchmark
+from elleelleaime.core.utils.jsonl import write_jsonl
+from elleelleaime.core.benchmarks.bug import Bug
 from typing import Optional, Union
-from sample.prompting.registry import PromptStrategyRegistry
+from elleelleaime.sample.prompting.registry import PromptStrategyRegistry
 
 import fire
 import sys
@@ -19,7 +19,7 @@ def generate_sample(
     """
 
     prompt_strategy_obj = PromptStrategyRegistry(**kwargs).get_strategy(prompt_strategy)
-    prompt = prompt_strategy_obj.prompt(bug, model_name, strict_one_hunk)
+    prompt = prompt_strategy_obj.prompt(bug)
 
     # Check if prompt was generated
     if prompt is None:
@@ -91,4 +91,5 @@ def main():
     fire.Fire(entry_point)
 
 
-sys.exit(main())
+if __name__ == "__main__":
+    sys.exit(main())

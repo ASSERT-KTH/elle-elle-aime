@@ -1,6 +1,6 @@
 from pathlib import Path
-from core.benchmarks.benchmark import Benchmark
-from core.benchmarks.defects4j.defects4jbug import Defects4JBug
+from elleelleaime.core.benchmarks.benchmark import Benchmark
+from elleelleaime.core.benchmarks.defects4j.defects4jbug import Defects4JBug
 
 import subprocess
 import logging

@@ -1,10 +1,10 @@
-from core.benchmarks.bug import Bug
+from elleelleaime.core.benchmarks.bug import Bug
 from ..strategy import PromptingStrategy
 from typing import Optional, Tuple
 from unidiff import PatchSet
 from uuid import uuid4
-from core.utils.java_tools.patch import read_patch
-from core.utils.java_tools.java_lang import (
+from elleelleaime.core.utils.java_tools.patch import read_patch
+from elleelleaime.core.utils.java_tools.java_lang import (
     get_node_by_position,
     load_ast_nodes,
     load_origin_code_node,
@@ -29,7 +29,11 @@ class ZeroShotClozePrompting(PromptingStrategy):
         super().__init__()
 
         self.strict_one_hunk: bool = kwargs.get("strict_one_hunk", False)
-        self.original_mask_token: str = None
+        self.model_name: str = kwargs.get("model_name", "").strip().lower()
+        assert (
+            self.model_name in MASK_DICT.keys()
+        ), f"Unknown model name: {kwargs.get('model_name', None)}"
+        self.original_mask_token: str = MASK_DICT[self.model_name]
         self.pre_mask_token: str = None
         self.distance: int = None
         self.mask_token_id: int = kwargs.get("mask_token_id", 0)
@@ -194,9 +198,7 @@ class ZeroShotClozePrompting(PromptingStrategy):
         buggy_node = get_node_by_position(buggy_nodes, fixed_node, i)
         return fixed_node, buggy_node
 
-    def cloze_prompt(
-        self, bug: Bug, mask_token: str, strict_one_hunk: bool
-    ) -> Optional[Tuple[str, str, str]]:
+    def cloze_prompt(self, bug: Bug) -> Tuple[str, str, str]:
         """
         Building prompt by masking.
 
@@ -246,7 +248,7 @@ class ZeroShotClozePrompting(PromptingStrategy):
             if re.sub("//.*", "", line).strip() != ""
         ]
 
-        if strict_one_hunk:
+        if self.strict_one_hunk:
             fixed_hunk = [
                 code_line[1:]
                 for code_line in self.find_longest_diff_hunk(diff_lines, "-")
@@ -267,32 +269,18 @@ class ZeroShotClozePrompting(PromptingStrategy):
 
         return buggy_code, fixed_code, prompt
 
-    def prompt(self, bug: Bug, *args) -> Optional[Tuple[str, str, str]]:
+    def prompt(self, bug: Bug) -> Optional[Tuple[str, str, str]]:
         """
         Returns the prompt for the given bug.
 
         :param bug: The bug to generate the prompt for.
-        :param mask_token: The mask token used to build the prompt.
-        :param strict_one_hunk: If true, use the longest diff hunk to pruduce cloze prompt. If two hunks have the same length, use the first one.
-                                If false, use all the individual hunks in one diff file to produce cloze prompt.
-        :return: A tuple of the form (buggy_code, fixed_code, prompt) or None if the prompt cannot be generated.
         """
-
-        model_name, strict_one_hunk = args[:2]
-        self.strict_one_hunk = strict_one_hunk
-
-        assert model_name in MASK_DICT.keys(), f"Unknown model name: {model_name}"
-
-        mask_token = MASK_DICT[model_name.lower()]
-        self.original_mask_token = mask_token
 
         diff = PatchSet(bug.get_ground_truth())
         # This strategy only supports single diff file bugs
         if len(diff) != 1 or len(diff[0]) != 1:
             return None
 
-        buggy_code, fixed_code, prompt = self.cloze_prompt(
-            bug, mask_token, strict_one_hunk
-        )
+        buggy_code, fixed_code, prompt = self.cloze_prompt(bug)
 
         return buggy_code, fixed_code, prompt

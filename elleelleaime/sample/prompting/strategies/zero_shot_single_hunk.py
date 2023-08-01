@@ -1,5 +1,5 @@
-from core.benchmarks.bug import Bug
-from sample.prompting.strategy import PromptingStrategy
+from elleelleaime.core.benchmarks.bug import Bug
+from ..strategy import PromptingStrategy
 from typing import Optional, Tuple
 from unidiff import PatchSet
 
