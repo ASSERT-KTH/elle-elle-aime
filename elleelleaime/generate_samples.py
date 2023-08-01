@@ -19,7 +19,7 @@ def generate_sample(
     """
 
     prompt_strategy_obj = PromptStrategyRegistry(**kwargs).get_strategy(prompt_strategy)
-    prompt = prompt_strategy_obj.prompt(bug, model_name, strict_one_hunk)
+    prompt = prompt_strategy_obj.prompt(bug)
 
     # Check if prompt was generated
     if prompt is None:
@@ -89,6 +89,7 @@ def entry_point(
 def main():
     logging.getLogger().setLevel(logging.INFO)
     fire.Fire(entry_point)
+
 
 if __name__ == "__main__":
     sys.exit(main())
