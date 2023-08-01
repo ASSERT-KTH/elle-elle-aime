@@ -1,10 +1,9 @@
-git submodule init;
-git submodule update;
+#!/bin/bash
 
-cd benchmarks/bugs-dot-jar/repositories;
 git submodule init;
 git submodule update;
 
 cd ../../defects4j;
-./init.sh
-cd ../../../
+cpanm --installdeps .;
+./init.sh;
+cd ../../../;

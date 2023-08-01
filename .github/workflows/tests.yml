@@ -1,0 +1,26 @@
+name: test
+on: [push]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - uses: Gr1N/setup-poetry@v8
+
+      - name: Install Python dependencies
+        run: poetry shell && poetry install
+
+      - name: Setup Perl
+        uses: shogo82148/actions-setup-perl@v1
+
+      - name: Setup benchmarks
+        run: ./setup.sh
+
+      - name: Build and run tests
+        run: poetry shell && cd elleelleaime && pytest -s
