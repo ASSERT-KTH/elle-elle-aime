@@ -14,7 +14,7 @@ jobs:
       - uses: Gr1N/setup-poetry@v8
 
       - name: Install Python dependencies
-        run: poetry shell && poetry install
+        run: poetry install
 
       - name: Setup Perl
         uses: shogo82148/actions-setup-perl@v1
@@ -23,4 +23,4 @@ jobs:
         run: ./setup.sh
 
       - name: Build and run tests
-        run: poetry shell && cd elleelleaime && pytest -s
+        run: cd elleelleaime && pytest -s
