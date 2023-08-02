@@ -9,7 +9,7 @@ class Benchmark(ABC):
 
 import pathlib
 
-from typing import Dict, Optional
+from typing import Dict, Set, Optional
 from elleelleaime.core.benchmarks.bug import Bug
 
 
@@ -33,8 +33,8 @@ class Benchmark(ABC):
     def get_bin(self) -> pathlib.Path:
         pass
 
-    def get_bugs(self) -> Dict[str, Bug]:
-        return self.bugs
+    def get_bugs(self) -> Set[Bug]:
+        return set(self.bugs.values())
 
     def get_bug(self, identifier) -> Optional[Bug]:
         return self.bugs[identifier]

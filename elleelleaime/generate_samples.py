@@ -73,7 +73,6 @@ def entry_point(
             futures.append(
                 executor.submit(generate_sample, bug, prompt_strategy, **kwargs)
             )
-            break
 
         # Check that all bugs are being processed
         # assert len(futures) == len(benchmark_obj.get_bugs()), "Some bugs are not being processed"
