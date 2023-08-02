@@ -12,8 +12,10 @@ def generate_candidate(sample: dict, model_name: str, **kwargs) -> dict:
     """
     Generates the candidate patch for the given sample and model.
     """
-    
-    generation_strategy = PatchGenerationStrategyRegistry(**kwargs).get_generation(model_name)
+
+    generation_strategy = PatchGenerationStrategyRegistry(**kwargs).get_generation(
+        model_name
+    )
     generation = generation_strategy.generate(sample["prompt"])
     sample["generation"] = generation
 
@@ -31,14 +33,16 @@ def entry_point(
     and writes the results to f"candidates_{benchmark}_{prompt_strategy}_{model_name}.jsonl.gz"
     """
     results = []
-    
+
     with ThreadPoolExecutor(max_workers=n_workers) as executor:
         futures = []
-        
+
         logging.info("Reading samples...")
         for sample in tqdm.tqdm(stream_jsonl(samples_path)):
-            futures.append(executor.submit(generate_candidate, sample, model_name, **kwargs))
-        
+            futures.append(
+                executor.submit(generate_candidate, sample, model_name, **kwargs)
+            )
+
         logging.info("Generating candidates...")
         for future in tqdm.tqdm(as_completed(futures), total=len(futures)):
             results.append(future.result())
@@ -46,12 +50,15 @@ def entry_point(
     # Write results to jsonl file
     benchmark = samples_path.split("_")[1]
     prompt_strategy = samples_path.split("_")[2].split(".")[0]
-    write_jsonl(f"candidates_{benchmark}_{prompt_strategy}_{model_name}.jsonl.gz", results)
+    write_jsonl(
+        f"candidates_{benchmark}_{prompt_strategy}_{model_name}.jsonl.gz", results
+    )
 
 
 def main():
     logging.getLogger().setLevel(logging.INFO)
     fire.Fire(entry_point)
+
 
 if __name__ == "__main__":
     sys.exit(main())
