@@ -46,4 +46,78 @@ class TestClozeSamplesIncoder:
         assert sample["prompt"].count("<|mask:2|>") == 1
         assert sample["prompt"].count("<|mask:3|>") == 1
 
-        print(sample.keys())
+    def test_lang_10(self):
+        bug = TestClozeSamplesIncoder.DEFECTS4J.get_bug("Lang-10")
+        assert bug is not None
+
+        sample = generate_sample(
+            bug=bug,
+            prompt_strategy=TestClozeSamplesIncoder.PROMPT_STRATEGY,
+            model_name=TestClozeSamplesIncoder.MODEL_NAME,
+        )
+
+        # Assert we are dealing with the correct bug and strategy
+        assert sample["identifier"] == "Lang-10"
+        assert sample["prompt_strategy"] == "zero-shot-cloze"
+
+        print(sample["buggy_code"])
+        print(sample["fixed_code"])
+
+        print(sample["prompt"])
+
+        # TODO: Adapt to Lang-10
+        # # Assert that the buggy code and fixed code are properly separated
+        # assert not "if(numDecimals <= 7){" in sample["buggy_code"]
+        # assert "if(numDecimals <= 7){" in sample["fixed_code"]
+
+        # # Assert that the prompt is properly constructed
+        # assert (
+        #     sample["prompt"]
+        #     .strip()
+        #     .startswith(
+        #         "public static Number createNumber(final String str) throws NumberFormatException"
+        #     )
+        # )
+        # assert sample["prompt"].count("<|mask:") == 4
+        # assert sample["prompt"].count("<|mask:0|>") == 1
+        # assert sample["prompt"].count("<|mask:1|>") == 1
+        # assert sample["prompt"].count("<|mask:2|>") == 1
+        # assert sample["prompt"].count("<|mask:3|>") == 1
+
+    def test_chart_23(self):
+        bug = TestClozeSamplesIncoder.DEFECTS4J.get_bug("Chart-23")
+        assert bug is not None
+
+        sample = generate_sample(
+            bug=bug,
+            prompt_strategy=TestClozeSamplesIncoder.PROMPT_STRATEGY,
+            model_name=TestClozeSamplesIncoder.MODEL_NAME,
+        )
+
+        # Assert we are dealing with the correct bug and strategy
+        assert sample["identifier"] == "Chart-23"
+        assert sample["prompt_strategy"] == "zero-shot-cloze"
+
+        print(sample["buggy_code"])
+        print(sample["fixed_code"])
+
+        print(sample["prompt"])
+
+        # TODO: Adapt to Chart-23
+        # # Assert that the buggy code and fixed code are properly separated
+        # assert not "if(numDecimals <= 7){" in sample["buggy_code"]
+        # assert "if(numDecimals <= 7){" in sample["fixed_code"]
+
+        # # Assert that the prompt is properly constructed
+        # assert (
+        #     sample["prompt"]
+        #     .strip()
+        #     .startswith(
+        #         "public static Number createNumber(final String str) throws NumberFormatException"
+        #     )
+        # )
+        # assert sample["prompt"].count("<|mask:") == 4
+        # assert sample["prompt"].count("<|mask:0|>") == 1
+        # assert sample["prompt"].count("<|mask:1|>") == 1
+        # assert sample["prompt"].count("<|mask:2|>") == 1
+        # assert sample["prompt"].count("<|mask:3|>") == 1
