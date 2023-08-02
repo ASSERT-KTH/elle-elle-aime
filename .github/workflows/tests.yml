@@ -36,4 +36,4 @@ jobs:
         run: ./setup.sh
 
       - name: Build and run tests
-        run: cd elleelleaime && python -m poetry run python -m pytest -sxv
+        run: cd elleelleaime && python -m poetry run python -m pytest -sxv tests/
