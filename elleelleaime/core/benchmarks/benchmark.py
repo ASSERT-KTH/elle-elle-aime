@@ -1,14 +1,17 @@
 from abc import ABC, abstractmethod
 
+
 # prevent circular import
 # Benchmark imports Bug -> Bug imports Benchmark -> Benchmark imports Bug -> ...
 class Benchmark(ABC):
     pass
 
+
 import pathlib
 
 from typing import Dict, Optional
 from elleelleaime.core.benchmarks.bug import Bug
+
 
 class Benchmark(ABC):
     """
@@ -25,7 +28,7 @@ class Benchmark(ABC):
 
     def get_path(self) -> pathlib.Path:
         return self.path
-    
+
     @abstractmethod
     def get_bin(self) -> pathlib.Path:
         pass
@@ -38,7 +41,7 @@ class Benchmark(ABC):
 
     def add_bug(self, bug: Bug) -> None:
         assert bug.get_identifier() not in self.bugs
-        self.bugs[bug.get_identifier()] = bug        
+        self.bugs[bug.get_identifier()] = bug
 
     @abstractmethod
     def initialize(self) -> None:

@@ -4,12 +4,15 @@ from elleelleaime.core.benchmarks.benchmark import Benchmark
 from elleelleaime.core.benchmarks.test_result import TestResult
 from elleelleaime.core.benchmarks.compile_result import CompileResult
 
+
 class Bug(ABC):
     """
     The abstract class for representing a bug.
     """
 
-    def __init__(self, benchmark: Benchmark, identifier: str, ground_truth: str) -> None:
+    def __init__(
+        self, benchmark: Benchmark, identifier: str, ground_truth: str
+    ) -> None:
         self.benchmark = benchmark
         self.identifier = identifier
         self.ground_truth = ground_truth
@@ -25,13 +28,13 @@ class Bug(ABC):
         pass
 
     @abstractmethod
-    def apply_diff(self, path:str) -> bool:
+    def apply_diff(self, path: str) -> bool:
         pass
 
     @abstractmethod
     def compile(self, path: str) -> CompileResult:
         pass
-    
+
     @abstractmethod
     def test(self, path: str) -> TestResult:
         pass
