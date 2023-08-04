@@ -194,8 +194,11 @@ class ZeroShotClozePrompting(PromptingStrategy):
         fixed_node, i = load_origin_code_node(
             fixed_file_path, countable_diffs[0].sorted_changes()
         )
-        buggy_nodes = load_ast_nodes(buggy_file_path)
-        buggy_node = get_node_by_position(buggy_nodes, fixed_node, i)
+        try:
+            buggy_nodes = load_ast_nodes(buggy_file_path)
+            buggy_node = get_node_by_position(buggy_nodes, fixed_node, i)
+        except:
+            return fixed_node, None
         return fixed_node, buggy_node
 
     def cloze_prompt(self, bug: Bug) -> Tuple[str, str, str]:
@@ -231,16 +234,16 @@ class ZeroShotClozePrompting(PromptingStrategy):
             fixed_bug_path, buggy_bug_path, countable_diffs
         )
         # Get the buggy and fixed code without comments
-        buggy_code, fixed_code = buggy_node.code_lines_str(
-            include_comment_line=False
-        ), fixed_node.code_lines_str(include_comment_line=False)
+        fixed_code = fixed_node.code_lines_str(include_comment_line=False)
+        buggy_code = buggy_node.code_lines_str(include_comment_line=False) if buggy_node is not None else None
 
         # Remove the checked-out bugs
         shutil.rmtree(buggy_path, ignore_errors=True)
         shutil.rmtree(fixed_path, ignore_errors=True)
 
-        buggy_code_lines = buggy_code.split("\n")
         fixed_code_lines = fixed_code.split("\n")
+        buggy_code_lines = buggy_code.split("\n") if buggy_code is not None else []
+        
         # Remove the comment lines
         diff_lines = [
             line
