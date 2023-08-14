@@ -60,11 +60,6 @@ class TestClozeSamplesIncoder:
         assert sample["identifier"] == "Closure-101"
         assert sample["prompt_strategy"] == "zero-shot-cloze"
 
-        print(sample["buggy_code"])
-        print(sample["fixed_code"])
-
-        print(sample["prompt"])
-
         # Assert that the buggy code and fixed code are properly separated
         assert (
             not "options.closurePass = flags.process_closure_primitives;"
