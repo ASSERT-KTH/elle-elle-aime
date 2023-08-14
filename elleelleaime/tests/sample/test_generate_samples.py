@@ -134,26 +134,17 @@ class TestClozeSamplesIncoder:
         assert sample["identifier"] == "Chart-23"
         assert sample["prompt_strategy"] == "zero-shot-cloze"
 
-        print(sample["buggy_code"])
-        print(sample["fixed_code"])
+        # Assert that the buggy code and fixed code are properly separated
+        assert sample["buggy_code"] is None
+        assert "public boolean equals(Object obj) {" in sample["fixed_code"]
 
-        print(sample["prompt"])
-
-        # TODO: Adapt to Chart-23
-        # # Assert that the buggy code and fixed code are properly separated
-        # assert not "if(numDecimals <= 7){" in sample["buggy_code"]
-        # assert "if(numDecimals <= 7){" in sample["fixed_code"]
-
-        # # Assert that the prompt is properly constructed
-        # assert (
-        #     sample["prompt"]
-        #     .strip()
-        #     .startswith(
-        #         "public static Number createNumber(final String str) throws NumberFormatException"
-        #     )
-        # )
-        # assert sample["prompt"].count("<|mask:") == 4
-        # assert sample["prompt"].count("<|mask:0|>") == 1
-        # assert sample["prompt"].count("<|mask:1|>") == 1
-        # assert sample["prompt"].count("<|mask:2|>") == 1
-        # assert sample["prompt"].count("<|mask:3|>") == 1
+        # Assert that the prompt is properly constructed
+        assert (
+            sample["prompt"]
+            .strip()
+            .startswith(
+                "<|mask:0|>"
+            )
+        )
+        assert sample["prompt"].count("<|mask:") == 1
+        assert sample["prompt"].count("<|mask:0|>") == 1
