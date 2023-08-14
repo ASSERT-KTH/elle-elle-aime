@@ -7,16 +7,16 @@ class TestClozeSamplesIncoder:
     """
     We test the generation of cloze prompts for several types of bug fixes.
     We only generate samples for bugs that are single-function and single-file.
-    
+
     We test the following types of bug fixes:
         - Addition only
             - Single-Hunk
                 - N continuous lines
                 - N non-continous lines  (Lang-3)
                 - Whole function (Chart-23)
-            - Multi-Hunk 
+            - Multi-Hunk
                 - N hunks of addition only
-        
+
         - Removal only
             - Single-Hunk
                 - N continuous lines
@@ -24,7 +24,7 @@ class TestClozeSamplesIncoder:
                 - Whole function
             - Multi-Hunk
                 - N hunks of removal only (Lang-10) (failing)
-        
+
         - Addition and removal
             - Single-Hunk
                 - N continuous lines (Chart-6)
@@ -32,6 +32,7 @@ class TestClozeSamplesIncoder:
             - Multi-Hunk
                 - N hunks of addition and removal
     """
+
     DEFECTS4J: Benchmark
     PROMPT_STRATEGY: str = "zero-shot-cloze"
     MODEL_NAME: str = "incoder"
@@ -55,7 +56,7 @@ class TestClozeSamplesIncoder:
         # Assert we are dealing with the correct bug and strategy
         assert sample["identifier"] == "Chart-6"
         assert sample["prompt_strategy"] == "zero-shot-cloze"
-        
+
         print(sample["buggy_code"])
         print(sample["fixed_code"])
         print(sample["prompt"])
@@ -68,11 +69,7 @@ class TestClozeSamplesIncoder:
 
         # Assert that the prompt is properly constructed
         assert (
-            sample["prompt"]
-            .strip()
-            .startswith(
-                "public boolean equals(Object obj) {"
-            )
+            sample["prompt"].strip().startswith("public boolean equals(Object obj) {")
         )
         assert sample["prompt"].count("<|mask:") == 1
         assert sample["prompt"].count("<|mask:0|>") == 1
@@ -202,12 +199,6 @@ class TestClozeSamplesIncoder:
         assert "public boolean equals(Object obj) {" in sample["fixed_code"]
 
         # Assert that the prompt is properly constructed
-        assert (
-            sample["prompt"]
-            .strip()
-            .startswith(
-                "<|mask:0|>"
-            )
-        )
+        assert sample["prompt"].strip().startswith("<|mask:0|>")
         assert sample["prompt"].count("<|mask:") == 1
         assert sample["prompt"].count("<|mask:0|>") == 1

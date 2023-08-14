@@ -145,12 +145,12 @@ class ZeroShotClozePrompting(PromptingStrategy):
         leading_spaces = re.match(r"^\s*", first_buggy_line).group()
         # Build the masking prompt
         return leading_spaces + mask_token
-    
+
     def format_fixed_code_lines(
         self, fixed_code_lines: list, diff_lines: list, deleted_hunks: list
     ) -> list:
         """Insert hunk that only contains deleted lines into fixed code."""
-        
+
         inserted_hunks = {}
         cnt = 0
 
@@ -170,18 +170,25 @@ class ZeroShotClozePrompting(PromptingStrategy):
 
         for located_lines, deleted_hunk in inserted_hunks.values():
             for idx, line in enumerate(fixed_code_lines):
-                if located_lines[0].lstrip() == fixed_code_lines[idx + 1].lstrip() and located_lines[1].lstrip() == fixed_code_lines[idx + 2].lstrip():
+                if (
+                    located_lines[0].lstrip() == fixed_code_lines[idx + 1].lstrip()
+                    and located_lines[1].lstrip() == fixed_code_lines[idx + 2].lstrip()
+                ):
                     # if located_lines[2].lstrip() == fixed_code_lines[idx + 2].lstrip() and located_lines[3].lstrip() == fixed_code_lines[idx + 3].lstrip():
                     leading_spaces = re.match(r"^\s*", line).group()
-                    deleted_hunk = [leading_spaces + line[1:].lstrip() for line in deleted_hunk]
-                    fixed_code_lines = fixed_code_lines[:idx+1] + deleted_hunk + fixed_code_lines[idx+1:]
+                    deleted_hunk = [
+                        leading_spaces + line[1:].lstrip() for line in deleted_hunk
+                    ]
+                    fixed_code_lines = (
+                        fixed_code_lines[: idx + 1]
+                        + deleted_hunk
+                        + fixed_code_lines[idx + 1 :]
+                    )
                     break
-        
+
         return fixed_code_lines
-    
-    def format_diff_lines(
-        self, diff_lines: list
-    ) -> list:
+
+    def format_diff_lines(self, diff_lines: list) -> list:
         """
         Format the diff lines according to the following rules:
         - For continuous lines starting with '-' and '+', remove the '+'
@@ -196,9 +203,15 @@ class ZeroShotClozePrompting(PromptingStrategy):
         for idx, line in enumerate(diff_lines):
             if line.startswith("-") and not line.startswith("--"):
                 formatted_lines.append(line)
-            elif line.startswith("+") and not line.startswith("++") and not deleted_flag:
-                if not diff_lines[idx - 1].startswith("-") and not diff_lines[idx - 1].startswith("+"):
-                    if not diff_lines[idx + 1].startswith("+") and not diff_lines[idx + 1].startswith("-"):
+            elif (
+                line.startswith("+") and not line.startswith("++") and not deleted_flag
+            ):
+                if not diff_lines[idx - 1].startswith("-") and not diff_lines[
+                    idx - 1
+                ].startswith("+"):
+                    if not diff_lines[idx + 1].startswith("+") and not diff_lines[
+                        idx + 1
+                    ].startswith("-"):
                         formatted_lines.append(line)
                         deleted_hunks.append([line])
                     else:
@@ -206,7 +219,9 @@ class ZeroShotClozePrompting(PromptingStrategy):
                         temp_lines.append(line)
             elif line.startswith("+") and not line.startswith("++") and deleted_flag:
                 temp_lines.append(line)
-                if not diff_lines[idx + 1].startswith("-") and not diff_lines[idx + 1].startswith("+"):
+                if not diff_lines[idx + 1].startswith("-") and not diff_lines[
+                    idx + 1
+                ].startswith("+"):
                     formatted_lines.extend(temp_lines)
                     deleted_hunks.append(temp_lines)
                     temp_lines = []
@@ -216,11 +231,11 @@ class ZeroShotClozePrompting(PromptingStrategy):
                     deleted_flag = False
             else:
                 formatted_lines.append(line)
-        
+
         for idx, line in enumerate(formatted_lines):
             if line.startswith("+") and not line.startswith("++"):
                 formatted_lines[idx] = "-" + line[1:]
-        
+
         for deleted_hunk in deleted_hunks:
             for idx, line in enumerate(deleted_hunk):
                 if line.startswith("+") and not line.startswith("++"):
@@ -228,9 +243,7 @@ class ZeroShotClozePrompting(PromptingStrategy):
 
         return formatted_lines, deleted_hunks
 
-    def find_all_diff_hunks(
-            self, diff_lines: list, sign: str
-    ) -> list:
+    def find_all_diff_hunks(self, diff_lines: list, sign: str) -> list:
         """Find all the diff hunks in the diff text."""
 
         # inverse_sign = "-" if sign == "+" else "+"
@@ -322,7 +335,11 @@ class ZeroShotClozePrompting(PromptingStrategy):
         )
         # Get the buggy and fixed code without comments
         fixed_code = fixed_node.code_lines_str(include_comment_line=False)
-        buggy_code = buggy_node.code_lines_str(include_comment_line=False) if buggy_node is not None else None
+        buggy_code = (
+            buggy_node.code_lines_str(include_comment_line=False)
+            if buggy_node is not None
+            else None
+        )
 
         # Remove the checked-out bugs
         shutil.rmtree(buggy_path, ignore_errors=True)
@@ -352,10 +369,14 @@ class ZeroShotClozePrompting(PromptingStrategy):
                 buggy_hunk, fixed_hunk, buggy_code_lines, fixed_code_lines
             )
         else:
-            fixed_hunks, diff_lines, deleted_hunks = self.find_all_diff_hunks(diff_lines, "-")
+            fixed_hunks, diff_lines, deleted_hunks = self.find_all_diff_hunks(
+                diff_lines, "-"
+            )
             # breakpoint()
             if len(deleted_hunks) > 0:
-                fixed_code_lines = self.format_fixed_code_lines(fixed_code_lines, diff_lines, deleted_hunks)
+                fixed_code_lines = self.format_fixed_code_lines(
+                    fixed_code_lines, diff_lines, deleted_hunks
+                )
             buggy_hunks = self.find_all_diff_hunks(diff_lines, "+")
             prompt = self.single_diff_file_prompt(
                 buggy_hunks, fixed_hunks, buggy_code_lines, fixed_code_lines
