@@ -145,34 +145,82 @@ class ZeroShotClozePrompting(PromptingStrategy):
             )
 
             # Compute the function diff
-            function_diff = difflib.unified_diff(
-                buggy_code.splitlines(keepends=True),
-                fixed_code.splitlines(keepends=True),
-                n=max(len(buggy_code), len(fixed_code)),
-            )
+            def compute_function_diff(buggy_code: str, fixed_code: str) -> List[str]:
+                return list(
+                    difflib.unified_diff(
+                        buggy_code.splitlines(keepends=True),
+                        fixed_code.splitlines(keepends=True),
+                        n=max(len(buggy_code), len(fixed_code)),
+                    )
+                )
+
+            # Check if the computed diff is equivalent to the original diff
+            def assert_same_diff(
+                original_diff: PatchSet, function_diff: List[str]
+            ) -> bool:
+                original_changed_lines = []
+                for file in original_diff:
+                    for hunk in file:
+                        for line in hunk:
+                            if not line.is_context:
+                                original_changed_lines.append(line.value)
+                for line in function_diff:
+                    if any(line.startswith(x) for x in ["---", "+++", "@@"]):
+                        continue
+                    if any(line.startswith(x) for x in ["+", "-"]):
+                        if (
+                            line[1:] not in original_changed_lines
+                            and line[1:].strip() != ""
+                        ):
+                            return False
+                        elif line[1:].strip() != "":
+                            original_changed_lines.remove(line[1:])
+                if len(original_changed_lines) > 0:
+                    for line in original_changed_lines:
+                        # Ignore the cases of things (e.g. annotations) that show up before the method declaration
+                        # This is valid since we only build the prompt from the method declaration onwards
+                        if not line.strip().startswith("@"):
+                            return False
+                return True
+
+            # HACK: sometimes we are not able to properly retrieve the code at the function-level
+            # This happens in cases suchas Closure-46 where a whole function is removed
+            # To detected and circumvent such cases, we check that the function_diff is equivalent to the original diff
+            # If the diffs are not equivalent, we try to fix the function diff by setting the fixed_code and buggy_code to empty
+            # If on of these works we assume it as correct (since the diff is now equivalent to the original one)
+            fdiff = compute_function_diff(buggy_code, fixed_code)
+            if not assert_same_diff(diff, fdiff):
+                fdiff = compute_function_diff(buggy_code, "")
+                if assert_same_diff(diff, fdiff):
+                    fixed_code = ""
+                else:
+                    fdiff = compute_function_diff("", fixed_code)
+                    if assert_same_diff(diff, fdiff):
+                        buggy_code = ""
+                    else:
+                        return None, None, None
 
             # Iterate over both the buggy and fixed code to generate the prompt
             prompt = ""
             mask_id = 0
-            line_idx = 0
-            lines = list(function_diff)
-            while line_idx < len(lines):
+            i = 0
+            while i < len(fdiff):
                 # Ignore garbage
-                if any(lines[line_idx].startswith(x) for x in ["---", "+++", "@@"]):
-                    line_idx += 1
+                if any(fdiff[i].startswith(x) for x in ["---", "+++", "@@"]):
+                    i += 1
                 # Add a mask token in added/removed chunk of code
-                elif any(lines[line_idx].startswith(x) for x in ["+", "-"]):
-                    prompt += f"{self.generate_masking_prompt(lines[line_idx][1:], mask_id)}\n"
+                elif any(fdiff[i].startswith(x) for x in ["+", "-"]):
+                    prompt += f"{self.generate_masking_prompt(fdiff[i][1:], mask_id)}\n"
                     mask_id += 1
                     # Skip over the remainder of the added/removed chunk
-                    while line_idx < len(lines) and any(
-                        lines[line_idx].startswith(x) for x in ["+", "-"]
+                    while i < len(fdiff) and any(
+                        fdiff[i].startswith(x) for x in ["+", "-"]
                     ):
-                        line_idx += 1
+                        i += 1
                 # Include unchanged lines
                 else:
-                    prompt += lines[line_idx]
-                    line_idx += 1
+                    prompt += fdiff[i]
+                    i += 1
 
             # Deal with whole-function addition/removal
             if prompt == "":

@@ -213,8 +213,6 @@ class TestClozeSamplesIncoder:
         assert sample["identifier"] == "Math-99"
         assert sample["prompt_strategy"] == "zero-shot-cloze"
 
-        print(sample["prompt"])
-
         # Assert that the prompt was not generated
         assert sample["prompt"] is None
 
@@ -342,8 +340,6 @@ class TestClozeSamplesIncoder:
         assert "if(numDecimals <= 7){" not in sample["buggy_code"]
         assert "if(numDecimals <= 7){" in sample["fixed_code"]
 
-        print(sample["prompt"])
-
         # Assert that the prompt is properly constructed
         assert (
             sample["prompt"]
@@ -413,8 +409,6 @@ class TestClozeSamplesIncoder:
         assert "if(Character.isWhitespace(c)) {" not in sample["fixed_code"]
         assert "boolean wasWhite= false;" in sample["buggy_code"]
         assert "boolean wasWhite= false;" not in sample["fixed_code"]
-
-        print(sample["prompt"])
 
         # Assert that the prompt is properly constructed
         assert (
