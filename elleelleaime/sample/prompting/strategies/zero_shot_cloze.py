@@ -177,10 +177,7 @@ class ZeroShotClozePrompting(PromptingStrategy):
                             original_changed_lines.remove(line[1:])
                 if len(original_changed_lines) > 0:
                     for line in original_changed_lines:
-                        # Ignore the cases of things (e.g. annotations) that show up before the method declaration
-                        # This is valid since we only build the prompt from the method declaration onwards
-                        if not line.strip().startswith("@"):
-                            return False
+                        return False
                 return True
 
             # HACK: sometimes we are not able to properly retrieve the code at the function-level

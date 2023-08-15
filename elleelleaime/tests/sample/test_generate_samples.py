@@ -21,7 +21,7 @@ class TestClozeSamplesIncoder:
             - Single-Hunk
                 - N continuous lines (Closure-11)
                 - N non-continous lines (Lang-10)
-                - Whole function (Closure-46) (failing)
+                - Whole function (no example found, other than Closure-46 which also changes the annotation)
             - Multi-Hunk
                 - N hunks of removal only (Closure-115)
 
@@ -33,7 +33,7 @@ class TestClozeSamplesIncoder:
                 - N hunks of addition and removal (Closure-4)
 
     Unsupported bug types:
-        - non single-function, single-file (Chart-2, Math-99)
+        - non single-function, single-file (Chart-2, Math-99, Closure-46 (special case, due to annotation change!))
         - non single-function, non single-file (Chart-18)
     """
 
@@ -61,22 +61,8 @@ class TestClozeSamplesIncoder:
         assert sample["identifier"] == "Closure-46"
         assert sample["prompt_strategy"] == "zero-shot-cloze"
 
-        print(sample["buggy_code"])
-        print(sample["fixed_code"])
-        print(sample["prompt"])
-
-        # Assert that the buggy code and fixed code are properly separated
-        assert "if (!that.isRecordType()) {" in sample["buggy_code"]
-        assert "if (!that.isRecordType()) {" not in sample["fixed_code"]
-
-        # Assert that the prompt is properly constructed
-        assert (
-            sample["prompt"]
-            .strip()
-            .startswith("public JSType getLeastSupertype(JSType that) {")
-        )
-        assert sample["prompt"].count("<|mask:") == 1
-        assert sample["prompt"].count("<|mask:0|>") == 1
+        # Not supported since it changes the annotation too (outside the method declaration)
+        assert sample["prompt"] is None
 
     def test_closure_115(self):
         bug = TestClozeSamplesIncoder.DEFECTS4J.get_bug("Closure-115")
