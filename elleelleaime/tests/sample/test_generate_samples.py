@@ -16,21 +16,25 @@ class TestClozeSamplesIncoder:
                 - N non-continous lines (Lang-3)
                 - Whole function (Chart-23)
             - Multi-Hunk
-                - N hunks of addition only (Chart-4) (failing)
+                - N hunks of addition only (Chart-4)
         - Removal only
             - Single-Hunk
-                - N continuous lines (Closure-11) (failing)
-                - N non-continous lines (Lang-10) (failing)
+                - N continuous lines (Closure-11)
+                - N non-continous lines (Lang-10)
                 - Whole function (Closure-46) (failing)
             - Multi-Hunk
-                - N hunks of removal only (Closure-115) (failing)
+                - N hunks of removal only (Closure-115)
 
         - Addition and removal
             - Single-Hunk
                 - N continuous lines (Chart-6)
                 - N non-continuous lines (Closure-101)
             - Multi-Hunk
-                - N hunks of addition and removal (Closure-4) (failing)
+                - N hunks of addition and removal (Closure-4)
+
+    Unsupported bug types:
+        - non single-function, single-file (Chart-2, Math-99)
+        - non single-function, non single-file (Chart-18)
     """
 
     DEFECTS4J: Benchmark
@@ -56,6 +60,10 @@ class TestClozeSamplesIncoder:
         # Assert we are dealing with the correct bug and strategy
         assert sample["identifier"] == "Closure-46"
         assert sample["prompt_strategy"] == "zero-shot-cloze"
+
+        print(sample["buggy_code"])
+        print(sample["fixed_code"])
+        print(sample["prompt"])
 
         # Assert that the buggy code and fixed code are properly separated
         assert "if (!that.isRecordType()) {" in sample["buggy_code"]
@@ -153,8 +161,16 @@ class TestClozeSamplesIncoder:
         assert sample["prompt_strategy"] == "zero-shot-cloze"
 
         # Assert that the buggy code and fixed code are properly separated
-        assert "if (r != null) {" not in sample["buggy_code"]
-        assert "if (r != null) {" in sample["fixed_code"]
+        assert (
+            """                if (r != null) {
+                    Collection c = r.getAnnotations();"""
+            not in sample["buggy_code"]
+        )
+        assert (
+            """                if (r != null) {
+                    Collection c = r.getAnnotations();"""
+            in sample["fixed_code"]
+        )
 
         # Assert that the prompt is properly constructed
         assert (
@@ -166,11 +182,8 @@ class TestClozeSamplesIncoder:
         assert sample["prompt"].count("<|mask:0|>") == 1
         assert sample["prompt"].count("<|mask:1|>") == 1
 
-    def test_math_62(self):
-        """
-        Test an unsupported bug type (non single-function, single-file)
-        """
-        bug = TestClozeSamplesIncoder.DEFECTS4J.get_bug("Math-62")
+    def test_chart_2(self):
+        bug = TestClozeSamplesIncoder.DEFECTS4J.get_bug("Chart-2")
         assert bug is not None
 
         sample = generate_sample(
@@ -180,7 +193,43 @@ class TestClozeSamplesIncoder:
         )
 
         # Assert we are dealing with the correct bug and strategy
-        assert sample["identifier"] == "Math-62"
+        assert sample["identifier"] == "Chart-2"
+        assert sample["prompt_strategy"] == "zero-shot-cloze"
+
+        # Assert that the prompt was not generated
+        assert sample["prompt"] is None
+
+    def test_math_99(self):
+        bug = TestClozeSamplesIncoder.DEFECTS4J.get_bug("Math-99")
+        assert bug is not None
+
+        sample = generate_sample(
+            bug=bug,
+            prompt_strategy=TestClozeSamplesIncoder.PROMPT_STRATEGY,
+            model_name=TestClozeSamplesIncoder.MODEL_NAME,
+        )
+
+        # Assert we are dealing with the correct bug and strategy
+        assert sample["identifier"] == "Math-99"
+        assert sample["prompt_strategy"] == "zero-shot-cloze"
+
+        print(sample["prompt"])
+
+        # Assert that the prompt was not generated
+        assert sample["prompt"] is None
+
+    def test_chart_18(self):
+        bug = TestClozeSamplesIncoder.DEFECTS4J.get_bug("Chart-18")
+        assert bug is not None
+
+        sample = generate_sample(
+            bug=bug,
+            prompt_strategy=TestClozeSamplesIncoder.PROMPT_STRATEGY,
+            model_name=TestClozeSamplesIncoder.MODEL_NAME,
+        )
+
+        # Assert we are dealing with the correct bug and strategy
+        assert sample["identifier"] == "Chart-18"
         assert sample["prompt_strategy"] == "zero-shot-cloze"
 
         # Assert that the prompt was not generated
@@ -236,7 +285,7 @@ class TestClozeSamplesIncoder:
         assert sample["prompt_strategy"] == "zero-shot-cloze"
 
         # Assert that the buggy code and fixed code are properly separated
-        assert not "if (gramps.isDelProp()) {" in sample["buggy_code"]
+        assert "if (gramps.isDelProp()) {" not in sample["buggy_code"]
         assert "if (gramps.isDelProp()) {" in sample["fixed_code"]
 
         # Assert that the prompt is properly constructed
@@ -265,7 +314,7 @@ class TestClozeSamplesIncoder:
         # Assert that the buggy code and fixed code are properly separated
         assert "return super.equals(obj);" in sample["buggy_code"]
         assert "return super.equals(obj);" not in sample["fixed_code"]
-        assert not "ShapeList that = (ShapeList) obj;" in sample["buggy_code"]
+        assert "ShapeList that = (ShapeList) obj;" not in sample["buggy_code"]
         assert "ShapeList that = (ShapeList) obj;" in sample["fixed_code"]
 
         # Assert that the prompt is properly constructed
@@ -290,8 +339,10 @@ class TestClozeSamplesIncoder:
         assert sample["prompt_strategy"] == "zero-shot-cloze"
 
         # Assert that the buggy code and fixed code are properly separated
-        assert not "if(numDecimals <= 7){" in sample["buggy_code"]
+        assert "if(numDecimals <= 7){" not in sample["buggy_code"]
         assert "if(numDecimals <= 7){" in sample["fixed_code"]
+
+        print(sample["prompt"])
 
         # Assert that the prompt is properly constructed
         assert (
@@ -331,7 +382,7 @@ class TestClozeSamplesIncoder:
             in sample["fixed_code"]
         )
         assert "if (flags.process_closure_primitives) {" in sample["buggy_code"]
-        assert not "if (flags.process_closure_primitives) {" in sample["fixed_code"]
+        assert "if (flags.process_closure_primitives) {" not in sample["fixed_code"]
 
         # Assert that the prompt is properly constructed
         assert (
@@ -359,15 +410,19 @@ class TestClozeSamplesIncoder:
 
         # Assert that the buggy code and fixed code are properly separated
         assert "if(Character.isWhitespace(c)) {" in sample["buggy_code"]
-        assert not "if(Character.isWhitespace(c)) {" in sample["fixed_code"]
+        assert "if(Character.isWhitespace(c)) {" not in sample["fixed_code"]
         assert "boolean wasWhite= false;" in sample["buggy_code"]
-        assert not "boolean wasWhite= false;" in sample["fixed_code"]
+        assert "boolean wasWhite= false;" not in sample["fixed_code"]
+
+        print(sample["prompt"])
 
         # Assert that the prompt is properly constructed
         assert (
             sample["prompt"]
             .strip()
-            .startswith("public Date parse(String source, ParsePosition pos) {")
+            .startswith(
+                "private static StringBuilder escapeRegex(StringBuilder regex, String value, boolean unquote) {"
+            )
         )
         assert sample["prompt"].count("<|mask:") == 2
         assert sample["prompt"].count("<|mask:0|>") == 1
@@ -388,7 +443,7 @@ class TestClozeSamplesIncoder:
         assert sample["prompt_strategy"] == "zero-shot-cloze"
 
         # Assert that the buggy code and fixed code are properly separated
-        assert sample["buggy_code"] is None
+        assert sample["buggy_code"] == ""
         assert "public boolean equals(Object obj) {" in sample["fixed_code"]
 
         # Assert that the prompt is properly constructed

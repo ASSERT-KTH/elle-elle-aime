@@ -17,7 +17,7 @@ class ZeroShotSingleHunkPrompting(PromptingStrategy):
         // This is the fixed code
         """
 
-    def prompt(self, bug: Bug) -> Optional[Tuple[str, str, str]]:
+    def prompt(self, bug: Bug) -> Tuple[Optional[str], Optional[str], Optional[str]]:
         """
         Returns the prompt for the given bug.
 
@@ -27,7 +27,7 @@ class ZeroShotSingleHunkPrompting(PromptingStrategy):
         diff = PatchSet(bug.get_ground_truth())
         # This strategy only supports single-hunk bugs
         if len(diff) != 1 or len(diff[0]) != 1:
-            return None
+            return None, None, None
 
         buggy_code = "".join([x.value for x in list(diff[0][0].target_lines())])
         fixed_code = "".join([x.value for x in list(diff[0][0].source_lines())])

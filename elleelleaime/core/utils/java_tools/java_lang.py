@@ -56,13 +56,21 @@ def load_ast_nodes(file_path):
     return ast_nodes
 
 
-def load_origin_code_node(file_path, line_numbers):
+def load_origin_code_node(
+    file_path,
+    line_numbers,
+    allowed_types=["MethodDeclaration", "ConstructorDeclaration"],
+):
     origin_ast_nodes = load_ast_nodes(file_path)
     ast_nodes = copy.deepcopy(origin_ast_nodes)
 
     for line_number in line_numbers:
         for m in ast_nodes:
-            if m.start_pos <= line_number and m.end_pos >= line_number:
+            if (
+                m.type in allowed_types
+                and m.start_pos <= line_number
+                and m.end_pos >= line_number
+            ):
                 m.add_highlight_line_number(line_number)
 
     ast_nodes = list(filter(lambda n: len(n.highlight_line_numbers) > 0, ast_nodes))

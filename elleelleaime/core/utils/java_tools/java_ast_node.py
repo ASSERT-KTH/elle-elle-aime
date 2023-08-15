@@ -116,6 +116,9 @@ class JavaAstNode:
             self.highlight_line_numbers,
         )
 
+    def __repr__(self):
+        return self.__str__()
+
     def __eq__(self, __o: object) -> bool:
         if not isinstance(__o, JavaAstNode):
             return False
@@ -124,5 +127,5 @@ class JavaAstNode:
             and self.type == __o.type
             and self.start_pos == __o.start_pos
             and self.end_pos == __o.end_pos
-            and self.highlight_line_numbers == __o.highlight_line_numbers
+            and self.hash == __o.hash
         )

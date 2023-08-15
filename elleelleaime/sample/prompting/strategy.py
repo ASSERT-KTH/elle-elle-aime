@@ -9,7 +9,7 @@ class PromptingStrategy(ABC):
         pass
 
     @abstractmethod
-    def prompt(self, bug: Bug) -> Optional[Tuple[str, str, str]]:
+    def prompt(self, bug: Bug) -> Tuple[Optional[str], Optional[str], Optional[str]]:
         """
         Returns the prompt for the given bug.
 
