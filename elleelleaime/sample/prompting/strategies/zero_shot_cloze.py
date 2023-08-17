@@ -223,8 +223,6 @@ class ZeroShotClozePrompting(PromptingStrategy):
             if prompt == "":
                 prompt = f"{self.generate_masking_prompt('', 0)}"
 
-            print(prompt)
-
             return buggy_code, fixed_code, prompt
 
         finally:
