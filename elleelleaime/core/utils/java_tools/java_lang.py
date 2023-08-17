@@ -36,10 +36,10 @@ def filter_ast_nodes_by_types(root, node_types):
 
 def load_ast_nodes(file_path):
     ast_nodes = []
-    with open(file_path, "r") as file:
+    with open(file_path, "r", encoding="ISO-8859-1") as file:
         text = file.read()
         tree = javalang.parse.parse(text)
-    with open(file_path, "r") as file:
+    with open(file_path, "r", encoding="ISO-8859-1") as file:
         file_lines = file.readlines()
 
     filtered_nodes = filter_ast_nodes_by_types(tree, ACCEPTED_NODE_TYPES)
