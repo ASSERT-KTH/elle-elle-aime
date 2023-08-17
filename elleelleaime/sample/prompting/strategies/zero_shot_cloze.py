@@ -39,9 +39,6 @@ class ZeroShotClozePrompting(PromptingStrategy):
             else self.original_mask_token
         )
 
-        # Replace the first "+/-" with the space token
-        line_to_replace = re.sub(r"^[+-]", " ", line_to_replace)
-
         # Find the leading spaces
         leading_spaces = re.match(r"^\s*", line_to_replace)
         if leading_spaces is not None:
@@ -210,7 +207,7 @@ class ZeroShotClozePrompting(PromptingStrategy):
                     i += 1
                 # Add a mask token in added/removed chunk of code
                 elif any(fdiff[i].startswith(x) for x in ["+", "-"]):
-                    prompt += f"{self.generate_masking_prompt(fdiff[i], mask_id)}\n"
+                    prompt += f"{self.generate_masking_prompt(fdiff[i][1:], mask_id)}\n"
                     mask_id += 1
                     # Skip over the remainder of the added/removed chunk
                     while i < len(fdiff) and any(
@@ -219,12 +216,14 @@ class ZeroShotClozePrompting(PromptingStrategy):
                         i += 1
                 # Include unchanged lines
                 else:
-                    prompt += fdiff[i]
+                    prompt += fdiff[i][1:]
                     i += 1
 
             # Deal with whole-function addition/removal
             if prompt == "":
                 prompt = f"{self.generate_masking_prompt('', 0)}"
+
+            print(prompt)
 
             return buggy_code, fixed_code, prompt
 
