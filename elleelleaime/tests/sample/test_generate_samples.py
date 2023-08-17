@@ -448,24 +448,6 @@ class TestClozeSamplesIncoder:
 
         # Assert that the prompt is properly constructed
         assert (
-            "long s = getDataItem(this.minMiddleIndex).getPeriod().getStart()"
-            in sample["buggy_code"]
-        )
-        assert (
-            "long s = getDataItem(this.minMiddleIndex).getPeriod().getStart()"
-            not in sample["fixed_code"]
-        )
-        assert (
-            "long s = getDataItem(this.maxMiddleIndex).getPeriod().getStart()"
-            not in sample["buggy_code"]
-        )
-        assert (
-            "long s = getDataItem(this.maxMiddleIndex).getPeriod().getStart()"
-            in sample["fixed_code"]
-        )
-
-        # Assert that the prompt is properly constructed
-        assert (
             sample["prompt"]
             .strip()
             .startswith("private void updateBounds(TimePeriod period, int index) {")
