@@ -116,6 +116,7 @@ venv.bak/
 
 ### VSCode ###
 .vscode/*
+*/.vscode
 
 ### Mac ###
 .DS_Store

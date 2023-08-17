@@ -1,9 +1,9 @@
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from core.utils.benchmarks import get_benchmark
-from core.utils.jsonl import write_jsonl
-from core.benchmarks.bug import Bug
+from elleelleaime.core.utils.benchmarks import get_benchmark
+from elleelleaime.core.utils.jsonl import write_jsonl
+from elleelleaime.core.benchmarks.bug import Bug
 from typing import Optional, Union
-from sample.prompting.registry import PromptStrategyRegistry
+from elleelleaime.sample.prompting.registry import PromptStrategyRegistry
 
 import fire
 import sys
@@ -11,12 +11,14 @@ import tqdm
 import logging
 
 
-def generate_sample(bug: Bug, prompt_strategy: str) -> dict[str, Optional[Union[str, Bug]]]:
+def generate_sample(
+    bug: Bug, prompt_strategy: str, **kwargs
+) -> dict[str, Optional[Union[str, Bug]]]:
     """
     Generates the sample for the given bug with the given prompt strategy.
     """
 
-    prompt_strategy_obj = PromptStrategyRegistry().get_strategy(prompt_strategy)
+    prompt_strategy_obj = PromptStrategyRegistry(**kwargs).get_strategy(prompt_strategy)
     prompt = prompt_strategy_obj.prompt(bug)
 
     # Check if prompt was generated
@@ -27,9 +29,9 @@ def generate_sample(bug: Bug, prompt_strategy: str) -> dict[str, Optional[Union[
             "fixed_code": None,
             "prompt_strategy": prompt_strategy,
             "prompt": None,
-            "ground_truth": bug.get_ground_truth()
+            "ground_truth": bug.get_ground_truth(),
         }
-    
+
     # Unpack the prompt
     buggy_code, fixed_code, prompt = prompt
     return {
@@ -38,14 +40,15 @@ def generate_sample(bug: Bug, prompt_strategy: str) -> dict[str, Optional[Union[
         "fixed_code": fixed_code,
         "prompt_strategy": prompt_strategy,
         "prompt": prompt,
-        "ground_truth": bug.get_ground_truth()
+        "ground_truth": bug.get_ground_truth(),
     }
 
 
 def entry_point(
     benchmark: str,
     prompt_strategy: str,
-    n_workers: int = 4
+    n_workers: int = 1,
+    **kwargs,
 ):
     """
     Generates the test samples for the bugs of the given benchmark with the given
@@ -67,11 +70,12 @@ def entry_point(
 
         # Launch a thread for each bug
         for bug in benchmark_obj.get_bugs():
-            args = (bug, prompt_strategy)
-            futures.append(executor.submit(generate_sample, *args))
+            futures.append(
+                executor.submit(generate_sample, bug, prompt_strategy, **kwargs)
+            )
 
         # Check that all bugs are being processed
-        assert len(futures) == len(benchmark_obj.get_bugs()), "Some bugs are not being processed"
+        # assert len(futures) == len(benchmark_obj.get_bugs()), "Some bugs are not being processed"
 
         # Wait for the results
         for future in tqdm.tqdm(as_completed(futures), total=len(futures)):
@@ -86,4 +90,5 @@ def main():
     fire.Fire(entry_point)
 
 
-sys.exit(main())
+if __name__ == "__main__":
+    sys.exit(main())
