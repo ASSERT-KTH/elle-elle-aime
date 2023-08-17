@@ -6,6 +6,7 @@ from typing import Optional, Union
 from elleelleaime.sample.prompting.registry import PromptStrategyRegistry
 
 import fire
+import traceback
 import sys
 import tqdm
 import logging
@@ -69,17 +70,25 @@ def entry_point(
         futures = []
 
         # Launch a thread for each bug
+        future_to_bug = {}
         for bug in benchmark_obj.get_bugs():
-            futures.append(
-                executor.submit(generate_sample, bug, prompt_strategy, **kwargs)
-            )
+            future = executor.submit(generate_sample, bug, prompt_strategy, **kwargs)
+            future_to_bug[future] = bug
+            futures.append(future)
 
         # Check that all bugs are being processed
-        # assert len(futures) == len(benchmark_obj.get_bugs()), "Some bugs are not being processed"
+        assert len(futures) == len(
+            benchmark_obj.get_bugs()
+        ), "Some bugs are not being processed"
 
         # Wait for the results
         for future in tqdm.tqdm(as_completed(futures), total=len(futures)):
-            results.append(future.result())
+            try:
+                results.append(future.result())
+            except Exception as e:
+                logging.error(
+                    f"Error while generating sample for bug {future_to_bug[future]}: {traceback.format_exc()}"
+                )
 
     # Write results to jsonl file
     write_jsonl(f"samples_{benchmark}_{prompt_strategy}.jsonl.gz", results)
