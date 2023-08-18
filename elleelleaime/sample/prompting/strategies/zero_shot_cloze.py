@@ -54,7 +54,7 @@ class ZeroShotClozePrompting(PromptingStrategy):
         Finds the code corresponding to the given line numbers in the given file.
         """
         code = ""
-        with open(file_path, "r") as file:
+        with open(file_path, "r", encoding="ISO-8859-1") as file:
             for idx, line in enumerate(file.readlines()):
                 if idx + 1 in line_numbers:
                     code += line
@@ -86,10 +86,16 @@ class ZeroShotClozePrompting(PromptingStrategy):
             bug.checkout(fixed_path, fixed=True)
 
             buggy_file_path = os.path.join(
-                buggy_path, diff[0].target_file.replace("b/", "", 1)
+                buggy_path,
+                diff[0].target_file[2:]
+                if diff[0].target_file.startswith("b/")
+                else diff[0].target_file,
             )
             fixed_file_path = os.path.join(
-                fixed_path, diff[0].source_file.replace("a/", "", 1)
+                fixed_path,
+                diff[0].source_file[2:]
+                if diff[0].source_file.startswith("a/")
+                else diff[0].source_file,
             )
 
             # Find the methods of each hunk
@@ -195,7 +201,7 @@ class ZeroShotClozePrompting(PromptingStrategy):
                     if assert_same_diff(diff, fdiff):
                         buggy_code = ""
                     else:
-                        return None, None, None
+                        return buggy_code, fixed_code, None
 
             # Iterate over both the buggy and fixed code to generate the prompt
             prompt = ""
