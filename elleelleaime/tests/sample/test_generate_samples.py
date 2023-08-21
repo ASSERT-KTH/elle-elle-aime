@@ -96,9 +96,10 @@ class TestClozeSamplesIncoder:
             .strip()
             .startswith("private CanInlineResult canInlineReferenceDirectly(")
         )
-        assert sample["prompt"].count("<|mask:") == 2
+        assert sample["prompt"].count("<|mask:") == 3
         assert sample["prompt"].count("<|mask:0|>") == 1
         assert sample["prompt"].count("<|mask:1|>") == 1
+        assert sample["prompt"].count("<|mask:2|>") == 1
 
     def test_closure_4(self):
         bug = TestClozeSamplesIncoder.DEFECTS4J.get_bug("Closure-4")
@@ -128,9 +129,10 @@ class TestClozeSamplesIncoder:
                 "JSType resolveInternal(ErrorReporter t, StaticScope<JSType> enclosing) {"
             )
         )
-        assert sample["prompt"].count("<|mask:") == 2
+        assert sample["prompt"].count("<|mask:") == 3
         assert sample["prompt"].count("<|mask:0|>") == 1
         assert sample["prompt"].count("<|mask:1|>") == 1
+        assert sample["prompt"].count("<|mask:2|>") == 1
 
     def test_chart_4(self):
         bug = TestClozeSamplesIncoder.DEFECTS4J.get_bug("Chart-4")
@@ -164,9 +166,10 @@ class TestClozeSamplesIncoder:
             .strip()
             .startswith("public Range getDataRange(ValueAxis axis) {")
         )
-        assert sample["prompt"].count("<|mask:") == 2
+        assert sample["prompt"].count("<|mask:") == 3
         assert sample["prompt"].count("<|mask:0|>") == 1
         assert sample["prompt"].count("<|mask:1|>") == 1
+        assert sample["prompt"].count("<|mask:2|>") == 1
 
     def test_chart_2(self):
         bug = TestClozeSamplesIncoder.DEFECTS4J.get_bug("Chart-2")
@@ -251,8 +254,9 @@ class TestClozeSamplesIncoder:
                 "private void visitGetProp(NodeTraversal t, Node n, Node parent) {"
             )
         )
-        assert sample["prompt"].count("<|mask:") == 1
+        assert sample["prompt"].count("<|mask:") == 2
         assert sample["prompt"].count("<|mask:0|>") == 1
+        assert sample["prompt"].count("<|mask:1|>") == 1
 
     def test_closure_5(self):
         bug = TestClozeSamplesIncoder.DEFECTS4J.get_bug("Closure-5")
@@ -278,8 +282,9 @@ class TestClozeSamplesIncoder:
             .strip()
             .startswith("private boolean isInlinableObject(List<Reference> refs) {")
         )
-        assert sample["prompt"].count("<|mask:") == 1
+        assert sample["prompt"].count("<|mask:") == 2
         assert sample["prompt"].count("<|mask:0|>") == 1
+        assert sample["prompt"].count("<|mask:1|>") == 1
 
     def test_chart_6(self):
         bug = TestClozeSamplesIncoder.DEFECTS4J.get_bug("Chart-6")
@@ -305,8 +310,9 @@ class TestClozeSamplesIncoder:
         assert (
             sample["prompt"].strip().startswith("public boolean equals(Object obj) {")
         )
-        assert sample["prompt"].count("<|mask:") == 1
+        assert sample["prompt"].count("<|mask:") == 2
         assert sample["prompt"].count("<|mask:0|>") == 1
+        assert sample["prompt"].count("<|mask:1|>") == 1
 
     def test_lang_3(self):
         bug = TestClozeSamplesIncoder.DEFECTS4J.get_bug("Lang-3")
@@ -334,11 +340,12 @@ class TestClozeSamplesIncoder:
                 "public static Number createNumber(final String str) throws NumberFormatException"
             )
         )
-        assert sample["prompt"].count("<|mask:") == 4
+        assert sample["prompt"].count("<|mask:") == 5
         assert sample["prompt"].count("<|mask:0|>") == 1
         assert sample["prompt"].count("<|mask:1|>") == 1
         assert sample["prompt"].count("<|mask:2|>") == 1
         assert sample["prompt"].count("<|mask:3|>") == 1
+        assert sample["prompt"].count("<|mask:4|>") == 1
 
     def test_closure_101(self):
         bug = TestClozeSamplesIncoder.DEFECTS4J.get_bug("Closure-101")
@@ -372,9 +379,10 @@ class TestClozeSamplesIncoder:
             .strip()
             .startswith("protected CompilerOptions createOptions() {")
         )
-        assert sample["prompt"].count("<|mask:") == 2
+        assert sample["prompt"].count("<|mask:") == 3
         assert sample["prompt"].count("<|mask:0|>") == 1
         assert sample["prompt"].count("<|mask:1|>") == 1
+        assert sample["prompt"].count("<|mask:2|>") == 1
 
     def test_lang_10(self):
         bug = TestClozeSamplesIncoder.DEFECTS4J.get_bug("Lang-10")
@@ -404,9 +412,10 @@ class TestClozeSamplesIncoder:
                 "private static StringBuilder escapeRegex(StringBuilder regex, String value, boolean unquote) {"
             )
         )
-        assert sample["prompt"].count("<|mask:") == 2
+        assert sample["prompt"].count("<|mask:") == 3
         assert sample["prompt"].count("<|mask:0|>") == 1
         assert sample["prompt"].count("<|mask:1|>") == 1
+        assert sample["prompt"].count("<|mask:2|>") == 1
 
     def test_chart_23(self):
         bug = TestClozeSamplesIncoder.DEFECTS4J.get_bug("Chart-23")
@@ -428,8 +437,9 @@ class TestClozeSamplesIncoder:
 
         # Assert that the prompt is properly constructed
         assert sample["prompt"].strip().startswith("<|mask:0|>")
-        assert sample["prompt"].count("<|mask:") == 1
+        assert sample["prompt"].count("<|mask:") == 2
         assert sample["prompt"].count("<|mask:0|>") == 1
+        assert sample["prompt"].count("<|mask:1|>") == 1
 
     def test_chart_7(self):
         # This is a special case that requires latin-1 encoding
@@ -452,6 +462,7 @@ class TestClozeSamplesIncoder:
             .strip()
             .startswith("private void updateBounds(TimePeriod period, int index) {")
         )
-        assert sample["prompt"].count("<|mask:") == 2
+        assert sample["prompt"].count("<|mask:") == 3
         assert sample["prompt"].count("<|mask:0|>") == 1
         assert sample["prompt"].count("<|mask:1|>") == 1
+        assert sample["prompt"].count("<|mask:2|>") == 1

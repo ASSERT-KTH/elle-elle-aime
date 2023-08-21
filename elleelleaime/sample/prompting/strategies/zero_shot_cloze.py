@@ -8,10 +8,12 @@ from elleelleaime.core.benchmarks.bug import Bug
 from elleelleaime.core.utils.java_tools.java_lang import load_origin_code_node
 
 
-MASK_DICT = {
-    "incoder": "<|mask:{}|>",
-    "plbart": "<mask>",
-    "codet5": "<extra_id_{}>",
+# MODEL_DICT is a dictionary of model names and their corresponding kwargs
+MODEL_DICT = {
+    "incoder": {
+        "mask_token": "<|mask:{}|>",
+        "extra_mask_token": True,
+    },
     # Add the model you want to use here
 }
 
@@ -26,9 +28,11 @@ class ZeroShotClozePrompting(PromptingStrategy):
 
         self.model_name: str = kwargs.get("model_name", "").strip().lower()
         assert (
-            self.model_name in MASK_DICT.keys()
+            self.model_name in MODEL_DICT.keys()
         ), f"Unknown model name: {kwargs.get('model_name', None)}"
-        self.original_mask_token: str = MASK_DICT[self.model_name]
+        model_kwargs = MODEL_DICT.get(self.model_name, {})
+        self.original_mask_token: str = model_kwargs["mask_token"]
+        self.extra_mask_token: bool = model_kwargs.get("extra_mask_token", False)
 
     def generate_masking_prompt(self, line_to_replace: str, mask_id: int) -> str:
         """Generate the mask token to be inserted, according to the mask idx."""
@@ -224,6 +228,10 @@ class ZeroShotClozePrompting(PromptingStrategy):
                 else:
                     prompt += fdiff[i][1:]
                     i += 1
+
+            # Add extra mask token (e.g. Incoder recommends this in Section 2.2 of their paper)
+            if self.extra_mask_token:
+                prompt += f"{self.generate_masking_prompt('', mask_id)}\n"
 
             # Deal with whole-function addition/removal
             if prompt == "":
