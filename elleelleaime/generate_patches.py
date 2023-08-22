@@ -18,8 +18,8 @@ def generate_candidate(sample: dict, model_name: str, **kwargs) -> dict:
     )
     generation = generation_strategy.generate(sample["prompt"])
     sample["generation"] = generation
-    
-    if len(generation) > 0:
+
+    if generation is not None and len(generation) > 0:
         print(f"Generation for bug {sample['identifier']}:")
         print(generation[0])
 
