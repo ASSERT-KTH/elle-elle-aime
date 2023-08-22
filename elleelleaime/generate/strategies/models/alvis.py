@@ -8,18 +8,36 @@ import paramiko
 import json
 
 
+MODELS_DICT = {
+    "facebook/incoder-6B": {
+        "inference_script": "incoder.py",
+    },
+    "facebook/incoder-1B": {
+        "inference_script": "incoder.py",
+    },
+}
+
+
 class AlvisHFModels(PatchGenerationStrategy):
     def __init__(self, model: str, **kwargs) -> None:
+        assert (
+            model in MODELS_DICT.keys()
+        ), f"Model {model} not supported by AlvisHFModels"
         self.model = model
-        self.max_new_tokens = kwargs.get("max_new_tokens", 512)
-        self.num_return_sequences = kwargs.get("num_return_sequences", 10)
+        # Compute settings
         self.gpu_type = kwargs.get("gpu_type", "A40")
         self.gpu_number = kwargs.get("gpu_number", "1")
         self.job_time = kwargs.get("job_time", "00:10:00")
+        # Generation settings
+        self.max_new_tokens = kwargs.get("max_new_tokens", 512)
+        self.num_return_sequences = kwargs.get("num_return_sequences", 10)
+        self.temperature = kwargs.get("temperature", 0.0)
+        # Alvis settings
         load_dotenv()
         self.hostname = os.getenv("ALVIS_HOSTNAME", "alvis")
         self.username = os.getenv("ALVIS_USERNAME")
         self.password = os.getenv("ALVIS_PASSWORD")
+        self.project = os.getenv("ALVIS_PROJECT")
 
     def _generate_impl(self, prompt: str) -> Any:
         # Generate unique id
@@ -66,11 +84,15 @@ class AlvisHFModels(PatchGenerationStrategy):
                 f"/cephyr/users/{self.username}/Alvis/elleelleaime-{unique_id}/inference.py",
                 "w+",
             ) as f:
-                with open("./generate/resources/scripts/inference.py", "r") as lf:
+                with open(
+                    f"./generate/resources/scripts/huggingface/{MODELS_DICT[self.model]['inference_script']}",
+                    "r",
+                ) as lf:
                     script = lf.read().format(
                         model=self.model,
                         max_new_tokens=self.max_new_tokens,
                         num_return_sequences=self.num_return_sequences,
+                        temperature=self.temperature,
                         unique_id=unique_id,
                     )
                     f.write(script)
@@ -86,6 +108,7 @@ class AlvisHFModels(PatchGenerationStrategy):
                         gpu_type=self.gpu_type,
                         gpu_number=self.gpu_number,
                         job_time=self.job_time,
+                        project=self.project,
                         script=f"/cephyr/users/{self.username}/Alvis/elleelleaime-{unique_id}/inference.py",
                     )
                     f.write(script)

@@ -11,7 +11,8 @@ class PatchGenerationStrategyRegistry:
     def __init__(self, **kwargs):
         self._models: dict[str, PatchGenerationStrategy] = {
             "gpt-3.5-turbo": OpenAIChatCompletionModels("gpt-3.5-turbo", **kwargs),
-            "codegen-2b-multi": AlvisHFModels("Salesforce/codegen-2B-multi", **kwargs),
+            "incoder-1b": AlvisHFModels("facebook/incoder-1B", **kwargs),
+            "incoder-6b": AlvisHFModels("facebook/incoder-6B", **kwargs),
         }
 
     def get_generation(self, name: str) -> PatchGenerationStrategy:
