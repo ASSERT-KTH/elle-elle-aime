@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Project to run under
-#SBATCH -A SNIC2022-5-596 -p alvis
+#SBATCH -A {project} -p alvis
 #SBATCH -J {job_name}
 #SBATCH -N 1 --gpus-per-node={gpu_type}:{gpu_number}
 #SBATCH --time={job_time}
