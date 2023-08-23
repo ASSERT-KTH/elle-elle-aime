@@ -20,6 +20,11 @@ MODELS_DICT = {
 
 
 class AlvisHFModels(PatchGenerationStrategy):
+    """
+    This strategy runs huggingface generation scripts on the Alvis cluster.
+    It is meant to be run remotely.
+    """
+
     __SETUP_LOCK: threading.Lock = threading.Lock()
     __SETUP_FLAG: bool = False
 
@@ -33,7 +38,7 @@ class AlvisHFModels(PatchGenerationStrategy):
         self.gpu_number = kwargs.get("gpu_number", "1")
         self.job_time = kwargs.get("job_time", "00:10:00")
         # Generation settings
-        self.max_new_tokens = kwargs.get("max_new_tokens", 512)
+        self.max_new_tokens = kwargs.get("max_new_tokens", 128)
         self.num_return_sequences = kwargs.get("num_return_sequences", 10)
         self.temperature = kwargs.get("temperature", 0.0)
         # Alvis settings
@@ -62,7 +67,7 @@ class AlvisHFModels(PatchGenerationStrategy):
                         "w+",
                     ) as f:
                         with open(
-                            "./generate/resources/scripts/setup_env.sh", "r"
+                            "./generate/resources/scripts/alvis/setup_env.sh", "r"
                         ) as lf:
                             script = lf.read()
                             f.write(script)
@@ -73,7 +78,7 @@ class AlvisHFModels(PatchGenerationStrategy):
                         "w+",
                     ) as f:
                         with open(
-                            "./generate/resources/scripts/load_modules.sh", "r"
+                            "./generate/resources/scripts/alvis/load_modules.sh", "r"
                         ) as lf:
                             script = lf.read()
                             f.write(script)
@@ -84,7 +89,7 @@ class AlvisHFModels(PatchGenerationStrategy):
                         "w+",
                     ) as f:
                         with open(
-                            "./generate/resources/scripts/requirements.txt", "r"
+                            "./generate/resources/scripts/alvis/requirements.txt", "r"
                         ) as lf:
                             script = lf.read()
                             f.write(script)
@@ -166,7 +171,7 @@ class AlvisHFModels(PatchGenerationStrategy):
                 f"/cephyr/users/{self.username}/Alvis/elleelleaime/elleelleaime-{unique_id}/jobscript",
                 "w+",
             ) as f:
-                with open("./generate/resources/scripts/jobscript", "r") as lf:
+                with open("./generate/resources/scripts/alvis/jobscript", "r") as lf:
                     script = lf.read().format(
                         job_name="elleelleaime",
                         gpu_type=self.gpu_type,

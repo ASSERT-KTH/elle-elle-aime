@@ -19,7 +19,6 @@ sqlalchemy = "^2.0.10"
 whatthepatch="^1.0.3"
 paramiko = "^3.1.0"
 transformers = {git = "https://github.com/huggingface/transformers"}
-torch = "^2.0.0"
 psycopg = {extras = ["binary", "pool"], version = "^3.1.8"}
 fire = "^0.5.0"
 tqdm = "^4.65.0"

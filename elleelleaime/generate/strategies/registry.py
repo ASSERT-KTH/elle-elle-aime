@@ -1,6 +1,10 @@
 from generate.strategies.strategy import PatchGenerationStrategy
-from generate.strategies.models.openai import OpenAIChatCompletionModels
-from generate.strategies.models.alvis import AlvisHFModels
+from elleelleaime.generate.strategies.models.openai.openai import (
+    OpenAIChatCompletionModels,
+)
+from elleelleaime.generate.strategies.models.huggingface.alvis import (
+    AlvisHFModels,
+)
 
 
 class PatchGenerationStrategyRegistry:
