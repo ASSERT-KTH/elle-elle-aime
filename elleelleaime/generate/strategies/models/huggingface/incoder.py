@@ -1,8 +1,6 @@
 from generate.strategies.strategy import PatchGenerationStrategy
 from typing import Any
 
-
-import json
 import torch
 import re
 from dataclasses import dataclass
@@ -21,7 +19,7 @@ class GenerateSettings:
     num_return_sequences: int = 1
 
 
-class IncoderModels(PatchGenerationStrategy):
+class IncoderHFModels(PatchGenerationStrategy):
     __SUPPORTED_MODELS = {
         "facebook/incoder-6B",
         "facebook/incoder-1B",
@@ -45,16 +43,17 @@ class IncoderModels(PatchGenerationStrategy):
         ), f"Model {model} not supported by IncoderModels"
         self.model = model
         # Generation settings
-        self.max_new_tokens = kwargs.get("max_new_tokens", 512)
+        # TODO: use these in the generation strategy
+        self.max_new_tokens = kwargs.get("max_new_tokens", 128)
         self.num_return_sequences = kwargs.get("num_return_sequences", 10)
-        self.temperature = kwargs.get("temperature", 0.0)
+        self.temperature = kwargs.get("temperature", 0.2)
 
     def _generate_impl(self, prompt: str) -> Any:
         # Setup environment
         device = "cuda" if torch.cuda.is_available() else "cpu"
 
         # Setup kwargs
-        if "{model}" == "facebook/incoder-6B":
+        if self.model == "facebook/incoder-6B":
             context_size = 4096
             kwargs = dict(
                 revision="float16",
@@ -68,8 +67,8 @@ class IncoderModels(PatchGenerationStrategy):
             )
 
         # Load the model and tokenizer
-        tokenizer = AutoTokenizer.from_pretrained("{model}")
-        model = AutoModelForCausalLM.from_pretrained("{model}", **kwargs).to(device)
+        tokenizer = AutoTokenizer.from_pretrained(self.model)
+        model = AutoModelForCausalLM.from_pretrained(self.model, **kwargs).to(device)
         if device == "cuda":
             model = model.half().cuda()
 

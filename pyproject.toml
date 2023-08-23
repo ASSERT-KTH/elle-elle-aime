@@ -18,7 +18,7 @@ sets = "^0.3.2"
 sqlalchemy = "^2.0.10"
 whatthepatch="^1.0.3"
 paramiko = "^3.1.0"
-transformers = {git = "https://github.com/huggingface/transformers"}
+transformers = "^4.32.0"
 psycopg = {extras = ["binary", "pool"], version = "^3.1.8"}
 fire = "^0.5.0"
 tqdm = "^4.65.0"
@@ -26,6 +26,8 @@ numpy = "^1.24.3"
 unidiff = "^0.7.5"
 backoff = "^2.2.1"
 black = "^23.7.0"
+torch = ">=2.0.0, !=2.0.1"
+accelerate = "0.22.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.3.1"

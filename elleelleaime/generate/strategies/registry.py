@@ -5,6 +5,9 @@ from elleelleaime.generate.strategies.models.openai.openai import (
 from elleelleaime.generate.strategies.models.huggingface.alvis import (
     AlvisHFModels,
 )
+from elleelleaime.generate.strategies.models.huggingface.incoder import (
+    IncoderHFModels,
+)
 
 
 class PatchGenerationStrategyRegistry:
@@ -15,8 +18,8 @@ class PatchGenerationStrategyRegistry:
     def __init__(self, **kwargs):
         self._models: dict[str, PatchGenerationStrategy] = {
             "gpt-3.5-turbo": OpenAIChatCompletionModels("gpt-3.5-turbo", **kwargs),
-            "incoder-1b": AlvisHFModels("facebook/incoder-1B", **kwargs),
-            "incoder-6b": AlvisHFModels("facebook/incoder-6B", **kwargs),
+            "incoder-1b": IncoderHFModels("facebook/incoder-1B", **kwargs),
+            "incoder-6b": IncoderHFModels("facebook/incoder-6B", **kwargs),
         }
 
     def get_generation(self, name: str) -> PatchGenerationStrategy:
