@@ -31,6 +31,8 @@ cd elleelleaime # Note: this is mandatory due to hard-coded paths for now
 pytest -s
 ```
 
+
+# LEGACY
 ----
 
 ## Overview
