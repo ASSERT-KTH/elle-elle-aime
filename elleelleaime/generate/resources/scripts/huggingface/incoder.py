@@ -76,6 +76,7 @@ def main():
                 "warning: max_length %s is greater than the context window %s"
                 % (max_length, context_size)
             )
+            return None
         with torch.no_grad():
             output = model.generate(
                 input_ids=input_ids,
@@ -112,6 +113,8 @@ def main():
             prompt += "<|mask:%d|>" % sentinel_ix
             # TODO: this is inefficient as it requires re-encoding prefixes repeatedly
             completion = generate(prompt, generate_settings)
+            if completion is None:
+                return None
             completion = completion[len(prompt) :]
             if EOM not in completion:
                 completion += EOM
