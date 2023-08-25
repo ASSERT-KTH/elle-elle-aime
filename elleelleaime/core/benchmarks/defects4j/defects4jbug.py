@@ -39,7 +39,7 @@ class Defects4JBug(Bug):
 
     def compile(self, path: str) -> CompileResult:
         run = subprocess.run(
-            "cd %s; timeout 60 defects4j compile" % path,
+            f"cd {path}; timeout 60 {self.benchmark.get_bin()} compile",
             shell=True,
             capture_output=True,
         )
@@ -47,7 +47,9 @@ class Defects4JBug(Bug):
 
     def test(self, path: str) -> TestResult:
         run = subprocess.run(
-            "cd %s; timeout 600 defects4j test" % path, shell=True, capture_output=True
+            f"cd {path}; timeout 600 {self.benchmark.get_bin()} test",
+            shell=True,
+            capture_output=True,
         )
         m = re.search(r"Failing tests: ([0-9]+)", run.stdout.decode("utf-8"))
         return TestResult(
