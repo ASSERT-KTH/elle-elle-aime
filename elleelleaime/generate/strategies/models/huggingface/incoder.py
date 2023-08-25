@@ -10,13 +10,13 @@ from transformers import AutoTokenizer, AutoModelForCausalLM
 @dataclass
 class GenerateSettings:
     name: str
-    num_beams: int = 1
+    num_beams: int = 10
     do_sample: bool = False
     top_k: int = 0
     top_p: float = 1.0
     temperature: float = 0.0
     max_new_tokens: int = 128
-    num_return_sequences: int = 1
+    num_return_sequences: int = 10
 
 
 class IncoderHFModels(PatchGenerationStrategy):
@@ -28,12 +28,10 @@ class IncoderHFModels(PatchGenerationStrategy):
     __GENERATION_STRATEGIES = {
         "beam_search": GenerateSettings(
             name="beam_search",
-            num_beams=10,
         ),
-        "temperature_sampling": GenerateSettings(
-            name="temperature_sampling",
+        "sampling": GenerateSettings(
+            name="sampling",
             do_sample=True,
-            temperature=0.2,
         ),
     }
 
@@ -43,10 +41,19 @@ class IncoderHFModels(PatchGenerationStrategy):
         ), f"Model {model} not supported by IncoderModels"
         self.model = model
         # Generation settings
-        # TODO: use these in the generation strategy
-        self.max_new_tokens = kwargs.get("max_new_tokens", 128)
-        self.num_return_sequences = kwargs.get("num_return_sequences", 10)
-        self.temperature = kwargs.get("temperature", 0.2)
+        assert (
+            kwargs.get("generation_strategy", "beam_search")
+            in self.__GENERATION_STRATEGIES
+        ), f"Generation strategy {kwargs.get('generation_strategy', 'beam_search')} not supported by IncoderHFModels"
+        self.generate_settings = self.__GENERATION_STRATEGIES[
+            kwargs.get("generation_strategy", "beam_search")
+        ]
+        self.generate_settings.max_new_tokens = kwargs.get("max_new_tokens", 128)
+        self.generate_settings.num_return_sequences = kwargs.get(
+            "num_return_sequences", 10
+        )
+        self.generate_settings.num_beams = kwargs.get("num_beams", 10)
+        self.generate_settings.temperature = kwargs.get("temperature", 0.2)
 
     def _generate_impl(self, prompt: str) -> Any:
         # Setup environment
@@ -73,8 +80,6 @@ class IncoderHFModels(PatchGenerationStrategy):
             model = model.half().cuda()
 
         # Setup generation settings
-        # TODO: make this an option
-        generate_settings = self.__GENERATION_STRATEGIES["beam_search"]
         predicted_texts = []
         # signals the start of a document
         BOS = "<|endoftext|>"
@@ -145,7 +150,7 @@ class IncoderHFModels(PatchGenerationStrategy):
 
             return text
 
-        while len(predicted_texts) < generate_settings.num_return_sequences:
-            predicted_texts.append(infill(prompt, generate_settings))
+        while len(predicted_texts) < self.generate_settings.num_return_sequences:
+            predicted_texts.append(infill(prompt, self.generate_settings))
 
         return predicted_texts
