@@ -32,6 +32,12 @@ jobs:
       - name: Setup Perl
         uses: shogo82148/actions-setup-perl@v1
 
+      - name: Setup Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '8'
+
       - name: Setup benchmarks
         run: ./setup.sh
       
