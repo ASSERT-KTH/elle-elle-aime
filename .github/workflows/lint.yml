@@ -1,4 +1,4 @@
-name: limt
+name: lint
 on: [push]
 
 jobs:
