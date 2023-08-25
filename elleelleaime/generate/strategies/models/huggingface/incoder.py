@@ -75,7 +75,9 @@ class IncoderHFModels(PatchGenerationStrategy):
 
         # Load the model and tokenizer
         tokenizer = AutoTokenizer.from_pretrained(self.model)
-        model = AutoModelForCausalLM.from_pretrained(self.model, **kwargs).to(device)
+        model = AutoModelForCausalLM.from_pretrained(
+            self.model, device_map="auto", **kwargs
+        ).to(device)
         if device == "cuda":
             model = model.half().cuda()
 
