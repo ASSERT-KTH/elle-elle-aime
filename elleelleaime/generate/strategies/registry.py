@@ -1,4 +1,4 @@
-from generate.strategies.strategy import PatchGenerationStrategy
+from elleelleaime.generate.strategies.strategy import PatchGenerationStrategy
 from elleelleaime.generate.strategies.models.openai.openai import (
     OpenAIChatCompletionModels,
 )
