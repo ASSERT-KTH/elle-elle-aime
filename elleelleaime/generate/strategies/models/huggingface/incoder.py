@@ -77,9 +77,7 @@ class IncoderHFModels(PatchGenerationStrategy):
         tokenizer = AutoTokenizer.from_pretrained(self.model)
         model = AutoModelForCausalLM.from_pretrained(
             self.model, device_map="auto", **kwargs
-        ).to(device)
-        if device == "cuda":
-            model = model.half().cuda()
+        )
 
         # Setup generation settings
         predicted_texts = []
