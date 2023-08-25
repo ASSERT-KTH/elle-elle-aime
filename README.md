@@ -13,9 +13,7 @@ poetry install # installs dependencies
 
 How to run:
 ```bash
-cd elle-elle-aime
 poetry shell
-cd elleelleaime # Note: this is mandatory due to hard-coded paths for now
 # Example on how to call sample.py to generate samples for Defects4J using the zero-shot-single-hunk strategy
 python generate_samples.py defects4j zero-shot-single-hunk 
 # Example on how to call generate.py to generate patches for the previously generated samples using gpt-3.5-turbo (note: need to setup .env file or export env variables)
@@ -26,10 +24,14 @@ How to run tests:
 ```bash
 cd elle-elle-aime
 poetry shell
-cd elleelleaime # Note: this is mandatory due to hard-coded paths for now
 # Run the tests and print the output
 pytest -s
 ```
+
+## Check out the results
+
+We store all the results (prompts, patches, evaluation) in a separate repository.
+Please visit https://github.com/ASSERT-KTH/elle-elle-aime-results for these.
 
 
 # LEGACY
