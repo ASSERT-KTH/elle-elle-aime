@@ -12,7 +12,7 @@ class Defects4J(Benchmark):
     The class for representing the Defects4J benchmark.
     """
 
-    def __init__(self, path: Path = Path("../benchmarks/defects4j").absolute()) -> None:
+    def __init__(self, path: Path = Path("benchmarks/defects4j").absolute()) -> None:
         super().__init__("defects4j", path)
         self.bin = path.joinpath("framework/bin/defects4j")
 
@@ -48,7 +48,7 @@ class Defects4J(Benchmark):
         for pid in pids:
             for bid in bugs[pid]:
                 # Read diff from file
-                diff_path = "../benchmarks/defects4j/framework/projects/{}/patches/{}.src.patch".format(
+                diff_path = "benchmarks/defects4j/framework/projects/{}/patches/{}.src.patch".format(
                     pid, bid
                 )
                 with open(diff_path, "r", encoding="ISO-8859-1") as diff_file:

@@ -1,4 +1,4 @@
-from elleelleaime.generate_samples import generate_sample
+from generate_samples import generate_sample
 from elleelleaime.core.utils.benchmarks import get_benchmark
 from elleelleaime.core.benchmarks.benchmark import Benchmark
 

@@ -2,7 +2,7 @@
 
 ## How to use the new codebase
 
-Requires python3.10 (or latest) and python-poetry
+Requires python3.9 (or latest) and python-poetry
 
 How to setup:
 ```bash
@@ -25,7 +25,7 @@ How to run tests:
 cd elle-elle-aime
 poetry shell
 # Run the tests and print the output
-pytest -s
+pytest -s tests/
 ```
 
 ## Check out the results
