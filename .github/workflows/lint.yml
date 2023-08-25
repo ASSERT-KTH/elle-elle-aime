@@ -1,17 +1,11 @@
-name: Lint
-
-on:
-  push:
-    branches:
-      - main
-  pull_request:
+name: limt
+on: [push]
 
 jobs:
   lint:
     strategy:
       matrix:
         src-dir: ["./elleelleaime", "./tests"]
-
 
     runs-on: ubuntu-latest
 
