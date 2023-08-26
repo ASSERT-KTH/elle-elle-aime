@@ -3,6 +3,7 @@ from typing import Any
 
 import torch
 import re
+import threading
 from dataclasses import dataclass
 from transformers import AutoTokenizer, AutoModelForCausalLM
 
@@ -35,11 +36,17 @@ class IncoderHFModels(PatchGenerationStrategy):
         ),
     }
 
-    def __init__(self, model: str, **kwargs) -> None:
+    __MODEL = None
+    __TOKENIZER = None
+    __MODELS_LOADED: bool = False
+    __MODELS_LOCK: threading.Lock = threading.Lock()
+
+    def __init__(self, model_name: str, **kwargs) -> None:
         assert (
-            model in self.__SUPPORTED_MODELS
-        ), f"Model {model} not supported by IncoderModels"
-        self.model = model
+            model_name in self.__SUPPORTED_MODELS
+        ), f"Model {model_name} not supported by IncoderModels"
+        self.model_name = model_name
+        self.__load_model()
         # Generation settings
         assert (
             kwargs.get("generation_strategy", "beam_search")
@@ -55,30 +62,36 @@ class IncoderHFModels(PatchGenerationStrategy):
         self.generate_settings.num_beams = kwargs.get("num_beams", 10)
         self.generate_settings.temperature = kwargs.get("temperature", 0.2)
 
-    def _generate_impl(self, prompt: str) -> Any:
+    def __load_model(self):
         # Setup environment
-        device = "cuda" if torch.cuda.is_available() else "cpu"
+        self.device = "cuda" if torch.cuda.is_available() else "cpu"
 
         # Setup kwargs
-        if self.model == "facebook/incoder-6B":
-            context_size = 4096
+        if self.model_name == "facebook/incoder-6B":
+            self.context_size = 4096
             kwargs = dict(
                 revision="float16",
                 torch_dtype=torch.float16,
                 low_cpu_mem_usage=True,
             )
         else:
-            context_size = 2048
+            self.context_size = 2048
             kwargs = dict(
                 low_cpu_mem_usage=True,
             )
 
         # Load the model and tokenizer
-        tokenizer = AutoTokenizer.from_pretrained(self.model)
-        model = AutoModelForCausalLM.from_pretrained(
-            self.model, device_map="auto", **kwargs
-        )
+        with self.__MODELS_LOCK:
+            if self.__MODELS_LOADED:
+                return
+            self.__TOKENIZER = AutoTokenizer.from_pretrained(self.model_name)
+            self.__MODEL = AutoModelForCausalLM.from_pretrained(
+                self.model_name, device_map="auto", **kwargs
+            )
 
+            self.__MODELS_LOADED = True
+
+    def _generate_impl(self, prompt: str) -> Any:
         # Setup generation settings
         predicted_texts = []
         # signals the start of a document
@@ -90,17 +103,17 @@ class IncoderHFModels(PatchGenerationStrategy):
             """
             Do standard left-to-right completion of the prefix `input` by sampling from the model
             """
-            input_ids = tokenizer(input, return_tensors="pt").input_ids
-            input_ids = input_ids.to(device)
+            input_ids = self.__TOKENIZER(input, return_tensors="pt").input_ids
+            input_ids = input_ids.to(self.device)
             max_length = generate_settings.max_new_tokens + input_ids.flatten().size(0)
-            if max_length > context_size:
+            if max_length > self.context_size:
                 print(
                     "warning: max_length %s is greater than the context window %s"
-                    % (max_length, context_size)
+                    % (max_length, self.context_size)
                 )
                 return None
             with torch.no_grad():
-                output = model.generate(
+                output = self.__MODEL.generate(
                     input_ids=input_ids,
                     do_sample=generate_settings.do_sample,
                     num_beams=generate_settings.num_beams,
@@ -110,7 +123,7 @@ class IncoderHFModels(PatchGenerationStrategy):
                     max_length=max_length,
                 )
             # pass clean_up_tokenization_spaces=False to avoid removing spaces before punctuation, e.g. "from ." -> "from."
-            detok_hypo_str = tokenizer.decode(
+            detok_hypo_str = self.__TOKENIZER.decode(
                 output.flatten(), clean_up_tokenization_spaces=False
             )
             if detok_hypo_str.startswith(BOS):

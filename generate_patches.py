@@ -13,8 +13,8 @@ def generate_candidate(sample: dict, model_name: str, **kwargs) -> dict:
     Generates the candidate patch for the given sample and model.
     """
 
-    generation_strategy = PatchGenerationStrategyRegistry(**kwargs).get_generation(
-        model_name
+    generation_strategy = PatchGenerationStrategyRegistry.get_generation(
+        model_name, **kwargs
     )
     generation = generation_strategy.generate(sample["prompt"])
     sample["generation"] = generation
