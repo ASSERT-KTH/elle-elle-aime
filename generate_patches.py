@@ -21,9 +21,8 @@ def generate_candidate(chunk: List[dict], model_name: str, **kwargs) -> List[dic
     for sample in tqdm.tqdm(
         chunk, "Generating candidates for a chunk", total=len(chunk)
     ):
-        # generation = generation_strategy.generate(sample["prompt"])
-        # sample["generation"] = generation
-        sample["generation"] = None
+        generation = generation_strategy.generate(sample["prompt"])
+        sample["generation"] = generation
 
     return chunk
 
