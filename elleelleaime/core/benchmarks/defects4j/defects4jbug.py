@@ -1,4 +1,6 @@
 import subprocess
+import backoff
+import shutil
 import re
 from elleelleaime.core.benchmarks.benchmark import Benchmark
 
@@ -19,27 +21,37 @@ class Defects4JBug(Bug):
         self.bid = bid
         super().__init__(benchmark, f"{pid}-{bid}", ground_truth)
 
+    @backoff.on_exception(
+        backoff.constant, subprocess.CalledProcessError, interval=1, max_tries=3
+    )
     def checkout(self, path: str, fixed: bool = False) -> bool:
-        run = subprocess.run(
+        # Remove the directory if it exists
+        shutil.rmtree(path, ignore_errors=True)
+
+        # Checkout the bug
+        checkout_run = subprocess.run(
             f"{self.benchmark.get_bin()} checkout -p {self.pid} -v {self.bid}{'f' if fixed else 'b'} -w {path}",
             shell=True,
             capture_output=True,
             check=True,
         )
-        run = subprocess.run(
+
+        # Convert line endings to unix
+        dos2unix_run = subprocess.run(
             f"find {path} -type f -print0 | xargs -0 -n 1 -P 4 dos2unix",
             shell=True,
             capture_output=True,
             check=True,
         )
-        return run.returncode == 0
+
+        return checkout_run.returncode == 0 and dos2unix_run.returncode == 0
 
     def apply_diff(self, path: str) -> bool:
         return super().apply_diff(path)
 
     def compile(self, path: str) -> CompileResult:
         run = subprocess.run(
-            f"cd {path}; timeout 60 {self.benchmark.get_bin()} compile",
+            f"cd {path}; timeout {5*60} {self.benchmark.get_bin()} compile",
             shell=True,
             capture_output=True,
         )
@@ -47,7 +59,7 @@ class Defects4JBug(Bug):
 
     def test(self, path: str) -> TestResult:
         run = subprocess.run(
-            f"cd {path}; timeout 600 {self.benchmark.get_bin()} test",
+            f"cd {path}; timeout {30*60} {self.benchmark.get_bin()} test",
             shell=True,
             capture_output=True,
         )

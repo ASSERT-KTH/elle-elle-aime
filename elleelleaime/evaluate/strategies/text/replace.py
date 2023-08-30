@@ -80,7 +80,6 @@ class ReplaceEvaluationStrategy(PatchEvaluationStrategy):
                         )
                         if result["compile"]:
                             test_result = bug.test(buggy_path)
-                            print(test_result)
                             result["test"] = (
                                 test_result.is_executing() and test_result.is_passing()
                             )
@@ -89,6 +88,6 @@ class ReplaceEvaluationStrategy(PatchEvaluationStrategy):
 
             evaluation.append(result)
             if evaluation[-1]["test"]:
-                print(f"Found a plausible patch for {sample['identifier']}!")
+                logging.info(f"Found a plausible patch for {sample['identifier']}!")
 
         return evaluation
