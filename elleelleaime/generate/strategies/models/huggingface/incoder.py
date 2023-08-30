@@ -65,20 +65,17 @@ class IncoderHFModels(PatchGenerationStrategy):
     def __load_model(self):
         # Setup environment
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
+        self.context_size = 2048
 
         # Setup kwargs
         if self.model_name == "facebook/incoder-6B":
-            self.context_size = 4096
             kwargs = dict(
                 revision="float16",
                 torch_dtype=torch.float16,
                 low_cpu_mem_usage=True,
             )
         else:
-            self.context_size = 2048
-            kwargs = dict(
-                low_cpu_mem_usage=True,
-            )
+            kwargs = dict()
 
         # Load the model and tokenizer
         with self.__MODELS_LOCK:
@@ -88,6 +85,8 @@ class IncoderHFModels(PatchGenerationStrategy):
             self.__MODEL = AutoModelForCausalLM.from_pretrained(
                 self.model_name, device_map="auto", **kwargs
             )
+            if self.device == "cuda":
+                self.__MODEL = self.__MODEL.half()
 
             self.__MODELS_LOADED = True
 
