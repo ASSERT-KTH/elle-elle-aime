@@ -6,6 +6,7 @@ import re
 import threading
 from dataclasses import dataclass
 from transformers import AutoTokenizer, AutoModelForCausalLM
+from typing import Optional
 
 
 @dataclass
@@ -98,7 +99,9 @@ class IncoderHFModels(PatchGenerationStrategy):
         # signals the end of a generated infill
         EOM = "<|endofmask|>"
 
-        def generate(input: str, generate_settings: GenerateSettings):
+        def generate(
+            input: str, generate_settings: GenerateSettings
+        ) -> Optional[list[str]]:
             """
             Do standard left-to-right completion of the prefix `input` by sampling from the model
             """
@@ -112,30 +115,39 @@ class IncoderHFModels(PatchGenerationStrategy):
                 )
                 return None
             with torch.no_grad():
-                output = self.__MODEL.generate(
-                    input_ids=input_ids,
-                    do_sample=generate_settings.do_sample,
+                outputs = self.__MODEL.generate(
+                    input_ids,
+                    max_length=max_length,
                     num_beams=generate_settings.num_beams,
+                    num_return_sequences=generate_settings.num_return_sequences,
+                    early_stopping=True,
+                    do_sample=generate_settings.do_sample,
                     top_k=generate_settings.top_k,
                     top_p=generate_settings.top_p,
                     temperature=generate_settings.temperature,
-                    max_length=max_length,
                 )
             # pass clean_up_tokenization_spaces=False to avoid removing spaces before punctuation, e.g. "from ." -> "from."
-            detok_hypo_str = self.__TOKENIZER.decode(
-                output.flatten(), clean_up_tokenization_spaces=False
+            detok_hypo_strs = self.__TOKENIZER.batch_decode(
+                outputs, clean_up_tokenization_spaces=False
             )
-            if detok_hypo_str.startswith(BOS):
-                detok_hypo_str = detok_hypo_str[len(BOS) :]
-            return detok_hypo_str
+            detok_hypo_strs = [
+                detok_hypo_str[len(BOS) :]
+                if detok_hypo_str.startswith(BOS)
+                else detok_hypo_str
+                for detok_hypo_str in detok_hypo_strs
+            ]
+            return detok_hypo_strs
 
-        def infill(prompt: str, generate_settings: GenerateSettings):
+        def infill(
+            prompt: str, generate_settings: GenerateSettings
+        ) -> Optional[list[str]]:
             """
             Generate infills to complete a partial document, e.g.
             [A C E] -> [A B C D E], where B and D are infills that have been generated.
             """
-            infills = []
-            complete = []
+            completions: list[list[str]] = [
+                [] for _ in range(generate_settings.num_return_sequences)
+            ]
 
             # Split prompt into parts separated by sentinels
             # We identify the sentinels with a regex pattern r"<\|mask:\d\|>"
@@ -143,26 +155,31 @@ class IncoderHFModels(PatchGenerationStrategy):
             parts = re.split(r"<\|mask:\d\|>", prompt)[:-1]
 
             for sentinel_ix, part in enumerate(parts[:-1]):
-                complete.append(part)
+                completions = [
+                    [] + [part] for _ in range(generate_settings.num_return_sequences)
+                ]
                 prompt += "<|mask:%d|>" % sentinel_ix
                 # TODO: this is inefficient as it requires re-encoding prefixes repeatedly
-                completion = generate(prompt, generate_settings)
-                if completion is None:
+                generations = generate(prompt, generate_settings)
+                # TODO: save error value
+                if generations is None:
                     return None
-                completion = completion[len(prompt) :]
-                if EOM not in completion:
-                    completion += EOM
-                completion = completion[: completion.index(EOM) + len(EOM)]
-                infilled = completion[: -len(EOM)]
-                infills.append(infilled)
-                complete.append(infilled)
-                prompt += completion
-            complete.append(parts[-1])
-            text = "".join(complete)
 
-            return text
+                for i, generation in enumerate(generations):
+                    completion = generation[len(prompt) :]
+                    if EOM not in completion:
+                        completion += EOM
+                    completion = completion[: completion.index(EOM) + len(EOM)]
+                    infilled = completion[: -len(EOM)]
+                    completions[i].append(infilled)
 
-        while len(predicted_texts) < self.generate_settings.num_return_sequences:
-            predicted_texts.append(infill(prompt, self.generate_settings))
+                    # TODO: maybe keep all 10 a generate beam starting on those 10?
+                    if i == 1:
+                        prompt += completion
+
+            completions = [x + [parts[-1]] for x in completions]
+            return ["".join(completion) for completion in completions]
+
+        predicted_texts = infill(prompt, self.generate_settings)
 
         return predicted_texts
