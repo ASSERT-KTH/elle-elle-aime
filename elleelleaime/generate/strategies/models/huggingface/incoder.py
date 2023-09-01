@@ -14,8 +14,6 @@ class GenerateSettings:
     name: str
     num_beams: int = 10
     do_sample: bool = False
-    top_k: int = 0
-    top_p: float = 1.0
     temperature: float = 0.0
     max_new_tokens: int = 128
     num_return_sequences: int = 10
@@ -122,8 +120,6 @@ class IncoderHFModels(PatchGenerationStrategy):
                     num_return_sequences=generate_settings.num_return_sequences,
                     early_stopping=True,
                     do_sample=generate_settings.do_sample,
-                    top_k=generate_settings.top_k,
-                    top_p=generate_settings.top_p,
                     temperature=generate_settings.temperature,
                 )
             # pass clean_up_tokenization_spaces=False to avoid removing spaces before punctuation, e.g. "from ." -> "from."
@@ -136,6 +132,8 @@ class IncoderHFModels(PatchGenerationStrategy):
                 else detok_hypo_str
                 for detok_hypo_str in detok_hypo_strs
             ]
+            for output in detok_hypo_strs:
+                print(output)
             return detok_hypo_strs
 
         def infill(
