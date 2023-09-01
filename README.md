@@ -1,16 +1,27 @@
 # elle-elle-aime ❤️
 
-## How to use the new codebase
+Framework to use LLMs for automated program repair.
+
+Supported benchmarks: 
+  * Defects4J
+  * Bugs-dot-jar
+  * Refactory
+  
+## Installation
 
 Requires python3.9 (or latest) and python-poetry
-
-How to setup:
+The repository uses many submodules.
 ```bash
+git clone --recurse-submodules ssh://github.com/ASSERT-KTH/elle-elle-aime.git
 cd elle-elle-aime
-poetry shell # initializes poetry env
 poetry install # installs dependencies
-```
 
+# for D4J
+cd benchmarks/defects4j/
+./init.sh
+cd ../../
+```
+## Execution
 How to run:
 ```bash
 poetry shell
@@ -35,16 +46,6 @@ Please visit https://github.com/ASSERT-KTH/elle-elle-aime-results for these.
 
 
 # LEGACY
-----
-
-## Overview
-Framework to use LLMs for automated program repair.
-Based on [RepairThemAll](https://github.com/program-repair/RepairThemAll),
-
-* Supported benchmarks: 
-  * Defects4J benchmark
-  * Bugs-dot-jar
-  * Refactory
 
 ## Prerequisite
   * git
@@ -121,3 +122,8 @@ Running parameters and settings should be configured in two different places.\
 * `TEST_FAILED`: This type indicates that the unit tests for the verifying choice have not been fully passed. The number of failed unit tests for the current verifying choice is greater than or equal to the number of failing tests for the original buggy code.
 
 * `SAMPLE_ERROR`: This type represents an error that occurs during compilation or while running unit tests. Typically, this means that the choice response is unable to make the project fully compile.
+
+## Credits
+
+Based on [RepairThemAll](https://github.com/program-repair/RepairThemAll),
+
