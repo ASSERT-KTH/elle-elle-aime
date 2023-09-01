@@ -12,7 +12,7 @@ from typing import Optional
 @dataclass
 class GenerateSettings:
     name: str
-    num_beams: int = 10
+    num_beams: int = 1
     do_sample: bool = False
     temperature: float = 0.0
     max_new_tokens: int = 128
@@ -58,7 +58,7 @@ class IncoderHFModels(PatchGenerationStrategy):
         self.generate_settings.num_return_sequences = kwargs.get(
             "num_return_sequences", 10
         )
-        self.generate_settings.num_beams = kwargs.get("num_beams", 10)
+        self.generate_settings.num_beams = kwargs.get("num_beams", 1)
         self.generate_settings.temperature = kwargs.get("temperature", 0.2)
 
     def __load_model(self):
