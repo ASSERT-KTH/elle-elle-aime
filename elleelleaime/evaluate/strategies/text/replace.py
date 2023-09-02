@@ -69,9 +69,13 @@ class ReplaceEvaluationStrategy(PatchEvaluationStrategy):
                         )
 
                         # Write the buggy code to the file
-                        with open(buggy_file_path, "w", encoding="ISO-8859-1") as f:
+                        with open(
+                            buggy_file_path,
+                            "w",
+                            encoding="ISO-8859-1",
+                            errors="replace",
+                        ) as f:
                             f.write(buggy_code)
-
                         # Evaluate the buggy code
                         compilation_result = bug.compile(buggy_path)
                         result["compile"] = (
