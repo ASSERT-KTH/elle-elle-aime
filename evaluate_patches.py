@@ -98,6 +98,10 @@ def compute_statistics(samples: list) -> dict:
         "num_bugs_with_exact_match_candidates": 0,
         "num_bugs_with_plausible_candidates": 0,
         "num_bugs_with_compilable_candidates": 0,
+        "num_patches": 0,
+        "num_compilable_patches": 0,
+        "num_plausible_patches": 0,
+        "num_exact_match_patches": 0,
         "bugs_with_exact_match_candidates": [],
         "bugs_with_plausible_candidates": [],
         "bugs_with_compilable_candidates": [],
@@ -115,20 +119,32 @@ def compute_statistics(samples: list) -> dict:
             )
         ):
             statistics["num_bugs_with_candidates"] += 1
-            if any(candidate["exact_match"] for candidate in sample["evaluation"]):
+            statistics["num_patches"] += sum(
+                [
+                    candidate["generation"] is not None
+                    for candidate in sample["evaluation"]
+                ]
+            )
+            statistics["num_compilable_patches"] += sum(
+                [compilable(candidate) for candidate in sample["evaluation"]]
+            )
+            statistics["num_plausible_patches"] += sum(
+                [plausible(candidate) for candidate in sample["evaluation"]]
+            )
+            statistics["num_exact_match_patches"] += sum(
+                [exact_match(candidate) for candidate in sample["evaluation"]]
+            )
+            if any(exact_match(candidate) for candidate in sample["evaluation"]):
                 statistics["num_bugs_with_exact_match_candidates"] += 1
                 statistics["bugs_with_exact_match_candidates"].append(
                     sample["identifier"]
                 )
-            if any(candidate["compile"] for candidate in sample["evaluation"]):
+            if any(compilable(candidate) for candidate in sample["evaluation"]):
                 statistics["num_bugs_with_compilable_candidates"] += 1
                 statistics["bugs_with_compilable_candidates"].append(
                     sample["identifier"]
                 )
-            if any(
-                candidate["compile"] and candidate["test"]
-                for candidate in sample["evaluation"]
-            ):
+            if any(plausible(candidate) for candidate in sample["evaluation"]):
                 statistics["num_bugs_with_plausible_candidates"] += 1
                 statistics["bugs_with_plausible_candidates"].append(
                     sample["identifier"]
@@ -205,8 +221,9 @@ def entry_point(
         - Export: export=True exports the patches to text files in structured directories.
     """
     # Get the benchmark, check if it exists, and initialize it
-    prompt_strategy = samples_path.split("_")[2].split(".")[0]
-    model_name = samples_path.split("_")[3].split(".")[0]
+    samples_file_name = os.path.basename(samples_path)
+    prompt_strategy = samples_file_name.split("_")[2].split(".")[0]
+    model_name = samples_file_name.split("_")[3].split(".")[0]
     benchmark_obj = get_benchmark(benchmark)
     if benchmark_obj is None:
         raise ValueError(f"Unknown benchmark {benchmark}")
