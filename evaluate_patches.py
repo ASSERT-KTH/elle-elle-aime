@@ -1,4 +1,5 @@
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from unidiff import PatchSet
 from elleelleaime.core.utils.benchmarks import get_benchmark
 from elleelleaime.core.benchmarks.bug import Bug
 from elleelleaime.core.utils.jsonl import stream_jsonl, write_jsonl
@@ -46,6 +47,44 @@ def compilable(evaluation: dict) -> bool:
     Returns True if the evaluation is compilable.
     """
     return evaluation["compile"]
+
+
+def is_single_chunk(sample: dict) -> bool:
+    """
+    Return True if the sample's ground truth is a single chunk.
+    Single chunk means that there is only one hunk in the ground truth and that the changes are all contiguous.
+    """
+    diff = PatchSet(sample["ground_truth"])
+    # Check if there is only one hunk
+    if len(diff) == 1 and len(diff[0]) == 1:
+        # Check if the changes are contiguous
+        hunk = diff[0][0]
+        i = 0
+        found_change = False
+        while i < len(hunk):
+            # Find a change
+            if hunk[i].is_added or hunk[i].is_removed:
+                if found_change:
+                    return False
+                found_change = True
+                # Skip over the remainder of the added/removed chunk
+                while i < len(hunk) and (hunk[i].is_added or hunk[i].is_removed):
+                    i += 1
+            # Skip over the unchanged chunk
+            else:
+                i += 1
+        return True
+    else:
+        return False
+
+
+def is_single_hunk(sample: dict) -> bool:
+    """
+    Return True if the sample's ground truth is a single hunk.
+    Single hunk means that there is only one hunk in the ground truth.
+    """
+    diff = PatchSet(sample["ground_truth"])
+    return len(diff) == 1 and len(diff[0]) == 1
 
 
 def compute_statistics(samples: list) -> dict:
@@ -197,8 +236,28 @@ def entry_point(
 
     # Compute statistics over the evaluation
     if "statistics" in kwargs and kwargs["statistics"]:
+        # Compute statistics for single chunk samples
+        statistics = compute_statistics(
+            [sample for sample in samples if is_single_chunk(sample)]
+        )
+        with open(
+            f"statistics_single_chunk_{benchmark}_{prompt_strategy}_{model_name}.json",
+            "w",
+        ) as f:
+            json.dump(statistics, f, indent=4)
+
+        # Compute statistics for single hunk samples
+        statistics = compute_statistics(
+            [sample for sample in samples if is_single_hunk(sample)]
+        )
+        with open(
+            f"statistics_single_hunk_{benchmark}_{prompt_strategy}_{model_name}.json",
+            "w",
+        ) as f:
+            json.dump(statistics, f, indent=4)
+
+        # Compute statistics for all samples
         statistics = compute_statistics(samples)
-        # Write statistics to pretty printed json (not gzip) file
         with open(
             f"statistics_{benchmark}_{prompt_strategy}_{model_name}.json", "w"
         ) as f:
