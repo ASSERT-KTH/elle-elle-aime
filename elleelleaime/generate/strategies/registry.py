@@ -2,11 +2,11 @@ from elleelleaime.generate.strategies.strategy import PatchGenerationStrategy
 from elleelleaime.generate.strategies.models.openai.openai import (
     OpenAIChatCompletionModels,
 )
-from elleelleaime.generate.strategies.models.huggingface.alvis import (
-    AlvisHFModels,
-)
 from elleelleaime.generate.strategies.models.huggingface.incoder import (
     IncoderHFModels,
+)
+from elleelleaime.generate.strategies.models.huggingface.codellama import (
+    CodeLlamaHFModels,
 )
 
 from typing import Tuple
@@ -25,6 +25,16 @@ class PatchGenerationStrategyRegistry:
         # HuggingFace models
         "incoder-1b": (IncoderHFModels, ("facebook/incoder-1B",)),
         "incoder-6b": (IncoderHFModels, ("facebook/incoder-6B",)),
+        "codellama-7b": (CodeLlamaHFModels, ("codellama/CodeLlama-7b-hf",)),
+        "codellama-13b": (CodeLlamaHFModels, ("codellama/CodeLlama-13b-hf",)),
+        "codellama-7b-instruct": (
+            CodeLlamaHFModels,
+            ("codellama/CodeLlama-7b-Instruct-hf",),
+        ),
+        "codellama-13b-instruct": (
+            CodeLlamaHFModels,
+            ("codellama/CodeLlama-13b-Instruct-hf",),
+        ),
     }
 
     @classmethod
