@@ -14,6 +14,10 @@ MODEL_DICT = {
         "mask_token": "<|mask:{}|>",
         "extra_mask_token": True,
     },
+    "codellama": {
+        "mask_token": "<FILL_ME>",
+        "extra_mask_token": False,
+    }
     # Add the model you want to use here
 }
 
