@@ -21,12 +21,13 @@ transformers = "^4.32.0"
 psycopg = {extras = ["binary", "pool"], version = "^3.1.8"}
 fire = "^0.5.0"
 tqdm = "^4.65.0"
-numpy = "1.22.3"
+numpy = "^1.25.2"
 unidiff = "^0.7.5"
 backoff = "^2.2.1"
 black = "^23.7.0"
 torch = ">=2.0.0, !=2.0.1"
 accelerate = "0.22.0"
+datasets = "^2.14.4"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.3.1"
