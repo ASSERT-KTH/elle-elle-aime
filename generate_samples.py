@@ -71,19 +71,15 @@ def entry_point(
 
         # Launch a thread for each bug
         future_to_bug = {}
-        i = 0
         for bug in benchmark_obj.get_bugs():
             future = executor.submit(generate_sample, bug, prompt_strategy, **kwargs)
             future_to_bug[future] = bug
             futures.append(future)
-            i += 1
-            if i == 10:
-                break
 
         # Check that all bugs are being processed
-        # assert len(futures) == len(
-        #     benchmark_obj.get_bugs()
-        # ), "Some bugs are not being processed"
+        assert len(futures) == len(
+            benchmark_obj.get_bugs()
+        ), "Some bugs are not being processed"
 
         # Wait for the results
         for future in tqdm.tqdm(as_completed(futures), total=len(futures)):
@@ -95,7 +91,8 @@ def entry_point(
                 )
 
     # Write results to jsonl file
-    write_jsonl(f"samples_{benchmark}_{prompt_strategy}.jsonl.gz", results)
+    kwargs_str = "_".join([f"{key}_{value}" for key, value in kwargs.items()])
+    write_jsonl(f"samples_{benchmark}_{prompt_strategy}_{kwargs_str}.jsonl.gz", results)
 
 
 def main():
