@@ -1,7 +1,7 @@
 from elleelleaime.generate.strategies.strategy import PatchGenerationStrategy
 from dataclasses import dataclass
 from transformers import LlamaForCausalLM, CodeLlamaTokenizer
-from typing import Optional, Any
+from typing import Any
 
 import torch
 import threading
@@ -52,7 +52,7 @@ class CodeLlamaHFModels(PatchGenerationStrategy):
         assert (
             kwargs.get("generation_strategy", "beam_search")
             in self.__GENERATION_STRATEGIES
-        ), f"Generation strategy {kwargs.get('generation_strategy', 'beam_search')} not supported by IncoderHFModels"
+        ), f"Generation strategy {kwargs.get('generation_strategy', 'beam_search')} not supported by CodeLlamaHFModels"
         self.generate_settings = self.__GENERATION_STRATEGIES[
             kwargs.get("generation_strategy", "beam_search")
         ]
@@ -94,7 +94,8 @@ class CodeLlamaHFModels(PatchGenerationStrategy):
         input_ids = self.__TOKENIZER(prompt, return_tensors="pt")["input_ids"].to(
             self.device
         )
-        max_length = self.generate_settings.max_new_tokens + input_ids.flatten().size(0)
+
+        max_length = self.generate_settings.max_new_tokens + input_ids.shape[1]
         if max_length > self.context_size:
             print(
                 "warning: max_length %s is greater than the context window %s"
@@ -113,9 +114,7 @@ class CodeLlamaHFModels(PatchGenerationStrategy):
                 temperature=self.generate_settings.temperature,
             )
 
-        fillings = self.__TOKENIZER.batch_decode(
-            generated_ids, skip_special_tokens=True
-        )
-        return [
-            prompt.replace("<FILL_ME>", filling[len(prompt) :]) for filling in fillings
-        ]
+        input_len = input_ids.shape[1]
+        fillings_ids = generated_ids[:, input_len:]
+        fillings = self.__TOKENIZER.batch_decode(fillings_ids, skip_special_tokens=True)
+        return [prompt.replace("<FILL_ME>", filling) for filling in fillings]
