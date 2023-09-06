@@ -116,4 +116,6 @@ class CodeLlamaHFModels(PatchGenerationStrategy):
         fillings = self.__TOKENIZER.batch_decode(
             generated_ids, skip_special_tokens=True
         )
-        return [prompt.replace("<FILL_ME>", filling) for filling in fillings]
+        return [
+            prompt.replace("<FILL_ME>", filling[len(prompt) :]) for filling in fillings
+        ]
