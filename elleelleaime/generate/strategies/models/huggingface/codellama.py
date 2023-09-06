@@ -66,10 +66,11 @@ class CodeLlamaHFModels(PatchGenerationStrategy):
     def __load_model(self):
         # Setup environment
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
+        self.context_size = 2048
 
         # Setup kwargs
         kwargs = dict(
-            torch_dtype=torch.float16,
+            torch_dtype=torch.bfloat16,
         )
 
         # Load the model and tokenizer
@@ -93,6 +94,14 @@ class CodeLlamaHFModels(PatchGenerationStrategy):
         input_ids = self.__TOKENIZER(prompt, return_tensors="pt")["input_ids"].to(
             self.device
         )
+        max_length = self.generate_settings.max_new_tokens + input_ids.flatten().size(0)
+        if max_length > self.context_size:
+            print(
+                "warning: max_length %s is greater than the context window %s"
+                % (max_length, self.context_size)
+            )
+            return None
+
         with torch.no_grad():
             generated_ids = self.__MODEL.generate(
                 input_ids,
