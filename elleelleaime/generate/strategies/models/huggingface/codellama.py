@@ -69,7 +69,7 @@ class CodeLlamaHFModels(PatchGenerationStrategy):
 
         # Setup kwargs
         kwargs = dict(
-            torch_dtype=torch.bfloat16,
+            torch_dtype=torch.float16,
         )
 
         # Load the model and tokenizer
