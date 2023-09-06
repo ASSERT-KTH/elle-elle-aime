@@ -97,7 +97,7 @@ class CodeLlamaHFModels(PatchGenerationStrategy):
 
         max_length = self.generate_settings.max_new_tokens + input_ids.shape[1]
         if max_length > self.context_size:
-            print(
+            logging.warning(
                 "warning: max_length %s is greater than the context window %s"
                 % (max_length, self.context_size)
             )
