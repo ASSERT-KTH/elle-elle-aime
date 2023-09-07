@@ -153,7 +153,7 @@ def compute_statistics(samples: list) -> dict:
     return statistics
 
 
-def export_patches(samples: list) -> None:
+def export_patches(samples: list, dir_path: str) -> None:
     """
     Exports the patches to text files in structured directories.
     """
@@ -171,10 +171,18 @@ def export_patches(samples: list) -> None:
                 sample["fixed_code"].splitlines(keepends=True),
                 n=max(len(sample["buggy_code"]), len(sample["fixed_code"])),
             )
-            os.makedirs(f"patches/{sample['identifier']}", exist_ok=True)
-            with open(f"patches/{sample['identifier']}/target.diff", "w") as f:
+            os.makedirs(
+                os.path.join(dir_path, f"patches/{sample['identifier']}"), exist_ok=True
+            )
+            with open(
+                os.path.join(dir_path, f"patches/{sample['identifier']}/target.diff"),
+                "w",
+            ) as f:
                 f.writelines(target_diff)
-            with open(f"patches/{sample['identifier']}/prompt.txt", "w") as f:
+            with open(
+                os.path.join(dir_path, f"patches/{sample['identifier']}/prompt.txt"),
+                "w",
+            ) as f:
                 f.write(sample["prompt"])
 
             for i, candidate in enumerate(sample["evaluation"]):
@@ -195,10 +203,17 @@ def export_patches(samples: list) -> None:
                         sub_dir = "non_compilable"
 
                     os.makedirs(
-                        f"patches/{sample['identifier']}/{sub_dir}", exist_ok=True
+                        os.path.join(
+                            dir_path, f"patches/{sample['identifier']}/{sub_dir}"
+                        ),
+                        exist_ok=True,
                     )
                     with open(
-                        f"patches/{sample['identifier']}/{sub_dir}/{i}.diff", "w"
+                        os.path.join(
+                            dir_path,
+                            f"patches/{sample['identifier']}/{sub_dir}/{i}.diff",
+                        ),
+                        "w",
                     ) as f:
                         f.writelines(diff)
 
@@ -222,6 +237,7 @@ def entry_point(
     """
     # Get the benchmark, check if it exists, and initialize it
     samples_file_name = os.path.basename(samples_path)
+    dir_path = os.path.dirname(samples_path)
     prompt_strategy = samples_file_name.split("_")[2].split(".")[0]
     model_name = samples_file_name.split("_")[3].split(".")[0]
     benchmark_obj = get_benchmark(benchmark)
@@ -258,7 +274,10 @@ def entry_point(
             [sample for sample in samples if is_single_chunk(sample)]
         )
         with open(
-            f"statistics_single_chunk_{benchmark}_{prompt_strategy}_{model_name}.json",
+            os.path.join(
+                dir_path,
+                f"statistics_single_chunk_{benchmark}_{prompt_strategy}_{model_name}.json",
+            ),
             "w",
         ) as f:
             json.dump(statistics, f, indent=4)
@@ -268,7 +287,10 @@ def entry_point(
             [sample for sample in samples if is_single_hunk(sample)]
         )
         with open(
-            f"statistics_single_hunk_{benchmark}_{prompt_strategy}_{model_name}.json",
+            os.path.join(
+                dir_path,
+                f"statistics_single_hunk_{benchmark}_{prompt_strategy}_{model_name}.json",
+            ),
             "w",
         ) as f:
             json.dump(statistics, f, indent=4)
@@ -276,17 +298,23 @@ def entry_point(
         # Compute statistics for all samples
         statistics = compute_statistics(samples)
         with open(
-            f"statistics_{benchmark}_{prompt_strategy}_{model_name}.json", "w"
+            os.path.join(
+                dir_path, f"statistics_{benchmark}_{prompt_strategy}_{model_name}.json"
+            ),
+            "w",
         ) as f:
             json.dump(statistics, f, indent=4)
 
     # Export patches to text files in structured directories
     if "export" in kwargs and kwargs["export"]:
-        export_patches(samples)
+        export_patches(samples, dir_path)
 
     # Write results to jsonl file
     write_jsonl(
-        f"evaluation_{benchmark}_{prompt_strategy}_{model_name}.jsonl.gz", samples
+        os.path.join(
+            dir_path, f"evaluation_{benchmark}_{prompt_strategy}_{model_name}.jsonl.gz"
+        ),
+        samples,
     )
 
 
