@@ -6,6 +6,7 @@ from elleelleaime.core.utils.jsonl import stream_jsonl, write_jsonl
 from elleelleaime.evaluate.strategies.registry import PatchEvaluationStrategyRegistry
 
 import fire
+import shutil
 import sys
 import tqdm
 import logging
@@ -109,30 +110,23 @@ def compute_statistics(samples: list) -> dict:
 
     for sample in tqdm.tqdm(samples):
         statistics["num_bugs"] += 1
-        if sample["prompt"] is not None:
+        if sample["prompt"]:
             statistics["num_bugs_with_prompt"] += 1
-        if (
-            sample["generation"] is not None
-            and len(sample["generation"]) > 0
-            and not all(
-                candidate["generation"] is None for candidate in sample["evaluation"]
-            )
+        if sample["generation"] and any(
+            candidate["generation"] for candidate in sample["evaluation"]
         ):
             statistics["num_bugs_with_candidates"] += 1
             statistics["num_patches"] += sum(
-                [
-                    candidate["generation"] is not None
-                    for candidate in sample["evaluation"]
-                ]
+                bool(candidate["generation"]) for candidate in sample["evaluation"]
             )
             statistics["num_compilable_patches"] += sum(
-                [compilable(candidate) for candidate in sample["evaluation"]]
+                compilable(candidate) for candidate in sample["evaluation"]
             )
             statistics["num_plausible_patches"] += sum(
-                [plausible(candidate) for candidate in sample["evaluation"]]
+                plausible(candidate) for candidate in sample["evaluation"]
             )
             statistics["num_exact_match_patches"] += sum(
-                [exact_match(candidate) for candidate in sample["evaluation"]]
+                exact_match(candidate) for candidate in sample["evaluation"]
             )
             if any(exact_match(candidate) for candidate in sample["evaluation"]):
                 statistics["num_bugs_with_exact_match_candidates"] += 1
@@ -150,6 +144,10 @@ def compute_statistics(samples: list) -> dict:
                     sample["identifier"]
                 )
 
+    statistics["bugs_with_exact_match_candidates"].sort()
+    statistics["bugs_with_plausible_candidates"].sort()
+    statistics["bugs_with_compilable_candidates"].sort()
+
     return statistics
 
 
@@ -157,65 +155,97 @@ def export_patches(samples: list, dir_path: str) -> None:
     """
     Exports the patches to text files in structured directories.
     """
+    # Remove the existing patches directory
+    patches_dir = os.path.join(dir_path, "patches")
+    if os.path.exists(patches_dir):
+        shutil.rmtree(patches_dir)
+
     for sample in tqdm.tqdm(samples):
-        if (
-            sample["generation"] is not None
+        if not sample["generation"] or all(
+            candidate["generation"] is None for candidate in sample["evaluation"]
+        ):
+            continue
+
+        # Write prompt, target diff to file
+        target_diff = difflib.unified_diff(
+            sample["buggy_code"].splitlines(keepends=True),
+            sample["fixed_code"].splitlines(keepends=True),
+            n=max(len(sample["buggy_code"]), len(sample["fixed_code"])),
+        )
+
+        sample_dir = os.path.join(patches_dir, sample["identifier"])
+        os.makedirs(sample_dir, exist_ok=True)
+
+        with open(os.path.join(sample_dir, "target.diff"), "w") as f:
+            f.writelines(target_diff)
+
+        with open(os.path.join(sample_dir, "prompt.txt"), "w") as f:
+            f.write(sample["prompt"])
+
+        for i, candidate in enumerate(sample["evaluation"]):
+            if not candidate["generation"]:
+                continue
+
+            # Compute diff between generated code and buggy code
+            diff = difflib.unified_diff(
+                sample["buggy_code"].splitlines(keepends=True),
+                candidate["generation"].splitlines(keepends=True),
+                n=max(len(sample["buggy_code"]), len(candidate["generation"])),
+            )
+
+            if exact_match(candidate):
+                sub_dir = "exact_match"
+            elif plausible(candidate):
+                sub_dir = "plausible"
+            elif compilable(candidate):
+                sub_dir = "compilable"
+            else:
+                sub_dir = "non_compilable"
+
+            candidate_dir = os.path.join(sample_dir, sub_dir)
+            os.makedirs(candidate_dir, exist_ok=True)
+
+            with open(os.path.join(candidate_dir, f"{i}.diff"), "w") as f:
+                f.writelines(diff)
+
+
+def export_bugs_by_category(samples, dir_path):
+    """
+    Exports list of bugs considered in each category to text files.
+    Categories are single chunk, single hunk, with prompt, and with candidates.
+    """
+    bugs_single_chunk = sorted(
+        [sample["identifier"] for sample in samples if is_single_chunk(sample)]
+    )
+    bugs_single_hunk = sorted(
+        [sample["identifier"] for sample in samples if is_single_hunk(sample)]
+    )
+    bugs_with_prompt = sorted(
+        [sample["identifier"] for sample in samples if sample["prompt"] is not None]
+    )
+    bugs_with_candidates = sorted(
+        [
+            sample["identifier"]
+            for sample in samples
+            if sample["generation"] is not None
             and len(sample["generation"]) > 0
             and not all(
                 candidate["generation"] is None for candidate in sample["evaluation"]
             )
-        ):
-            # Write prompt, target diff to file
-            target_diff = difflib.unified_diff(
-                sample["buggy_code"].splitlines(keepends=True),
-                sample["fixed_code"].splitlines(keepends=True),
-                n=max(len(sample["buggy_code"]), len(sample["fixed_code"])),
-            )
-            os.makedirs(
-                os.path.join(dir_path, f"patches/{sample['identifier']}"), exist_ok=True
-            )
-            with open(
-                os.path.join(dir_path, f"patches/{sample['identifier']}/target.diff"),
-                "w",
-            ) as f:
-                f.writelines(target_diff)
-            with open(
-                os.path.join(dir_path, f"patches/{sample['identifier']}/prompt.txt"),
-                "w",
-            ) as f:
-                f.write(sample["prompt"])
+        ]
+    )
 
-            for i, candidate in enumerate(sample["evaluation"]):
-                if candidate["generation"] is not None:
-                    # Compute diff between generated code and buggy code
-                    diff = difflib.unified_diff(
-                        sample["buggy_code"].splitlines(keepends=True),
-                        candidate["generation"].splitlines(keepends=True),
-                        n=max(len(sample["buggy_code"]), len(candidate["generation"])),
-                    )
-                    if exact_match(candidate):
-                        sub_dir = "exact_match"
-                    elif plausible(candidate):
-                        sub_dir = "plausible"
-                    elif compilable(candidate):
-                        sub_dir = "compilable"
-                    else:
-                        sub_dir = "non_compilable"
+    with open(os.path.join(dir_path, "bugs_single_chunk.txt"), "w") as f:
+        f.write("\n".join(bugs_single_chunk))
 
-                    os.makedirs(
-                        os.path.join(
-                            dir_path, f"patches/{sample['identifier']}/{sub_dir}"
-                        ),
-                        exist_ok=True,
-                    )
-                    with open(
-                        os.path.join(
-                            dir_path,
-                            f"patches/{sample['identifier']}/{sub_dir}/{i}.diff",
-                        ),
-                        "w",
-                    ) as f:
-                        f.writelines(diff)
+    with open(os.path.join(dir_path, "bugs_single_hunk.txt"), "w") as f:
+        f.write("\n".join(bugs_single_hunk))
+
+    with open(os.path.join(dir_path, "bugs_with_prompt.txt"), "w") as f:
+        f.write("\n".join(bugs_with_prompt))
+
+    with open(os.path.join(dir_path, "bugs_with_candidates.txt"), "w") as f:
+        f.write("\n".join(bugs_with_candidates))
 
 
 def entry_point(
@@ -308,6 +338,7 @@ def entry_point(
     # Export patches to text files in structured directories
     if "export" in kwargs and kwargs["export"]:
         export_patches(samples, dir_path)
+        export_bugs_by_category(samples, dir_path)
 
     # Write results to jsonl file
     write_jsonl(
