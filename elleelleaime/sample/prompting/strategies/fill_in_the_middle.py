@@ -8,20 +8,17 @@ from elleelleaime.core.benchmarks.bug import Bug
 from elleelleaime.core.utils.java_tools.java_lang import load_origin_code_node
 
 
-class ZeroShotClozePrompting(PromptingStrategy):
+class FillInTheMiddlePrompting(PromptingStrategy):
     """
-    Implements the zero-shot cloze style prompt strategy for single diff file.
+    Implements the fill-in-the-middle style prompt strategy for single diff file.
     """
 
     # MODEL_DICT is a dictionary of model names and their corresponding kwargs
     MODEL_DICT = {
-        "incoder": {
-            "mask_token": "<|mask:{}|>",
-            "extra_mask_token": True,
-        },
-        "codellama": {
-            "mask_token": "<FILL_ME>",
-            "extra_mask_token": False,
+        "starcoder": {
+            "prefix_token": "<fim_prefix>",
+            "middle_token": "<fim_middle>",
+            "sufix_token": "<fim_suffix>",
         },
         # Add the model you want to use here
     }
@@ -34,27 +31,9 @@ class ZeroShotClozePrompting(PromptingStrategy):
             self.model_name in self.MODEL_DICT.keys()
         ), f"Unknown model name: {kwargs.get('model_name', None)}"
         model_kwargs = self.MODEL_DICT.get(self.model_name, {})
-        self.original_mask_token: str = model_kwargs["mask_token"]
-        self.extra_mask_token: bool = model_kwargs.get("extra_mask_token", False)
-
-    def generate_masking_prompt(self, line_to_replace: str, mask_id: int) -> str:
-        """Generate the mask token to be inserted, according to the mask idx."""
-        # Generate the mask token
-        mask_token = (
-            self.original_mask_token.format(mask_id)
-            if "{}" in self.original_mask_token
-            else self.original_mask_token
-        )
-
-        # Find the leading spaces
-        leading_spaces = re.match(r"^\s*", line_to_replace)
-        if leading_spaces is not None:
-            leading_spaces = leading_spaces.group()
-        else:
-            leading_spaces = ""
-
-        # Build the masking prompt
-        return leading_spaces + mask_token
+        self.prefix_token: str = model_kwargs["prefix_token"]
+        self.middle_token: str = model_kwargs["middle_token"]
+        self.sufix_token: str = model_kwargs["sufix_token"]
 
     def find_code(self, file_path: str, line_numbers: List[int]) -> str:
         """
@@ -66,6 +45,34 @@ class ZeroShotClozePrompting(PromptingStrategy):
                 if idx + 1 in line_numbers:
                     code += line
         return code
+
+    def is_single_chunk(self, diff_str: str) -> bool:
+        """
+        Return True if the sample's ground truth is a single chunk.
+        Single chunk means that there is only one hunk in the ground truth and that the changes are all contiguous.
+        """
+        diff = PatchSet(diff_str)
+        # Check if there is only one hunk
+        if len(diff) == 1 and len(diff[0]) == 1:
+            # Check if the changes are contiguous
+            hunk = diff[0][0]
+            i = 0
+            found_change = False
+            while i < len(hunk):
+                # Find a change
+                if hunk[i].is_added or hunk[i].is_removed:
+                    if found_change:
+                        return False
+                    found_change = True
+                    # Skip over the remainder of the added/removed chunk
+                    while i < len(hunk) and (hunk[i].is_added or hunk[i].is_removed):
+                        i += 1
+                # Skip over the unchanged chunk
+                else:
+                    i += 1
+            return True
+        else:
+            return False
 
     def cloze_prompt(
         self, bug: Bug
@@ -84,6 +91,9 @@ class ZeroShotClozePrompting(PromptingStrategy):
         fixed_path = os.path.join(
             tempfile.gettempdir(), "elleelleaime", bug.get_identifier(), str(uuid4())
         )
+
+        if not self.is_single_chunk(bug.get_ground_truth()):
+            return None, None, None
 
         try:
             # Note: this diff is inverted, i.e. the target file is the buggy file
@@ -211,34 +221,30 @@ class ZeroShotClozePrompting(PromptingStrategy):
                         return buggy_code, fixed_code, None
 
             # Iterate over both the buggy and fixed code to generate the prompt
-            prompt = ""
-            mask_id = 0
+            prompt = f"{self.prefix_token}"
             i = 0
             while i < len(fdiff):
                 # Ignore garbage
                 if any(fdiff[i].startswith(x) for x in ["---", "+++", "@@"]):
                     i += 1
-                # Add a mask token in added/removed chunk of code
+                # Skip over the chunk
                 elif any(fdiff[i].startswith(x) for x in ["+", "-"]):
-                    prompt += f"{self.generate_masking_prompt(fdiff[i][1:], mask_id)}\n"
-                    mask_id += 1
                     # Skip over the remainder of the added/removed chunk
                     while i < len(fdiff) and any(
                         fdiff[i].startswith(x) for x in ["+", "-"]
                     ):
                         i += 1
+                    prompt += f"{self.sufix_token}"
                 # Include unchanged lines
                 else:
                     prompt += fdiff[i][1:]
                     i += 1
 
-            # Add extra mask token (e.g. Incoder recommends this in Section 2.2 of their paper)
-            if self.extra_mask_token:
-                prompt += f"{self.generate_masking_prompt('', mask_id)}\n"
+            # Deal with whole function removal/addition
+            if not self.sufix_token in prompt:
+                prompt += f"{self.sufix_token}"
 
-            # Deal with whole-function addition/removal
-            if prompt == "":
-                prompt = f"{self.generate_masking_prompt('', 0)}"
+            prompt += f"{self.middle_token}"
 
             return buggy_code, fixed_code, prompt
 

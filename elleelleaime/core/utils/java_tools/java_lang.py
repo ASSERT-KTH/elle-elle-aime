@@ -11,14 +11,6 @@ ACCEPTED_NODE_TYPES = [
 ]
 
 
-def clean_code(lines):
-    # remove right side trailing space
-    lines = [line.rstrip() for line in lines]
-    # remove empty lines
-    lines = [x for x in lines if len(x) > 0]
-    return "\n".join(lines)
-
-
 def filter_ast_nodes_by_types(root, node_types):
     filtered_nodes = []
     for node in root:
@@ -91,43 +83,3 @@ def load_origin_code_node(
             position = i
 
     return most_related_method, position
-
-
-class NodeNotFoundException(Exception):
-    pass
-
-
-def get_node_by_hash(ast_nodes, hash):
-    for node in ast_nodes:
-        if node.hash == hash:
-            return node
-    raise NodeNotFoundException("Node with hash {} not found".format(hash))
-
-
-def get_node_by_position(ast_nodes, fixed_node, position):
-    if position < len(ast_nodes):
-        node = ast_nodes[position]
-        if node.hash == fixed_node.hash or node.name == fixed_node.name:
-            return node
-    raise NodeNotFoundException("Node with name {} not found".format(fixed_node.name))
-
-
-def find_exact_match(sample):
-    try:
-        fixed_tokens = javalang.tokenizer.tokenize(sample.fixed_code_chunk)
-        reformed_fixed_tokens = javalang.tokenizer.reformat_tokens(fixed_tokens)
-
-        respond_tokens = javalang.tokenizer.tokenize(sample.respond_clean_code_chunk)
-        reformed_respond_tokens = javalang.tokenizer.reformat_tokens(respond_tokens)
-
-        # fixed_parser = javalang.parser.Parser(reformed_fixed_tokens)
-        # respond_parser = javalang.parser.Parser(reformed_respond_tokens)
-
-        if len(reformed_fixed_tokens) == 0 or len(reformed_respond_tokens) == 0:
-            return False
-        if len(reformed_fixed_tokens) != len(reformed_respond_tokens):
-            return False
-
-        return reformed_fixed_tokens == reformed_respond_tokens
-    except Exception:
-        return False

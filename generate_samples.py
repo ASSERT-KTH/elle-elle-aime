@@ -19,7 +19,7 @@ def generate_sample(
     Generates the sample for the given bug with the given prompt strategy.
     """
 
-    prompt_strategy_obj = PromptStrategyRegistry(**kwargs).get_strategy(prompt_strategy)
+    prompt_strategy_obj = PromptStrategyRegistry.get_strategy(prompt_strategy, **kwargs)
     prompt = prompt_strategy_obj.prompt(bug)
 
     # Check if prompt was generated
