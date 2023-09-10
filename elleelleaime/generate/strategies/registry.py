@@ -8,6 +8,9 @@ from elleelleaime.generate.strategies.models.huggingface.incoder import (
 from elleelleaime.generate.strategies.models.huggingface.codellama import (
     CodeLlamaHFModels,
 )
+from elleelleaime.generate.strategies.models.huggingface.starcoder import (
+    StarCoderHFModels,
+)
 
 from typing import Tuple
 
@@ -34,6 +37,14 @@ class PatchGenerationStrategyRegistry:
         "codellama-13b-instruct": (
             CodeLlamaHFModels,
             ("codellama/CodeLlama-13b-Instruct-hf",),
+        ),
+        "starcoderbase": (
+            StarCoderHFModels,
+            ("bigcode/starcoderbase",),
+        ),
+        "starcoderplus": (
+            StarCoderHFModels,
+            ("bigcode/starcoderplus",),
         ),
     }
 
