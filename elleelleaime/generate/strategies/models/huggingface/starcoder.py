@@ -64,7 +64,7 @@ class StarCoderHFModels(PatchGenerationStrategy):
     def __load_model(self):
         # Setup environment
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
-        self.context_size = 8192
+        self.context_size = 2048
 
         # Setup kwargs
         kwargs = dict(
@@ -82,9 +82,9 @@ class StarCoderHFModels(PatchGenerationStrategy):
             self.__MODELS_LOADED = True
 
     def _generate_impl(self, prompt: str) -> Any:
-        inputs = self.__TOKENIZER.encode(prompt, return_tensors="pt").to(device)
+        inputs = self.__TOKENIZER.encode(prompt, return_tensors="pt").to(self.device)
 
-        max_length = self.generate_settings.max_new_tokens + input.input_ids.shape[1]
+        max_length = self.generate_settings.max_new_tokens + inputs.shape[1]
         if max_length > self.context_size:
             logging.warning(
                 "warning: max_length %s is greater than the context window %s"
@@ -103,7 +103,7 @@ class StarCoderHFModels(PatchGenerationStrategy):
                 temperature=self.generate_settings.temperature,
             )
 
-        input_len = input.input_ids.shape[1]
+        input_len = inputs.shape[1]
         fillings_ids = generated_ids[:, input_len:]
         fillings = self.__TOKENIZER.batch_decode(fillings_ids, skip_special_tokens=True)
 
@@ -113,20 +113,12 @@ class StarCoderHFModels(PatchGenerationStrategy):
         # We want to achieve
         # <prefix><middle><suffix>
         # where <middle> is the the filling
-        def get_prefix(text):
-            return text.split("<fim_prefix>")[1].split("<fim_suffix>")[0]
-
-        def get_suffix(text):
-            return text.split("<fim_suffix>")[1].split("<fim_middle>")[0]
-
-        def get_middle(text):
-            return text.split("<fim_middle>")[1]
+        prefix = prompt.split("<fim_prefix>")[1].split("<fim_suffix>")[0]
+        suffix = prompt.split("<fim_suffix>")[1].split("<fim_middle>")[0]
 
         fillings = [
-            get_prefix(filling) + get_middle(filling) + get_suffix(filling)
+            prefix + filling + suffix
             for filling in fillings
         ]
-
-        print(fillings[0])
 
         return fillings
