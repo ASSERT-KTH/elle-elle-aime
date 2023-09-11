@@ -42,6 +42,10 @@ class PatchGenerationStrategyRegistry:
             StarCoderHFModels,
             ("bigcode/starcoderbase",),
         ),
+        "starcoder": (
+            StarCoderHFModels,
+            ("bigcode/starcoder",),
+        ),
         "starcoderplus": (
             StarCoderHFModels,
             ("bigcode/starcoderplus",),

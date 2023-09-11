@@ -22,6 +22,7 @@ class GenerateSettings:
 class StarCoderHFModels(PatchGenerationStrategy):
     __SUPPORTED_MODELS = {
         "bigcode/starcoderbase",
+        "bigcode/starcoder",
         "bigcode/starcoderplus",
     }
 
@@ -116,9 +117,6 @@ class StarCoderHFModels(PatchGenerationStrategy):
         prefix = prompt.split("<fim_prefix>")[1].split("<fim_suffix>")[0]
         suffix = prompt.split("<fim_suffix>")[1].split("<fim_middle>")[0]
 
-        fillings = [
-            prefix + filling + suffix
-            for filling in fillings
-        ]
+        fillings = [prefix + filling + suffix for filling in fillings]
 
         return fillings
