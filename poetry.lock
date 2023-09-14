@@ -399,6 +399,17 @@ html5lib = ["html5lib"]
 lxml = ["lxml"]
 
 [[package]]
+name = "bitsandbytes"
+version = "0.41.1"
+description = "k-bit optimizers and matrix multiplication routines."
+optional = false
+python-versions = "*"
+files = [
+    {file = "bitsandbytes-0.41.1-py3-none-any.whl", hash = "sha256:b25228c27636367f222232ed4d1e1502eedd2064be215633734fb8ea0c1c65f4"},
+    {file = "bitsandbytes-0.41.1.tar.gz", hash = "sha256:b3f8e7e1e5f88d4813d10ebd4072034ba6a18eca7f0e255376f8320e5499032c"},
+]
+
+[[package]]
 name = "black"
 version = "23.7.0"
 description = "The uncompromising code formatter."
@@ -2485,6 +2496,34 @@ files = [
 ]
 
 [[package]]
+name = "peft"
+version = "0.5.0"
+description = "Parameter-Efficient Fine-Tuning (PEFT)"
+optional = false
+python-versions = ">=3.8.0"
+files = [
+    {file = "peft-0.5.0-py3-none-any.whl", hash = "sha256:82b307830f946bcc1e8e19419a55aac50fcf670a55d6be04eb6adbcbc5c21042"},
+    {file = "peft-0.5.0.tar.gz", hash = "sha256:3cc03049ac6130426d82c22ca54cc6de849e7c6727181393e7751f7f512a9ced"},
+]
+
+[package.dependencies]
+accelerate = "*"
+numpy = ">=1.17"
+packaging = ">=20.0"
+psutil = "*"
+pyyaml = "*"
+safetensors = "*"
+torch = ">=1.13.0"
+tqdm = "*"
+transformers = "*"
+
+[package.extras]
+dev = ["black (>=22.0,<23.0)", "hf-doc-builder", "ruff (>=0.0.241)", "urllib3 (<=2.0.0)"]
+docs-specific = ["hf-doc-builder"]
+quality = ["black (>=22.0,<23.0)", "ruff (>=0.0.241)", "urllib3 (<=2.0.0)"]
+test = ["black (>=22.0,<23.0)", "datasets", "diffusers", "hf-doc-builder", "parameterized", "pytest", "pytest-cov", "pytest-xdist", "ruff (>=0.0.241)", "urllib3 (<=2.0.0)"]
+
+[[package]]
 name = "pexpect"
 version = "4.8.0"
 description = "Pexpect allows easy control of interactive console applications."
@@ -4410,4 +4449,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "0315817a29b92390cff447c6b9e5322805cc4e0d48a2e95f361beda51c066011"
+content-hash = "e94c506e00bd9a1b86491391ab2e03c3285e1e44f2beab498bb74f16339bfd71"
