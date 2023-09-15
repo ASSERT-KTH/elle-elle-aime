@@ -226,6 +226,7 @@ class ZeroShotClozePrompting(PromptingStrategy):
                         prompt += "// buggy code\n//" + fdiff[i][1:]
                     # We generate the mask token with the leading spaces of the first buggy line
                     mask_token = self.generate_masking_prompt(fdiff[i][1:], mask_id)
+                    i += 1
                     # Skip over the remainder of the added/removed chunk
                     while i < len(fdiff) and any(
                         fdiff[i].startswith(x) for x in ["+", "-"]
