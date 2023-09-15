@@ -36,6 +36,7 @@ class ZeroShotClozePrompting(PromptingStrategy):
         model_kwargs = self.MODEL_DICT.get(self.model_name, {})
         self.original_mask_token: str = model_kwargs["mask_token"]
         self.extra_mask_token: bool = model_kwargs.get("extra_mask_token", False)
+        self.keep_buggy_code: bool = kwargs.get("keep_buggy_code", False)
 
     def generate_masking_prompt(self, line_to_replace: str, mask_id: int) -> str:
         """Generate the mask token to be inserted, according to the mask idx."""
@@ -220,13 +221,18 @@ class ZeroShotClozePrompting(PromptingStrategy):
                     i += 1
                 # Add a mask token in added/removed chunk of code
                 elif any(fdiff[i].startswith(x) for x in ["+", "-"]):
-                    prompt += f"{self.generate_masking_prompt(fdiff[i][1:], mask_id)}\n"
-                    mask_id += 1
+                    if self.keep_buggy_code and fdiff[i].startswith("-"):
+                        prompt += "// buggy code\n//" + fdiff[i][1:]
+                    i += 1
                     # Skip over the remainder of the added/removed chunk
                     while i < len(fdiff) and any(
                         fdiff[i].startswith(x) for x in ["+", "-"]
                     ):
+                        if self.keep_buggy_code and fdiff[i].startswith("-"):
+                            prompt += "//" + fdiff[i][1:]
                         i += 1
+                    prompt += f"{self.generate_masking_prompt(fdiff[i][1:], mask_id)}\n"
+                    mask_id += 1
                 # Include unchanged lines
                 else:
                     prompt += fdiff[i][1:]

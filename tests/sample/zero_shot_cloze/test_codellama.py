@@ -247,6 +247,46 @@ class TestClozeSamplesCodeLLaMA:
         )
         assert sample["prompt"].count("<FILL_ME>") == 1
 
+    def test_closure_11_keep_buggy_code(self):
+        bug = TestClozeSamplesCodeLLaMA.DEFECTS4J.get_bug("Closure-11")
+        assert bug is not None
+
+        sample = generate_sample(
+            bug=bug,
+            prompt_strategy=TestClozeSamplesCodeLLaMA.PROMPT_STRATEGY,
+            model_name=TestClozeSamplesCodeLLaMA.MODEL_NAME,
+            keep_buggy_code=True,
+        )
+
+        # Assert we are dealing with the correct bug and strategy
+        assert sample["identifier"] == "Closure-11"
+        assert sample["prompt_strategy"] == "zero-shot-cloze"
+
+        # Assert that the buggy code and fixed code are properly separated
+        assert (
+            "} else if (n.getJSType() != null && parent.isAssign()) {"
+            in sample["buggy_code"]
+        )
+        assert (
+            not "} else if (n.getJSType() != null && parent.isAssign()) {"
+            in sample["fixed_code"]
+        )
+
+        # Assert that the prompt is properly constructed
+        assert (
+            sample["prompt"]
+            .strip()
+            .startswith(
+                "private void visitGetProp(NodeTraversal t, Node n, Node parent) {"
+            )
+        )
+        assert sample["prompt"].count("<FILL_ME>") == 1
+        assert "// buggy code" in sample["prompt"]
+        assert (
+            "} else if (n.getJSType() != null && parent.isAssign()) {"
+            in sample["prompt"]
+        )
+
     def test_closure_5(self):
         bug = TestClozeSamplesCodeLLaMA.DEFECTS4J.get_bug("Closure-5")
         assert bug is not None
