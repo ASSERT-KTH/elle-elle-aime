@@ -221,17 +221,21 @@ class ZeroShotClozePrompting(PromptingStrategy):
                     i += 1
                 # Add a mask token in added/removed chunk of code
                 elif any(fdiff[i].startswith(x) for x in ["+", "-"]):
+                    # If we keep the buggy code we add a first line signaling it and then the first buggy line
                     if self.keep_buggy_code and fdiff[i].startswith("-"):
                         prompt += "// buggy code\n//" + fdiff[i][1:]
-                    i += 1
+                    # We generate the mask token with the leading spaces of the first buggy line
+                    mask_token = self.generate_masking_prompt(fdiff[i][1:], mask_id)
                     # Skip over the remainder of the added/removed chunk
                     while i < len(fdiff) and any(
                         fdiff[i].startswith(x) for x in ["+", "-"]
                     ):
+                        # Keep buggy lines if the option is true
                         if self.keep_buggy_code and fdiff[i].startswith("-"):
                             prompt += "//" + fdiff[i][1:]
                         i += 1
-                    prompt += f"{self.generate_masking_prompt(fdiff[i][1:], mask_id)}\n"
+                    # Add the mask token after all buggy lines have been processed
+                    prompt += f"{mask_token}\n"
                     mask_id += 1
                 # Include unchanged lines
                 else:
