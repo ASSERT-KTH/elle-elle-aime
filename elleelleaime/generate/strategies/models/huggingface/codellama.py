@@ -84,9 +84,9 @@ class CodeLlamaHFModels(PatchGenerationStrategy):
             self.__MODELS_LOADED = True
 
     def _generate_impl(self, prompt: str) -> Any:
-        if prompt.count("<FILL_ME>") != 1:
+        if prompt.count("<FILL_ME>") > 1:
             logging.warning(
-                "Prompt should contain exactly one <FILL_ME> tag, but it contains %d. Skipping bug.",
+                "Prompt should contain exactly at most one <FILL_ME> tag, but it contains %d. Skipping bug.",
                 prompt.count("<FILL_ME>"),
             )
             return None
