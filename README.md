@@ -28,8 +28,6 @@ Be sure to be in the correct environment:
 poetry shell
 ```
 
-### Generating Samples/Prompts
-
 Example of how to generate samples for Defects4J using the zero-shot-cloze strategy for CodeLlama:
 ```bash
 python generate_samples.py defects4j zero-shot-cloze --model_name codellama
