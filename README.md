@@ -22,20 +22,46 @@ cd benchmarks/defects4j/
 cd ../../
 ```
 ## Execution
-How to run:
+
+Be sure to be in the correct environment:
 ```bash
 poetry shell
-# Example on how to call sample.py to generate samples for Defects4J using the zero-shot-single-hunk strategy
-python generate_samples.py defects4j zero-shot-single-hunk 
-# Example on how to call generate.py to generate patches for the previously generated samples using gpt-3.5-turbo (note: need to setup .env file or export env variables)
-python generate_patches.py samples_defects4j_zero-shot-single-hunk.jsonl.gz gpt-3.5-turbo 
 ```
+
+### Generating Samples/Prompts
+
+Example of how to generate samples for Defects4J using the zero-shot-cloze strategy for CodeLlama:
+```bash
+python generate_samples.py defects4j zero-shot-cloze --model_name codellama
+```
+---
+
+Example of how to generate patches for the samples
+```bash
+python generate_patches.py samples_defects4j_zero-shot-cloze_model_name_codellama.jsonl.gz codellama-7B --n_workers 1 --generation_strategy beam_search --n_beams 10 --num_return_sequences 10
+```
+---
+
+Example of how to evaluate the generated patches:
+```bash
+python evaluate_patches.py defects4j evaluation_defects4j_zero-shot-cloze_codellama-7B.jsonl.gz --correctness
+```
+The option `--correctness`, enabled by default, will enable compilation and test execution of the generated patches.
+
+---
+
+Example of how to generate statistical reports and export patches:
+```bash
+python evaluate_patches.py defects4j evaluation_defects4j_zero-shot-cloze_codellama-7B.jsonl.gz --correctness False --statistics --export
+```
+Note: This command will output the reports and patches to the same directory of the evaluation file
+
+
+
+## Development
 
 How to run tests:
 ```bash
-cd elle-elle-aime
-poetry shell
-# Run the tests and print the output
 pytest -s tests/
 ```
 
