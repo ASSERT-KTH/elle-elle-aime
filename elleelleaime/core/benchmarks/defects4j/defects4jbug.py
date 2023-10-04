@@ -15,7 +15,7 @@ class Defects4JBug(Bug):
     """
 
     def __init__(
-        self, benchmark: Benchmark, pid: str, bid: str, ground_truth: str
+        self, benchmark: Benchmark, pid: str, bid: int, ground_truth: str
     ) -> None:
         self.pid = pid
         self.bid = bid

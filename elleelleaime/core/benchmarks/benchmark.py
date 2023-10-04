@@ -42,6 +42,11 @@ class Benchmark(ABC):
         assert bug.get_identifier() not in self.bugs
         self.bugs[bug.get_identifier()] = bug
 
+    def get_oldest_bug(self, project: Optional[str] = None) -> Dict[str, Bug]:
+        raise NotImplementedError(
+            f"get_oldest_bug is not implemented for {self.identifier}"
+        )
+
     @abstractmethod
     def initialize(self) -> None:
         pass
