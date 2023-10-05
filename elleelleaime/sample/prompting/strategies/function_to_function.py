@@ -35,7 +35,10 @@ class FunctionToFunctionPrompting(PromptingStrategy):
         buggy_code, fixed_code = result
 
         # TODO: add fault localization option
-        prompt = buggy_code
+        prompt = f"""// buggy function
+{buggy_code}
+// fixed function
+"""
 
         return buggy_code, fixed_code, prompt
 
