@@ -70,7 +70,7 @@ class Defects4J(Benchmark):
                 )
                 with open(diff_path, "r", encoding="ISO-8859-1") as diff_file:
                     diff = diff_file.read()
-                self.add_bug(self.__create_bug(self, pid, bid, diff))
+                self.add_bug(self.__create_bug(pid, bid))
 
     def get_oldest_bug(self, project: Optional[str] = None) -> Dict[str, Defects4JBug]:
         pids = set()
