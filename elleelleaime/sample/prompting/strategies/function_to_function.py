@@ -134,26 +134,52 @@ class FunctionToFunctionPrompting(PromptingStrategy):
             def assert_same_diff(
                 original_diff: PatchSet, function_diff: List[str]
             ) -> bool:
-                original_changed_lines = []
+                """
+                Checks if the computed diff is equivalent to the original diff
+                """
+                original_source = ""
+                original_target = ""
+                original_added_lines = []
+                original_removed_lines = []
+                # Get the original changed lines
+                # TODO: this diff is inverted, i.e. the target file is the buggy file
                 for file in original_diff:
                     for hunk in file:
                         for line in hunk:
-                            if not line.is_context:
-                                original_changed_lines.append(line.value)
+                            if line.is_added:
+                                original_removed_lines.append(line.value.strip())
+                                original_source += line.value
+                            elif line.is_removed:
+                                original_added_lines.append(line.value.strip())
+                                original_target += line.value
+                            elif line.is_context:
+                                original_source += line.value
+                                original_target += line.value
+                # Get the new changed lines
+                new_source = ""
+                new_target = ""
+                new_added_lines = []
+                new_removed_lines = []
                 for line in function_diff:
                     if any(line.startswith(x) for x in ["---", "+++", "@@"]):
                         continue
-                    if any(line.startswith(x) for x in ["+", "-"]):
-                        if (
-                            line[1:] not in original_changed_lines
-                            and line[1:].strip() != ""
-                        ):
-                            return False
-                        elif line[1:].strip() != "":
-                            original_changed_lines.remove(line[1:])
-                if len(original_changed_lines) > 0:
-                    for line in original_changed_lines:
-                        return False
+                    elif line.startswith("+"):
+                        new_added_lines.append(line[1:].strip())
+                        new_target += line[1:]
+                    elif line.startswith("-"):
+                        new_removed_lines.append(line[1:].strip())
+                        new_source += line[1:]
+                    else:
+                        new_source += line[1:]
+                        new_target += line[1:]
+                # Check that all the
+                if (
+                    any([line not in original_source for line in new_removed_lines])
+                    or any([line not in original_target for line in new_added_lines])
+                    or any([line not in new_source for line in original_removed_lines])
+                    or any([line not in new_target for line in original_added_lines])
+                ):
+                    return False
                 return True
 
             # HACK: sometimes we are not able to properly retrieve the code at the function-level
