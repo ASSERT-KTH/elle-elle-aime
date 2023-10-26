@@ -19,15 +19,22 @@ def find_code(file_path: str, line_numbers: List[int]) -> str:
     return code
 
 
-def compute_diff(buggy_code: str, fixed_code: str) -> List[str]:
+def compute_diff(
+    buggy_code: str, fixed_code: str, context_len: Optional[int] = None
+) -> List[str]:
     """
     Computes the diff between the buggy and fixed code.
     """
+    context_len = (
+        context_len
+        if context_len is not None
+        else max(len(buggy_code), len(fixed_code))
+    )
     return list(
         difflib.unified_diff(
             buggy_code.splitlines(keepends=True),
             fixed_code.splitlines(keepends=True),
-            n=max(len(buggy_code), len(fixed_code)),
+            n=context_len,
         )
     )
 
@@ -183,7 +190,7 @@ def extract_single_function(bug: Bug) -> Optional[Tuple[str, str]]:
                 if assert_same_diff(diff, fdiff):
                     buggy_code = ""
                 else:
-                    return buggy_code, fixed_code
+                    return None
 
         return buggy_code, fixed_code
 
