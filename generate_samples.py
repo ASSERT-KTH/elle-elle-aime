@@ -90,10 +90,6 @@ def entry_point(
                     f"Error while generating sample for bug {future_to_bug[future]}: {traceback.format_exc()}"
                 )
 
-        for result in results:
-            if result["prompt"] is not None:
-                print(result["identifier"])
-
     # Write results to jsonl file
     kwargs_str = "_".join([f"{key}_{value}" for key, value in kwargs.items()])
     write_jsonl(f"samples_{benchmark}_{prompt_strategy}_{kwargs_str}.jsonl.gz", results)
