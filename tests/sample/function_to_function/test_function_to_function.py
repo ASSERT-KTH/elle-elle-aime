@@ -385,3 +385,30 @@ class TestFunctionToFunctionSamples:
             .startswith("private void updateBounds(TimePeriod period, int index) {")
         )
         assert sample["prompt"] == sample["buggy_code"]
+
+    def test_cli_29(self):
+        bug = TestFunctionToFunctionSamples.DEFECTS4J.get_bug("Cli-29")
+        assert bug is not None
+
+        sample = generate_sample(
+            bug=bug,
+            prompt_strategy=TestFunctionToFunctionSamples.PROMPT_STRATEGY,
+        )
+
+        # Assert we are dealing with the correct bug and strategy
+        assert sample["identifier"] == "Cli-29"
+        assert sample["prompt_strategy"] == "function-to-function"
+
+        # Assert that the buggy code and fixed code are properly separated
+        assert "str = str.substring(1, str.length());" in sample["buggy_code"]
+        assert "str = str.substring(1, str.length());" not in sample["fixed_code"]
+        assert "str = str.substring(1, length - 1);" not in sample["buggy_code"]
+        assert "str = str.substring(1, length - 1);" in sample["fixed_code"]
+
+        # Assert that the prompt is properly constructed
+        assert (
+            sample["prompt"]
+            .strip()
+            .startswith("static String stripLeadingAndTrailingQuotes(String str)")
+        )
+        assert sample["prompt"] == sample["buggy_code"]
