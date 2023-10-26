@@ -75,7 +75,8 @@ class ZeroShotClozePrompting(PromptingStrategy):
         if result is None:
             return None, None, None
 
-        fdiff = compute_diff(*result)
+        buggy_code, fixed_code = result
+        fdiff = compute_diff(buggy_code, fixed_code)
 
         # Iterate over both the buggy and fixed code to generate the prompt
         prompt = ""
@@ -117,7 +118,7 @@ class ZeroShotClozePrompting(PromptingStrategy):
         if prompt == "":
             prompt = f"{self.generate_masking_prompt('', 0)}"
 
-        return result[0], result[0], prompt
+        return buggy_code, fixed_code, prompt
 
     def prompt(self, bug: Bug) -> Tuple[Optional[str], Optional[str], Optional[str]]:
         """

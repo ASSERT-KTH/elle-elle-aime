@@ -94,7 +94,8 @@ class FillInTheMiddlePrompting(PromptingStrategy):
         if result is None:
             return None, None, None
 
-        fdiff = compute_diff(*result)
+        buggy_code, fixed_code = result
+        fdiff = compute_diff(buggy_code, fixed_code)
 
         # Iterate over both the buggy and fixed code to generate the prompt
         prompt = f"{self.prefix_token}"
@@ -122,7 +123,7 @@ class FillInTheMiddlePrompting(PromptingStrategy):
 
         prompt += f"{self.middle_token}"
 
-        return result[0], result[1], prompt
+        return buggy_code, fixed_code, prompt
 
     def prompt(self, bug: Bug) -> Tuple[Optional[str], Optional[str], Optional[str]]:
         """
