@@ -1,5 +1,4 @@
 class CompileResult:
-
     def __init__(self, executes: bool, result: bool) -> None:
         self.executes = executes
         self.result = result

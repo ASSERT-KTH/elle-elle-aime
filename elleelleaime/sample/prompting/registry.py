@@ -1,18 +1,24 @@
 from .strategy import PromptingStrategy
 from .strategies.zero_shot_single_hunk import ZeroShotSingleHunkPrompting
+from .strategies.zero_shot_cloze import ZeroShotClozePrompting
+from .strategies.fill_in_the_middle import FillInTheMiddlePrompting
+from .strategies.function_to_function import FunctionToFunctionPrompting
 
 
-class PromptStrategyRegistry():
+class PromptStrategyRegistry:
     """
     Class for storing and retrieving prompting strategies based on their name.
     """
-    
-    def __init__(self):
-        self._strategies: dict[str, PromptingStrategy] = {
-            "zero-shot-single-hunk": ZeroShotSingleHunkPrompting(),
-        }
 
-    def get_strategy(self, name: str) -> PromptingStrategy:
-        if name.lower().strip() not in self._strategies:
+    __STRATEGIES: dict[str, type] = {
+        "zero-shot-single-hunk": ZeroShotSingleHunkPrompting,
+        "zero-shot-cloze": ZeroShotClozePrompting,
+        "fill-in-the-middle": FillInTheMiddlePrompting,
+        "function-to-function": FunctionToFunctionPrompting,
+    }
+
+    @classmethod
+    def get_strategy(cls, name: str, **kwargs) -> PromptingStrategy:
+        if name.lower().strip() not in cls.__STRATEGIES:
             raise ValueError(f"Unknown prompting strategy {name}")
-        return self._strategies[name.lower().strip()]
+        return cls.__STRATEGIES[name.lower().strip()](**kwargs)

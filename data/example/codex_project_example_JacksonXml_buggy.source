@@ -1,4 +1,0 @@
-    protected XmlSerializerProvider(XmlSerializerProvider src) {
-        super(src);
-        _rootNameLookup = src._rootNameLookup;
-    }

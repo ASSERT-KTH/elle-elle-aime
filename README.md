@@ -1,37 +1,75 @@
 # elle-elle-aime ❤️
 
-## How to use the new codebase
-
-Requires python3.10 (or latest) and python-poetry
-
-How to setup:
-```bash
-cd elle-elle-aime
-poetry shell # initializes poetry env
-poetry install # installs dependencies
-```
-
-How to run:
-```bash
-cd elle-elle-aime
-poetry shell
-cd elleelleaime # Note: this is mandatory due to hard-coded paths for now
-# Example on how to call sample.py to generate samples for Defects4J using the zero-shot-single-hunk strategy
-python sample.py defects4j zero-shot-single-hunk 
-# Example on how to call generate.py to generate patches for the previously generated samples using gpt-3.5-turbo (note: need to setup .env file or export env variables)
-python generate.py samples_defects4j_zero-shot-single-hunk.jsonl.gz gpt-3.5-turbo 
-```
-
-----
-
-## Overview
 Framework to use LLMs for automated program repair.
-Based on [RepairThemAll](https://github.com/program-repair/RepairThemAll),
 
-* Supported benchmarks: 
-  * Defects4J benchmark
+Supported benchmarks: 
+  * Defects4J
   * Bugs-dot-jar
   * Refactory
+  
+## Installation
+
+Requires python3.9 (or latest) and python-poetry
+The repository uses many submodules.
+```bash
+git clone --recurse-submodules ssh://github.com/ASSERT-KTH/elle-elle-aime.git
+cd elle-elle-aime
+poetry install # installs dependencies
+
+# for D4J
+cd benchmarks/defects4j/
+./init.sh
+cd ../../
+```
+## Execution
+
+Be sure to be in the correct environment:
+```bash
+poetry shell
+```
+
+Example of how to generate samples for Defects4J using the zero-shot-cloze strategy for CodeLlama:
+```bash
+python generate_samples.py defects4j zero-shot-cloze --model_name codellama
+```
+---
+
+Example of how to generate patches for the samples
+```bash
+python generate_patches.py samples_defects4j_zero-shot-cloze_model_name_codellama.jsonl.gz codellama-7B --n_workers 1 --generation_strategy beam_search --n_beams 10 --num_return_sequences 10
+```
+---
+
+Example of how to evaluate the generated patches:
+```bash
+python evaluate_patches.py defects4j evaluation_defects4j_zero-shot-cloze_codellama-7B.jsonl.gz --correctness
+```
+The option `--correctness`, enabled by default, will enable compilation and test execution of the generated patches.
+
+---
+
+Example of how to generate statistical reports and export patches:
+```bash
+python evaluate_patches.py defects4j evaluation_defects4j_zero-shot-cloze_codellama-7B.jsonl.gz --correctness False --statistics --export
+```
+Note: This command will output the reports and patches to the same directory of the evaluation file
+
+
+
+## Development
+
+How to run tests:
+```bash
+pytest -s tests/
+```
+
+## Check out the results
+
+We store all the results (prompts, patches, evaluation) in a separate repository.
+Please visit https://github.com/ASSERT-KTH/elle-elle-aime-results for these.
+
+
+# LEGACY
 
 ## Prerequisite
   * git
@@ -108,3 +146,8 @@ Running parameters and settings should be configured in two different places.\
 * `TEST_FAILED`: This type indicates that the unit tests for the verifying choice have not been fully passed. The number of failed unit tests for the current verifying choice is greater than or equal to the number of failing tests for the original buggy code.
 
 * `SAMPLE_ERROR`: This type represents an error that occurs during compilation or while running unit tests. Typically, this means that the choice response is unable to make the project fully compile.
+
+## Credits
+
+Based on [RepairThemAll](https://github.com/program-repair/RepairThemAll),
+
