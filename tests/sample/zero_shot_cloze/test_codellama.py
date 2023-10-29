@@ -96,7 +96,7 @@ class TestClozeSamplesCodeLLaMA:
             .strip()
             .startswith("private CanInlineResult canInlineReferenceDirectly(")
         )
-        assert sample["prompt"].count("<FILL_ME>") == 2
+        assert sample["prompt"].count("<FILL_ME>") == 1
 
     def test_closure_4(self):
         bug = TestClozeSamplesCodeLLaMA.DEFECTS4J.get_bug("Closure-4")
@@ -126,7 +126,7 @@ class TestClozeSamplesCodeLLaMA:
                 "JSType resolveInternal(ErrorReporter t, StaticScope<JSType> enclosing) {"
             )
         )
-        assert sample["prompt"].count("<FILL_ME>") == 2
+        assert sample["prompt"].count("<FILL_ME>") == 1
 
     def test_chart_4(self):
         bug = TestClozeSamplesCodeLLaMA.DEFECTS4J.get_bug("Chart-4")
@@ -160,7 +160,7 @@ class TestClozeSamplesCodeLLaMA:
             .strip()
             .startswith("public Range getDataRange(ValueAxis axis) {")
         )
-        assert sample["prompt"].count("<FILL_ME>") == 2
+        assert sample["prompt"].count("<FILL_ME>") == 1
 
     def test_chart_2(self):
         bug = TestClozeSamplesCodeLLaMA.DEFECTS4J.get_bug("Chart-2")
@@ -365,7 +365,7 @@ class TestClozeSamplesCodeLLaMA:
                 "public static Number createNumber(final String str) throws NumberFormatException"
             )
         )
-        assert sample["prompt"].count("<FILL_ME>") == 4
+        assert sample["prompt"].count("<FILL_ME>") == 1
 
     def test_closure_101(self):
         bug = TestClozeSamplesCodeLLaMA.DEFECTS4J.get_bug("Closure-101")
@@ -399,7 +399,7 @@ class TestClozeSamplesCodeLLaMA:
             .strip()
             .startswith("protected CompilerOptions createOptions() {")
         )
-        assert sample["prompt"].count("<FILL_ME>") == 2
+        assert sample["prompt"].count("<FILL_ME>") == 1
 
     def test_lang_10(self):
         bug = TestClozeSamplesCodeLLaMA.DEFECTS4J.get_bug("Lang-10")
@@ -429,7 +429,7 @@ class TestClozeSamplesCodeLLaMA:
                 "private static StringBuilder escapeRegex(StringBuilder regex, String value, boolean unquote) {"
             )
         )
-        assert sample["prompt"].count("<FILL_ME>") == 2
+        assert sample["prompt"].count("<FILL_ME>") == 1
 
     def test_chart_23(self):
         bug = TestClozeSamplesCodeLLaMA.DEFECTS4J.get_bug("Chart-23")
@@ -474,4 +474,4 @@ class TestClozeSamplesCodeLLaMA:
             .strip()
             .startswith("private void updateBounds(TimePeriod period, int index) {")
         )
-        assert sample["prompt"].count("<FILL_ME>") == 2
+        assert sample["prompt"].count("<FILL_ME>") == 1
