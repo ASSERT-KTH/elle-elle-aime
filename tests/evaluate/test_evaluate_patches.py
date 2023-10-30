@@ -56,6 +56,7 @@ class TestEvaluatePatches:
 
         assert sample["evaluation"][0]["compile"] == True
         assert sample["evaluation"][0]["test"] == True
+        assert sample["evaluation"][0]["exact_match"] == True
 
     def test_buggy_patch(self):
         bug, sample = TestEvaluatePatches.get_buggy_sample()
@@ -71,3 +72,4 @@ class TestEvaluatePatches:
 
         assert sample["evaluation"][0]["compile"] == True
         assert sample["evaluation"][0]["test"] == False
+        assert sample["evaluation"][0]["exact_match"] == False

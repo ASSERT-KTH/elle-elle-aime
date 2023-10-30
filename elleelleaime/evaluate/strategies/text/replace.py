@@ -35,7 +35,14 @@ class ReplaceEvaluationStrategy(PatchEvaluationStrategy):
             result = {
                 "generation": generation,
                 "exact_match": generation is not None
-                and generation.strip() == sample["fixed_code"].strip(),
+                and all(
+                    [
+                        x.strip() == y.strip()
+                        for x, y in zip(
+                            generation.split("\n"), sample["fixed_code"].split("\n")
+                        )
+                    ]
+                ),
                 "compile": False,
                 "test": False,
             }
