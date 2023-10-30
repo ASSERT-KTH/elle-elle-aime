@@ -39,7 +39,7 @@ class ReplaceEvaluationStrategy(PatchEvaluationStrategy):
                     [
                         x.strip() == y.strip()
                         for x, y in zip(
-                            generation.split("\n"), sample["fixed_code"].strip("\n")
+                            generation.split("\n"), sample["fixed_code"].split("\n")
                         )
                     ]
                 ),
