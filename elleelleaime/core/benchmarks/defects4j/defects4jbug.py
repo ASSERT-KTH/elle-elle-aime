@@ -55,15 +55,25 @@ class Defects4JBug(Bug):
             shell=True,
             capture_output=True,
         )
-        return CompileResult(True, run.returncode == 0)
+        return CompileResult(run.returncode == 0)
 
     def test(self, path: str) -> TestResult:
+        # First run only relevant tests
+        run = subprocess.run(
+            f"cd {path}; timeout {30*60} {self.benchmark.get_bin()} test -r",
+            shell=True,
+            capture_output=True,
+        )
+
+        m = re.search(r"Failing tests: ([0-9]+)", run.stdout.decode("utf-8"))
+        if not (run.returncode == 0 and m != None and int(m.group(1)) == 0):
+            return TestResult(False)
+
+        # Only run the whole test suite if the relevant tests pass
         run = subprocess.run(
             f"cd {path}; timeout {30*60} {self.benchmark.get_bin()} test",
             shell=True,
             capture_output=True,
         )
         m = re.search(r"Failing tests: ([0-9]+)", run.stdout.decode("utf-8"))
-        return TestResult(
-            m != None, run.returncode == 0 and m != None and int(m.group(1)) == 0
-        )
+        return TestResult(run.returncode == 0 and m != None and int(m.group(1)) == 0)

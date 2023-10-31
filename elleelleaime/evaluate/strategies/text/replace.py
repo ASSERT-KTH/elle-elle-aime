@@ -85,15 +85,10 @@ class ReplaceEvaluationStrategy(PatchEvaluationStrategy):
                             f.write(buggy_code)
                         # Evaluate the buggy code
                         compilation_result = bug.compile(buggy_path)
-                        result["compile"] = (
-                            compilation_result.is_executing()
-                            and compilation_result.is_passing()
-                        )
+                        result["compile"] = compilation_result.is_passing()
                         if result["compile"]:
                             test_result = bug.test(buggy_path)
-                            result["test"] = (
-                                test_result.is_executing() and test_result.is_passing()
-                            )
+                            result["test"] = test_result.is_passing()
                 finally:
                     shutil.rmtree(buggy_path)
 
