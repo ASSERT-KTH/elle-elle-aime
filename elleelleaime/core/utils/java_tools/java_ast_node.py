@@ -1,5 +1,6 @@
 import hashlib
 import re
+import logging
 
 
 class CodeLine:
@@ -99,7 +100,7 @@ class JavaAstNode:
 
             return current_pos
         except Exception as e:
-            print(
+            logging.error(
                 "Error in __cal_node_end_pos: {} {} {}\n{}".format(
                     self.name, self.type, self.start_pos, e
                 )

@@ -26,7 +26,7 @@ class Defects4JBug(Bug):
     )
     def checkout(self, path: str, fixed: bool = False) -> bool:
         # Remove the directory if it exists
-        shutil.rmtree(path, ignore_errors=True)
+        self.cleanup(path)
 
         # Checkout the bug
         checkout_run = subprocess.run(
@@ -45,6 +45,10 @@ class Defects4JBug(Bug):
         )
 
         return checkout_run.returncode == 0 and dos2unix_run.returncode == 0
+
+    def cleanup(self, path: str) -> bool:
+        shutil.rmtree(path, ignore_errors=True)
+        return True
 
     def apply_diff(self, path: str) -> bool:
         return super().apply_diff(path)

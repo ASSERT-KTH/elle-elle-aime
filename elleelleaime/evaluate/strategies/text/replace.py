@@ -111,7 +111,7 @@ class ReplaceEvaluationStrategy(PatchEvaluationStrategy):
                             test_result = bug.test(buggy_path)
                             result["test"] = test_result.is_passing()
                 finally:
-                    shutil.rmtree(buggy_path)
+                    bug.cleanup(buggy_path)
 
             evaluation.append(result)
             if evaluation[-1]["test"]:

@@ -28,6 +28,10 @@ class Bug(ABC):
         pass
 
     @abstractmethod
+    def cleanup(self, path: str) -> bool:
+        pass
+
+    @abstractmethod
     def apply_diff(self, path: str) -> bool:
         pass
 

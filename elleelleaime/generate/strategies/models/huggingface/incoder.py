@@ -132,8 +132,6 @@ class IncoderHFModels(PatchGenerationStrategy):
                 else detok_hypo_str
                 for detok_hypo_str in detok_hypo_strs
             ]
-            for output in detok_hypo_strs:
-                print(output)
             return detok_hypo_strs
 
         def infill(

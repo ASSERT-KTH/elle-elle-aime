@@ -197,8 +197,8 @@ def extract_single_function(bug: Bug) -> Optional[Tuple[str, str]]:
 
     finally:
         # Remove the checked-out bugs
-        shutil.rmtree(buggy_path, ignore_errors=True)
-        shutil.rmtree(fixed_path, ignore_errors=True)
+        bug.cleanup(buggy_path)
+        bug.cleanup(fixed_path)
 
 
 def remove_java_comments(source: str) -> str:
