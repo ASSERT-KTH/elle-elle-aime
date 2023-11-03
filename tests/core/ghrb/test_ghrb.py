@@ -12,7 +12,8 @@ class TestGHRB:
         bugs = ghrb.get_bugs()
 
         assert bugs is not None
-        assert len(bugs) > 0
+        assert len(bugs) == 76
+        assert len(set([bug.pid for bug in bugs])) == 16
 
     def test_checkout(self):
         ghrb = get_benchmark("ghrb")
