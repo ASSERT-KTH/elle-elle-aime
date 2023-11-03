@@ -1,8 +1,7 @@
 from typing import Optional, Tuple, List
 from unidiff import PatchSet
 from uuid import uuid4
-import os, tempfile, difflib, shutil
-import re
+import os, tempfile, difflib, re
 
 from elleelleaime.core.benchmarks.bug import Bug
 from elleelleaime.core.utils.java_tools.java_lang import load_origin_code_node
@@ -50,14 +49,13 @@ def assert_same_diff(original_diff: PatchSet, function_diff: List[str]) -> bool:
     original_added_lines = []
     original_removed_lines = []
     # Get the original changed lines
-    # TODO: this diff is inverted, i.e. the target file is the buggy file
     for file in original_diff:
         for hunk in file:
             for line in hunk:
-                if line.is_added:
+                if line.is_removed:
                     original_removed_lines.append(line.value.strip())
                     original_source += line.value
-                elif line.is_removed:
+                elif line.is_added:
                     original_added_lines.append(line.value.strip())
                     original_target += line.value
                 elif line.is_context:
@@ -116,20 +114,19 @@ def extract_single_function(bug: Bug) -> Optional[Tuple[str, str]]:
         bug.checkout(buggy_path, fixed=False)
         bug.checkout(fixed_path, fixed=True)
 
-        # Note: this diff is inverted, i.e. the target file is the buggy file
         diff = PatchSet(bug.get_ground_truth())
 
         buggy_file_path = os.path.join(
             buggy_path,
-            diff[0].target_file[2:]
-            if diff[0].target_file.startswith("b/")
-            else diff[0].target_file,
-        )
-        fixed_file_path = os.path.join(
-            fixed_path,
             diff[0].source_file[2:]
             if diff[0].source_file.startswith("a/")
             else diff[0].source_file,
+        )
+        fixed_file_path = os.path.join(
+            fixed_path,
+            diff[0].target_file[2:]
+            if diff[0].target_file.startswith("b/")
+            else diff[0].target_file,
         )
 
         # Find the methods of each hunk
@@ -140,14 +137,14 @@ def extract_single_function(bug: Bug) -> Optional[Tuple[str, str]]:
             buggy_methods.append(
                 load_origin_code_node(
                     buggy_file_path,
-                    [x.target_line_no for x in hunk.target_lines()],
+                    [x.source_line_no for x in hunk.source_lines()],
                     allowed_node_types,
                 )[0]
             )
             fixed_methods.append(
                 load_origin_code_node(
                     fixed_file_path,
-                    [x.source_line_no for x in hunk.source_lines()],
+                    [x.target_line_no for x in hunk.target_lines()],
                     allowed_node_types,
                 )[0]
             )

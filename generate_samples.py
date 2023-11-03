@@ -85,6 +85,8 @@ def entry_point(
         for future in tqdm.tqdm(as_completed(futures), total=len(futures)):
             try:
                 results.append(future.result())
+                if results[-1]["prompt"] is not None:
+                    print(results[-1]["ground_truth"])
             except Exception as e:
                 logging.error(
                     f"Error while generating sample for bug {future_to_bug[future]}: {traceback.format_exc()}"
