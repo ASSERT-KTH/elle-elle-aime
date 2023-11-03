@@ -105,9 +105,11 @@ def extract_single_function(bug: Bug) -> Optional[Tuple[str, str]]:
     buggy_path = os.path.join(
         tempfile.gettempdir(), "elleelleaime", bug.get_identifier(), str(uuid4())
     )
+    os.makedirs(buggy_path)
     fixed_path = os.path.join(
         tempfile.gettempdir(), "elleelleaime", bug.get_identifier(), str(uuid4())
     )
+    os.makedirs(fixed_path)
 
     try:
         # Checkout the buggy and fixed versions of the bug

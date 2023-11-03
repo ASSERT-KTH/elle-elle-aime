@@ -1,6 +1,7 @@
 from elleelleaime.core.utils.benchmarks import get_benchmark
 
 from pathlib import Path
+import uuid
 
 
 class TestGHRB:
@@ -23,8 +24,8 @@ class TestGHRB:
         # Sample a bug
         bug = ghrb.get_bugs().pop()
 
-        buggy_path = f"/tmp/elleelleaime/ghrb/{bug.get_identifier()}-buggy"
-        fixed_path = f"/tmp/elleelleaime/ghrb/{bug.get_identifier()}-fixed"
+        buggy_path = f"/tmp/elleelleaime/{bug.get_identifier()}-buggy-{uuid.uuid4()}"
+        fixed_path = f"/tmp/elleelleaime/{bug.get_identifier()}-fixed-{uuid.uuid4()}"
         try:
             # Checkout buggy version
             bug.checkout(buggy_path, fixed=False)
@@ -46,7 +47,7 @@ class TestGHRB:
         # Sample a bug
         bug = ghrb.get_bugs().pop()
 
-        buggy_path = f"/tmp/elleelleaime/ghrb/{bug.get_identifier()}-buggy"
+        buggy_path = f"/tmp/elleelleaime/{bug.get_identifier()}-buggy-{uuid.uuid4()}"
         try:
             # Checkout buggy version
             bug.checkout(buggy_path, fixed=False)
@@ -69,7 +70,7 @@ class TestGHRB:
         # Sample a bug
         bug = ghrb.get_bugs().pop()
 
-        fixed_path = f"/tmp/elleelleaime/ghrb/{bug.get_identifier()}-fixed"
+        fixed_path = f"/tmp/elleelleaime/{bug.get_identifier()}-fixed-{uuid.uuid4()}"
         try:
             # Checkout fixed version
             bug.checkout(fixed_path, fixed=True)
