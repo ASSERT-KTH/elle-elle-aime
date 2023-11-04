@@ -129,8 +129,10 @@ class ZeroShotClozePrompting(PromptingStrategy):
                     suffix[1] += line[1:]
 
         if self.keep_buggy_code:
-            middle = "// buggy code\n" + "//".join(
-                [line for line in buggy_code.splitlines(keepends=True)]
+            middle = (
+                "// buggy code\n"
+                + "//"
+                + "//".join([line for line in middle.splitlines(keepends=True)])
             )
             prompt = prefix[1] + middle + "<FILL_ME>\n" + suffix[1]
         else:
