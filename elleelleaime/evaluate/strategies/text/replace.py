@@ -25,6 +25,17 @@ class ReplaceEvaluationStrategy(PatchEvaluationStrategy):
         evaluation = []
 
         for generation in sample["generation"]:
+            if generation is None:
+                evaluation.append(
+                    {
+                        "generation": None,
+                        "exact_match": False,
+                        "compile": False,
+                        "test": False,
+                    }
+                )
+                continue
+
             buggy_path = os.path.join(
                 tempfile.gettempdir(),
                 "elleelleaime",
@@ -32,15 +43,29 @@ class ReplaceEvaluationStrategy(PatchEvaluationStrategy):
                 str(uuid4()),
             )
 
+            # Remove comments from the generated code and the fixed code
+            generation_no_comments = "".join(
+                [
+                    line
+                    for line in generation.splitlines(keepends=True)
+                    if not line.strip().startswith("//")
+                ]
+            )
+
+            fixed_code = "".join(
+                [
+                    line
+                    for line in sample["fixed_code"].splitlines(keepends=True)
+                    if not line.strip().startswith("//")
+                ]
+            )
+
             result = {
                 "generation": generation,
-                "exact_match": generation is not None
-                and all(
+                "exact_match": all(
                     [
                         x.strip() == y.strip()
-                        for x, y in zip(
-                            generation.split("\n"), sample["fixed_code"].split("\n")
-                        )
+                        for x, y in zip(generation_no_comments, fixed_code)
                     ]
                 ),
                 "compile": False,

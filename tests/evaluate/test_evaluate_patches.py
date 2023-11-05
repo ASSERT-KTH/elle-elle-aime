@@ -26,7 +26,7 @@ class TestEvaluatePatches:
             prompt_strategy=TestEvaluatePatches.PROMPT_STRATEGY,
             model_name=TestEvaluatePatches.MODEL_NAME,
         )
-        sample["generation"] = [sample["fixed_code"]]
+        sample["generation"] = [sample["fixed_code"] + "\n// comment"]
         return bug, sample
 
     @classmethod
