@@ -247,6 +247,61 @@ class TestClozeSamplesCodeLLaMA:
         )
         assert sample["prompt"].count("<FILL_ME>") == 1
 
+    def test_chart_1_keep_buggy_code(self):
+        bug = TestClozeSamplesCodeLLaMA.DEFECTS4J.get_bug("Chart-1")
+        assert bug is not None
+
+        sample = generate_sample(
+            bug=bug,
+            prompt_strategy=TestClozeSamplesCodeLLaMA.PROMPT_STRATEGY,
+            model_name=TestClozeSamplesCodeLLaMA.MODEL_NAME,
+            keep_buggy_code=True,
+        )
+
+        # Assert we are dealing with the correct bug and strategy
+        assert sample["identifier"] == "Chart-1"
+        assert sample["prompt_strategy"] == "zero-shot-cloze"
+
+        assert (
+            sample["prompt"]
+            == """    public LegendItemCollection getLegendItems() {
+        LegendItemCollection result = new LegendItemCollection();
+        if (this.plot == null) {
+            return result;
+        }
+        int index = this.plot.getIndexOf(this);
+        CategoryDataset dataset = this.plot.getDataset(index);
+// buggy code
+//        if (dataset != null) {
+<FILL_ME>
+            return result;
+        }
+        int seriesCount = dataset.getRowCount();
+        if (plot.getRowRenderingOrder().equals(SortOrder.ASCENDING)) {
+            for (int i = 0; i < seriesCount; i++) {
+                if (isSeriesVisibleInLegend(i)) {
+                    LegendItem item = getLegendItem(index, i);
+                    if (item != null) {
+                        result.add(item);
+                    }
+                }
+            }
+        }
+        else {
+            for (int i = seriesCount - 1; i >= 0; i--) {
+                if (isSeriesVisibleInLegend(i)) {
+                    LegendItem item = getLegendItem(index, i);
+                    if (item != null) {
+                        result.add(item);
+                    }
+                }
+            }
+        }
+        return result;
+    }
+"""
+        )
+
     def test_closure_11_keep_buggy_code(self):
         bug = TestClozeSamplesCodeLLaMA.DEFECTS4J.get_bug("Closure-11")
         assert bug is not None

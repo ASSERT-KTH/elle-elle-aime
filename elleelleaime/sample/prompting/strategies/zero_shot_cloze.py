@@ -121,7 +121,8 @@ class ZeroShotClozePrompting(PromptingStrategy):
                 suffix[0] = True
                 middle += suffix[1]
                 suffix[1] = ""
-                middle += line[1:]
+                if line.startswith("-"):
+                    middle += line[1:]
             else:
                 if prefix[0]:
                     prefix[1] += line[1:]
