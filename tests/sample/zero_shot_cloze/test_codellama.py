@@ -401,6 +401,55 @@ class TestClozeSamplesCodeLLaMA:
             in sample["prompt"]
         )
 
+    def test_closure_2_keep_buggy_code(self):
+        bug = TestClozeSamplesCodeLLaMA.DEFECTS4J.get_bug("Closure-2")
+        assert bug is not None
+
+        sample = generate_sample(
+            bug=bug,
+            prompt_strategy=TestClozeSamplesCodeLLaMA.PROMPT_STRATEGY,
+            model_name=TestClozeSamplesCodeLLaMA.MODEL_NAME,
+            keep_buggy_code=True,
+        )
+
+        # Assert we are dealing with the correct bug and strategy
+        assert sample["identifier"] == "Closure-2"
+        assert sample["prompt_strategy"] == "zero-shot-cloze"
+
+        assert (
+            sample["prompt"]
+            == """  private void checkInterfaceConflictProperties(NodeTraversal t, Node n,
+      String functionName, HashMap<String, ObjectType> properties,
+      HashMap<String, ObjectType> currentProperties,
+      ObjectType interfaceType) {
+    ObjectType implicitProto = interfaceType.getImplicitPrototype();
+    Set<String> currentPropertyNames;
+// buggy code
+//      // This can be the case if interfaceType is proxy to a non-existent
+//      // object (which is a bad type annotation, but shouldn't crash).
+//      currentPropertyNames = implicitProto.getOwnPropertyNames();
+<FILL_ME>
+    for (String name : currentPropertyNames) {
+      ObjectType oType = properties.get(name);
+      if (oType != null) {
+        if (!interfaceType.getPropertyType(name).isEquivalentTo(
+            oType.getPropertyType(name))) {
+          compiler.report(
+              t.makeError(n, INCOMPATIBLE_EXTENDED_PROPERTY_TYPE,
+                  functionName, name, oType.toString(),
+                  interfaceType.toString()));
+        }
+      }
+      currentProperties.put(name, interfaceType);
+    }
+    for (ObjectType iType : interfaceType.getCtorExtendedInterfaces()) {
+      checkInterfaceConflictProperties(t, n, functionName, properties,
+          currentProperties, iType);
+    }
+  }
+"""
+        )
+
     def test_closure_5(self):
         bug = TestClozeSamplesCodeLLaMA.DEFECTS4J.get_bug("Closure-5")
         assert bug is not None
