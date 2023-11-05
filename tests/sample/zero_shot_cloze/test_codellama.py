@@ -302,6 +302,65 @@ class TestClozeSamplesCodeLLaMA:
 """
         )
 
+    def test_chart_5_keep_buggy_code(self):
+        bug = TestClozeSamplesCodeLLaMA.DEFECTS4J.get_bug("Chart-5")
+        assert bug is not None
+
+        sample = generate_sample(
+            bug=bug,
+            prompt_strategy=TestClozeSamplesCodeLLaMA.PROMPT_STRATEGY,
+            model_name=TestClozeSamplesCodeLLaMA.MODEL_NAME,
+            keep_buggy_code=True,
+        )
+
+        # Assert we are dealing with the correct bug and strategy
+        assert sample["identifier"] == "Chart-5"
+        assert sample["prompt_strategy"] == "zero-shot-cloze"
+
+        assert (
+            sample["prompt"]
+            == """    public XYDataItem addOrUpdate(Number x, Number y) {
+        if (x == null) {
+            throw new IllegalArgumentException("Null 'x' argument.");
+// buggy code
+//        }
+//
+//        // if we get to here, we know that duplicate X values are not permitted
+//        XYDataItem overwritten = null;
+//        int index = indexOf(x);
+//        if (index >= 0 && !this.allowDuplicateXValues) {
+<FILL_ME>
+            XYDataItem existing = (XYDataItem) this.data.get(index);
+            try {
+                overwritten = (XYDataItem) existing.clone();
+            }
+            catch (CloneNotSupportedException e) {
+                throw new SeriesException("Couldn't clone XYDataItem!");
+            }
+            existing.setY(y);
+        }
+        else {
+            // if the series is sorted, the negative index is a result from
+            // Collections.binarySearch() and tells us where to insert the
+            // new item...otherwise it will be just -1 and we should just
+            // append the value to the list...
+            if (this.autoSort) {
+                this.data.add(-index - 1, new XYDataItem(x, y));
+            }
+            else {
+                this.data.add(new XYDataItem(x, y));
+            }
+            // check if this addition will exceed the maximum item count...
+            if (getItemCount() > this.maximumItemCount) {
+                this.data.remove(0);
+            }
+        }
+        fireSeriesChanged();
+        return overwritten;
+    }
+"""
+        )
+
     def test_closure_11_keep_buggy_code(self):
         bug = TestClozeSamplesCodeLLaMA.DEFECTS4J.get_bug("Closure-11")
         assert bug is not None
