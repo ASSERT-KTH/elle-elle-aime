@@ -43,22 +43,18 @@ class ReplaceEvaluationStrategy(PatchEvaluationStrategy):
                 str(uuid4()),
             )
 
-            # Remove comments from the generated code and the fixed code
-            generation_no_comments = "".join(
-                [
-                    line
-                    for line in generation.splitlines(keepends=True)
-                    if not line.strip().startswith("//")
-                ]
-            )
+            # Remove comments and empty lines from the generated code and the fixed code
+            generation_no_comments = [
+                line
+                for line in generation.splitlines(keepends=True)
+                if not line.strip().startswith("//") and not line.strip() == ""
+            ]
 
-            fixed_code = "".join(
-                [
-                    line
-                    for line in sample["fixed_code"].splitlines(keepends=True)
-                    if not line.strip().startswith("//")
-                ]
-            )
+            fixed_code = [
+                line
+                for line in sample["fixed_code"].splitlines(keepends=True)
+                if not line.strip().startswith("//") and not line.strip() == ""
+            ]
 
             result = {
                 "generation": generation,
