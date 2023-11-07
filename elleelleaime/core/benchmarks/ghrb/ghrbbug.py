@@ -74,4 +74,6 @@ class GHRBBug(Bug):
         )
         m_stdout = re.search(r"Failure\/Error info", run.stdout.decode("utf-8"))
         m_stderr = re.search(r"Failure\/Error info", run.stderr.decode("utf-8"))
+        print(run.stdout.decode("utf-8"))
+        print(run.stderr.decode("utf-8"))
         return TestResult(run.returncode == 0 and m_stdout is None and m_stderr is None)

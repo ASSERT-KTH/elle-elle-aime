@@ -70,6 +70,8 @@ class TestGHRB:
         # Sample a bug
         bug = ghrb.get_bugs().pop()
 
+        print(bug.get_identifier())
+
         fixed_path = f"/tmp/elleelleaime/{bug.get_identifier()}-fixed-{uuid.uuid4()}"
         try:
             # Checkout fixed version
@@ -84,3 +86,50 @@ class TestGHRB:
             assert test_result.is_passing()
         finally:
             bug.cleanup(fixed_path)
+
+    def test_run_all_bugs(self):
+        ghrb = get_benchmark("ghrb")
+        assert ghrb is not None
+        ghrb.initialize()
+
+        # Sample a bug
+        for bug in ghrb.get_bugs():
+            print(bug.get_identifier())
+
+            fixed_path = (
+                f"/tmp/elleelleaime/{bug.get_identifier()}-fixed-{uuid.uuid4()}"
+            )
+            try:
+                # Checkout fixed version
+                bug.checkout(fixed_path, fixed=True)
+
+                # Compile fixed version
+                compile_result = bug.compile(fixed_path)
+                if not compile_result.is_passing():
+                    print(f"Bug {bug.get_identifier()} (fixed) failed to compile")
+
+                # Test fixed version
+                test_result = bug.test(fixed_path)
+                if not test_result.is_passing():
+                    print(f"Bug {bug.get_identifier()} (fixed) failed to test")
+            finally:
+                bug.cleanup(fixed_path)
+
+            buggy_path = (
+                f"/tmp/elleelleaime/{bug.get_identifier()}-buggy-{uuid.uuid4()}"
+            )
+            try:
+                # Checkout buggy version
+                bug.checkout(buggy_path, fixed=True)
+
+                # Compile buggy version
+                compile_result = bug.compile(buggy_path)
+                if not compile_result.is_passing():
+                    print(f"Bug {bug.get_identifier()} (buggy) failed to compile")
+
+                # Test buggy version
+                test_result = bug.test(buggy_path)
+                if test_result.is_passing():
+                    print(f"Bug {bug.get_identifier()} (buggy) passed tests")
+            finally:
+                bug.cleanup(buggy_path)
