@@ -23,6 +23,9 @@ class Bug(ABC):
     def get_ground_truth(self) -> str:
         return self.ground_truth
 
+    def is_ground_truth_inverted(self) -> bool:
+        return False
+
     @abstractmethod
     def checkout(self, path: str, fixed: bool = False) -> bool:
         pass

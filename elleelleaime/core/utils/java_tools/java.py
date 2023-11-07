@@ -40,7 +40,11 @@ def compute_diff(
 
 
 # Check if the computed diff is equivalent to the original diff
-def assert_same_diff(original_diff: PatchSet, function_diff: List[str]) -> bool:
+def assert_same_diff(
+    original_diff: PatchSet,
+    function_diff: List[str],
+    original_diff_inverted: bool = False,
+) -> bool:
     """
     Checks if the computed diff is equivalent to the original diff
     """
@@ -52,12 +56,18 @@ def assert_same_diff(original_diff: PatchSet, function_diff: List[str]) -> bool:
     for file in original_diff:
         for hunk in file:
             for line in hunk:
-                if line.is_removed:
+                if not original_diff_inverted and line.is_removed:
                     original_removed_lines.append(line.value.strip())
                     original_source += line.value
-                elif line.is_added:
+                elif not original_diff_inverted and line.is_added:
                     original_added_lines.append(line.value.strip())
                     original_target += line.value
+                elif original_diff_inverted and line.is_removed:
+                    original_added_lines.append(line.value.strip())
+                    original_target += line.value
+                elif original_diff_inverted and line.is_added:
+                    original_removed_lines.append(line.value.strip())
+                    original_source += line.value
                 elif line.is_context:
                     original_source += line.value
                     original_target += line.value
@@ -129,6 +139,9 @@ def extract_single_function(bug: Bug) -> Optional[Tuple[str, str]]:
             else diff[0].target_file,
         )
 
+        if bug.is_ground_truth_inverted():
+            buggy_file_path, fixed_file_path = fixed_file_path, buggy_file_path
+
         # Find the methods of each hunk
         buggy_methods = []
         fixed_methods = []
@@ -137,14 +150,18 @@ def extract_single_function(bug: Bug) -> Optional[Tuple[str, str]]:
             buggy_methods.append(
                 load_origin_code_node(
                     buggy_file_path,
-                    [x.source_line_no for x in hunk.source_lines()],
+                    [x.source_line_no for x in hunk.source_lines()]
+                    if not bug.is_ground_truth_inverted()
+                    else [x.target_line_no for x in hunk.target_lines()],
                     allowed_node_types,
                 )[0]
             )
             fixed_methods.append(
                 load_origin_code_node(
                     fixed_file_path,
-                    [x.target_line_no for x in hunk.target_lines()],
+                    [x.target_line_no for x in hunk.target_lines()]
+                    if not bug.is_ground_truth_inverted()
+                    else [x.source_line_no for x in hunk.source_lines()],
                     allowed_node_types,
                 )[0]
             )

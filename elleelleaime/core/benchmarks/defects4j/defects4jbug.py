@@ -21,6 +21,9 @@ class Defects4JBug(Bug):
         self.bid = bid
         super().__init__(benchmark, f"{pid}-{bid}", ground_truth)
 
+    def is_ground_truth_inverted(self) -> bool:
+        return True
+
     @backoff.on_exception(
         backoff.constant, subprocess.CalledProcessError, interval=1, max_tries=3
     )
