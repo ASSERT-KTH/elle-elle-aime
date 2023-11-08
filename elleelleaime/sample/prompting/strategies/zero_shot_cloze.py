@@ -7,6 +7,8 @@ from elleelleaime.core.benchmarks.bug import Bug
 from elleelleaime.core.utils.java_tools.java import (
     extract_single_function,
     compute_diff,
+    remove_java_comments,
+    remove_empty_lines,
 )
 
 
@@ -41,6 +43,7 @@ class ZeroShotClozePrompting(PromptingStrategy):
         self.original_mask_token: str = model_kwargs["mask_token"]
         self.extra_mask_token: bool = model_kwargs.get("extra_mask_token", False)
         self.keep_buggy_code: bool = kwargs.get("keep_buggy_code", False)
+        self.keep_comments: bool = kwargs.get("keep_comments", False)
 
     def generate_masking_prompt(self, line_to_replace: str, mask_id: int) -> str:
         """Generate the mask token to be inserted, according to the mask idx."""
@@ -157,10 +160,23 @@ class ZeroShotClozePrompting(PromptingStrategy):
             return None, None, None
 
         buggy_code, fixed_code = result
-        if self.MODEL_DICT[self.model_name]["single_chunk"]:
-            prompt = self.build_single_cloze_prompt(buggy_code, fixed_code)
+
+        if not self.keep_comments:
+            buggy_code_prompt = remove_java_comments(buggy_code)
+            fixed_code_prompt = remove_java_comments(fixed_code)
         else:
-            prompt = self.build_multi_cloze_prompt(buggy_code, fixed_code)
+            buggy_code_prompt = buggy_code
+            fixed_code_prompt = fixed_code
+
+        buggy_code_prompt = remove_empty_lines(buggy_code_prompt)
+        fixed_code_prompt = remove_empty_lines(fixed_code_prompt)
+
+        if self.MODEL_DICT[self.model_name]["single_chunk"]:
+            prompt = self.build_single_cloze_prompt(
+                buggy_code_prompt, fixed_code_prompt
+            )
+        else:
+            prompt = self.build_multi_cloze_prompt(buggy_code_prompt, fixed_code_prompt)
 
         return buggy_code, fixed_code, prompt
 

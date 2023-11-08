@@ -379,10 +379,9 @@ class TestClozeSamplesIncoder:
             .strip()
             .startswith("protected CompilerOptions createOptions() {")
         )
-        assert sample["prompt"].count("<|mask:") == 3
+        assert sample["prompt"].count("<|mask:") == 2
         assert sample["prompt"].count("<|mask:0|>") == 1
         assert sample["prompt"].count("<|mask:1|>") == 1
-        assert sample["prompt"].count("<|mask:2|>") == 1
 
     def test_lang_10(self):
         bug = TestClozeSamplesIncoder.DEFECTS4J.get_bug("Lang-10")
