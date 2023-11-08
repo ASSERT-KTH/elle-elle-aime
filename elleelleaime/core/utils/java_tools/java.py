@@ -1,7 +1,7 @@
 from typing import Optional, Tuple, List
 from unidiff import PatchSet
 from uuid import uuid4
-import os, tempfile, difflib
+import os, tempfile, difflib, shutil
 import re
 
 from elleelleaime.core.benchmarks.bug import Bug
