@@ -45,7 +45,8 @@ class TestGHRB:
         ghrb.initialize()
 
         # Sample a bug
-        bug = ghrb.get_bugs().pop()
+        bug = ghrb.get_bug("assertj-3")
+        assert bug is not None
 
         buggy_path = f"/tmp/elleelleaime/{bug.get_identifier()}-buggy-{uuid.uuid4()}"
         try:
@@ -68,9 +69,8 @@ class TestGHRB:
         ghrb.initialize()
 
         # Sample a bug
-        bug = ghrb.get_bugs().pop()
-
-        print(bug.get_identifier())
+        bug = ghrb.get_bug("assertj-3")
+        assert bug is not None
 
         fixed_path = f"/tmp/elleelleaime/{bug.get_identifier()}-fixed-{uuid.uuid4()}"
         try:

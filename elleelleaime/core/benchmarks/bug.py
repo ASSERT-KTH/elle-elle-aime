@@ -1,4 +1,6 @@
 from abc import ABC, abstractmethod
+from unidiff import PatchSet
+import os
 
 from elleelleaime.core.benchmarks.benchmark import Benchmark
 from elleelleaime.core.benchmarks.test_result import TestResult
@@ -25,6 +27,42 @@ class Bug(ABC):
 
     def is_ground_truth_inverted(self) -> bool:
         return False
+
+    def get_buggy_file_path(self, work_dir: str) -> str:
+        diff = PatchSet(self.get_ground_truth())
+
+        if self.is_ground_truth_inverted():
+            return os.path.join(
+                work_dir,
+                diff[0].target_file[2:]
+                if diff[0].target_file.startswith("b/")
+                else diff[0].target_file,
+            )
+        else:
+            return os.path.join(
+                work_dir,
+                diff[0].source_file[2:]
+                if diff[0].source_file.startswith("a/")
+                else diff[0].source_file,
+            )
+
+    def get_fixed_file_path(self, work_dir: str) -> str:
+        diff = PatchSet(self.get_ground_truth())
+
+        if self.is_ground_truth_inverted():
+            return os.path.join(
+                work_dir,
+                diff[0].source_file[2:]
+                if diff[0].source_file.startswith("a/")
+                else diff[0].source_file,
+            )
+        else:
+            return os.path.join(
+                work_dir,
+                diff[0].target_file[2:]
+                if diff[0].target_file.startswith("b/")
+                else diff[0].target_file,
+            )
 
     @abstractmethod
     def checkout(self, path: str, fixed: bool = False) -> bool:

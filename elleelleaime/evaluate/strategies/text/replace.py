@@ -70,19 +70,11 @@ class ReplaceEvaluationStrategy(PatchEvaluationStrategy):
 
             if generation is not None:
                 try:
-                    # Note: this diff is inverted, i.e. the target file is the buggy file
-                    diff = PatchSet(bug.get_ground_truth())
-
                     # Checkout the buggy code
                     bug.checkout(buggy_path, fixed=False)
 
                     # Locate and load the buggy file
-                    buggy_file_path = os.path.join(
-                        buggy_path,
-                        diff[0].target_file[2:]
-                        if diff[0].target_file.startswith("b/")
-                        else diff[0].target_file,
-                    )
+                    buggy_file_path = bug.get_buggy_file_path(buggy_path)
                     with open(buggy_file_path, "r", encoding="ISO-8859-1") as f:
                         buggy_code = f.read()
 

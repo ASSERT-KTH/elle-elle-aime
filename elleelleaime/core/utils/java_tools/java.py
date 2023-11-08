@@ -126,21 +126,8 @@ def extract_single_function(bug: Bug) -> Optional[Tuple[str, str]]:
 
         diff = PatchSet(bug.get_ground_truth())
 
-        buggy_file_path = os.path.join(
-            buggy_path,
-            diff[0].source_file[2:]
-            if diff[0].source_file.startswith("a/")
-            else diff[0].source_file,
-        )
-        fixed_file_path = os.path.join(
-            fixed_path,
-            diff[0].target_file[2:]
-            if diff[0].target_file.startswith("b/")
-            else diff[0].target_file,
-        )
-
-        if bug.is_ground_truth_inverted():
-            buggy_file_path, fixed_file_path = fixed_file_path, buggy_file_path
+        buggy_file_path = bug.get_buggy_file_path(buggy_path)
+        fixed_file_path = bug.get_fixed_file_path(fixed_path)
 
         # Find the methods of each hunk
         buggy_methods = []
