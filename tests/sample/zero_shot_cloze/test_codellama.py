@@ -317,8 +317,6 @@ class TestClozeSamplesCodeLLaMA:
         assert sample["identifier"] == "Chart-5"
         assert sample["prompt_strategy"] == "zero-shot-cloze"
 
-        print(sample["prompt"])
-
         assert (
             sample["prompt"]
             == """    public XYDataItem addOrUpdate(Number x, Number y) {
