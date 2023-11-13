@@ -45,7 +45,7 @@ class TestGHRB:
         ghrb.initialize()
 
         # Sample a bug
-        bug = ghrb.get_bug("assertj-3")
+        bug = ghrb.get_bug("jackson-core-1")
         assert bug is not None
 
         buggy_path = f"/tmp/elleelleaime/{bug.get_identifier()}-buggy-{uuid.uuid4()}"
@@ -92,9 +92,30 @@ class TestGHRB:
         assert ghrb is not None
         ghrb.initialize()
 
+        sfbugs = [
+            "openapi-generator-5",
+            "checkstyle-3",
+            "fastjson-1",
+            "retrofit-1",
+            "checkstyle-6",
+            "checkstyle-12",
+            "openapi-generator-2",
+            "jackson-core-1",
+            "nacos-3",
+            "gson-9",
+            "openapi-generator-1",
+            "jackson-databind-3",
+            "sslcontext-kickstart-4",
+            "rocketmq-9",
+            "jackson-databind-2",
+            "checkstyle-5",
+            "rocketmq-1",
+        ]
+
         # Sample a bug
         for bug in ghrb.get_bugs():
-            print(bug.get_identifier())
+            if bug.get_identifier() not in sfbugs:
+                continue
 
             fixed_path = (
                 f"/tmp/elleelleaime/{bug.get_identifier()}-fixed-{uuid.uuid4()}"
