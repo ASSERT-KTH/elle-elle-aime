@@ -38,6 +38,7 @@ class TestClozeSamplesCodeLLaMA:
     """
 
     DEFECTS4J: Benchmark
+    HUMANEVALJAVA: Benchmark
     PROMPT_STRATEGY: str = "zero-shot-cloze"
     MODEL_NAME: str = "codellama"
 
@@ -46,6 +47,9 @@ class TestClozeSamplesCodeLLaMA:
         TestClozeSamplesCodeLLaMA.DEFECTS4J = get_benchmark("defects4j")
         assert TestClozeSamplesCodeLLaMA.DEFECTS4J is not None
         TestClozeSamplesCodeLLaMA.DEFECTS4J.initialize()
+        TestClozeSamplesCodeLLaMA.HUMANEVALJAVA = get_benchmark("humanevaljava")
+        assert TestClozeSamplesCodeLLaMA.HUMANEVALJAVA is not None
+        TestClozeSamplesCodeLLaMA.HUMANEVALJAVA.initialize()
 
     def test_closure_46(self):
         bug = TestClozeSamplesCodeLLaMA.DEFECTS4J.get_bug("Closure-46")
@@ -628,4 +632,83 @@ class TestClozeSamplesCodeLLaMA:
             .strip()
             .startswith("private void updateBounds(TimePeriod period, int index) {")
         )
+        assert sample["prompt"].count("<FILL_ME>") == 1
+
+    def test_GET_ROW(self):
+        bug = TestClozeSamplesCodeLLaMA.HUMANEVALJAVA.get_bug("GET_ROW")
+        assert bug is not None
+
+        sample = generate_sample(
+            bug=bug,
+            prompt_strategy=TestClozeSamplesCodeLLaMA.PROMPT_STRATEGY,
+            model_name=TestClozeSamplesCodeLLaMA.MODEL_NAME,
+        )
+
+        # Assert we are dealing with the correct bug and strategy
+        assert sample["identifier"] == "GET_ROW"
+        assert sample["prompt_strategy"] == "zero-shot-cloze"
+
+        # Assert that the prompt is properly constructed
+        assert sample["prompt"] is not None
+        assert sample["prompt"].count("<FILL_ME>") == 1
+
+    def test_GET_ROW_keep_buggy_code(self):
+        bug = TestClozeSamplesCodeLLaMA.HUMANEVALJAVA.get_bug("GET_ROW")
+        assert bug is not None
+
+        sample = generate_sample(
+            bug=bug,
+            prompt_strategy=TestClozeSamplesCodeLLaMA.PROMPT_STRATEGY,
+            model_name=TestClozeSamplesCodeLLaMA.MODEL_NAME,
+            keep_buggy_code=True,
+        )
+
+        # Assert we are dealing with the correct bug and strategy
+        assert sample["identifier"] == "GET_ROW"
+        assert sample["prompt_strategy"] == "zero-shot-cloze"
+
+        # Assert that the prompt is properly constructed
+        assert sample["prompt"] is not None
+        assert "// buggy code" in sample["prompt"]
+        assert (
+            "for (int j = lst.get(0).size() - 1; j >= 0; j -= 1){" in sample["prompt"]
+        )
+        assert sample["prompt"].count("<FILL_ME>") == 1
+
+    def test_ADD(self):
+        bug = TestClozeSamplesCodeLLaMA.HUMANEVALJAVA.get_bug("ADD")
+        assert bug is not None
+
+        sample = generate_sample(
+            bug=bug,
+            prompt_strategy=TestClozeSamplesCodeLLaMA.PROMPT_STRATEGY,
+            model_name=TestClozeSamplesCodeLLaMA.MODEL_NAME,
+        )
+
+        # Assert we are dealing with the correct bug and strategy
+        assert sample["identifier"] == "ADD"
+        assert sample["prompt_strategy"] == "zero-shot-cloze"
+
+        # Assert that the prompt is properly constructed
+        assert sample["prompt"] is not None
+        assert sample["prompt"].count("<FILL_ME>") == 1
+
+    def test_ADD_keep_buggy_code(self):
+        bug = TestClozeSamplesCodeLLaMA.HUMANEVALJAVA.get_bug("ADD")
+        assert bug is not None
+
+        sample = generate_sample(
+            bug=bug,
+            prompt_strategy=TestClozeSamplesCodeLLaMA.PROMPT_STRATEGY,
+            model_name=TestClozeSamplesCodeLLaMA.MODEL_NAME,
+            keep_buggy_code=True,
+        )
+
+        # Assert we are dealing with the correct bug and strategy
+        assert sample["identifier"] == "ADD"
+        assert sample["prompt_strategy"] == "zero-shot-cloze"
+
+        # Assert that the prompt is properly constructed
+        assert sample["prompt"] is not None
+        assert "//        return x | y;" in sample["prompt"]
         assert sample["prompt"].count("<FILL_ME>") == 1

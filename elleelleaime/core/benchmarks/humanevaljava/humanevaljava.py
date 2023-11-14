@@ -1,10 +1,10 @@
 from pathlib import Path
+from unidiff import PatchSet
 from elleelleaime.core.benchmarks.benchmark import Benchmark
 from elleelleaime.core.benchmarks.humanevaljava.humanevaljavabug import HumanEvalJavaBug
 
 import subprocess
 import logging
-import tqdm
 
 
 class HumanEvalJava(Benchmark):
@@ -66,7 +66,9 @@ class HumanEvalJava(Benchmark):
                     shell=True,
                     capture_output=True,
                 )
-                diff = run.stdout.decode("utf-8")
+                diff = PatchSet(run.stdout.decode("utf-8"))
+                # Change the source file path to point to the buggy version
+                diff[0].source_file = f"src/main/java/humaneval/buggy/{bid}.java"
 
                 run = subprocess.run(
                     f"sed -i 's/package humaneval\\.buggy/package humaneval\\.correct/g' {self.get_path()}/src/main/java/humaneval/correct/{bid}.java",
@@ -75,4 +77,4 @@ class HumanEvalJava(Benchmark):
                     check=True,
                 )
 
-                self.add_bug(HumanEvalJavaBug(self, bid, diff))
+                self.add_bug(HumanEvalJavaBug(self, bid, str(diff)))
