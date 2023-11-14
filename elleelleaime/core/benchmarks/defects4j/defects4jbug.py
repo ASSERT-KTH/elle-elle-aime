@@ -46,9 +46,6 @@ class Defects4JBug(Bug):
 
         return checkout_run.returncode == 0 and dos2unix_run.returncode == 0
 
-    def apply_diff(self, path: str) -> bool:
-        return super().apply_diff(path)
-
     def compile(self, path: str) -> CompileResult:
         run = subprocess.run(
             f"cd {path}; timeout {5*60} {self.benchmark.get_bin()} compile",

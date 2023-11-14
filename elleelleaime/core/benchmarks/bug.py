@@ -28,10 +28,6 @@ class Bug(ABC):
         pass
 
     @abstractmethod
-    def apply_diff(self, path: str) -> bool:
-        pass
-
-    @abstractmethod
     def compile(self, path: str) -> CompileResult:
         pass
 
