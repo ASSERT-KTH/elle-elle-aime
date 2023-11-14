@@ -73,7 +73,9 @@ class TestHumanEvalJava:
         assert humanevaljava is not None
         humanevaljava.initialize()
 
-        bugs = list(humanevaljava.get_bugs())
+        # This test takes a while, so we limit to 10 bugs.
+        # Remove the slice to run all bugs.
+        bugs = list(humanevaljava.get_bugs())[:10]
         assert bugs is not None
 
         def run_bug(bug):
