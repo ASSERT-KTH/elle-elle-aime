@@ -29,9 +29,8 @@ class Benchmark(ABC):
     def get_path(self) -> pathlib.Path:
         return self.path
 
-    @abstractmethod
-    def get_bin(self) -> pathlib.Path:
-        pass
+    def get_bin(self) -> Optional[pathlib.Path]:
+        return None
 
     def get_bugs(self) -> Set[Bug]:
         return set(self.bugs.values())
