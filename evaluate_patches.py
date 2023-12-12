@@ -36,6 +36,13 @@ def exact_match(evaluation: dict) -> bool:
     return evaluation["exact_match"]
 
 
+def ast_match(evaluation: dict) -> bool:
+    """
+    Returns True if the evaluation is an AST match.
+    """
+    return evaluation["ast_match"]
+
+
 def plausible(evaluation: dict) -> bool:
     """
     Returns True if the evaluation is plausible.
@@ -97,13 +104,16 @@ def compute_statistics(samples: list) -> dict:
         "num_bugs_with_prompt": 0,
         "num_bugs_with_candidates": 0,
         "num_bugs_with_exact_match_candidates": 0,
+        "num_bugs_with_ast_match_candidates": 0,
         "num_bugs_with_plausible_candidates": 0,
         "num_bugs_with_compilable_candidates": 0,
         "num_patches": 0,
         "num_compilable_patches": 0,
         "num_plausible_patches": 0,
+        "num_ast_match_patches": 0,
         "num_exact_match_patches": 0,
         "bugs_with_exact_match_candidates": [],
+        "bugs_with_ast_match_candidates": [],
         "bugs_with_plausible_candidates": [],
         "bugs_with_compilable_candidates": [],
     }
@@ -125,12 +135,20 @@ def compute_statistics(samples: list) -> dict:
             statistics["num_plausible_patches"] += sum(
                 plausible(candidate) for candidate in sample["evaluation"]
             )
+            statistics["num_ast_match_patches"] += sum(
+                ast_match(candidate) for candidate in sample["evaluation"]
+            )
             statistics["num_exact_match_patches"] += sum(
                 exact_match(candidate) for candidate in sample["evaluation"]
             )
             if any(exact_match(candidate) for candidate in sample["evaluation"]):
                 statistics["num_bugs_with_exact_match_candidates"] += 1
                 statistics["bugs_with_exact_match_candidates"].append(
+                    sample["identifier"]
+                )
+            if any(ast_match(candidate) for candidate in sample["evaluation"]):
+                statistics["num_bugs_with_ast_match_candidates"] += 1
+                statistics["bugs_with_ast_match_candidates"].append(
                     sample["identifier"]
                 )
             if any(compilable(candidate) for candidate in sample["evaluation"]):
@@ -145,6 +163,7 @@ def compute_statistics(samples: list) -> dict:
                 )
 
     statistics["bugs_with_exact_match_candidates"].sort()
+    statistics["bugs_with_ast_match_candidates"].sort()
     statistics["bugs_with_plausible_candidates"].sort()
     statistics["bugs_with_compilable_candidates"].sort()
 
@@ -193,8 +212,11 @@ def export_patches(samples: list, dir_path: str) -> None:
                 n=max(len(sample["buggy_code"]), len(candidate["generation"])),
             )
 
+            # Store in the most restrictive sub-directory
             if exact_match(candidate):
                 sub_dir = "exact_match"
+            elif ast_match(candidate):
+                sub_dir = "ast_match"
             elif plausible(candidate):
                 sub_dir = "plausible"
             elif compilable(candidate):

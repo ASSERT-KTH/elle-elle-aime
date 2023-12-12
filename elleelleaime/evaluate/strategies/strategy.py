@@ -1,7 +1,10 @@
-from abc import ABC, abstractmethod
-from elleelleaime.core.benchmarks.bug import Bug
+import tempfile
+import subprocess
 
+from abc import ABC, abstractmethod
 from typing import Any, List, Optional, final
+
+from elleelleaime.core.benchmarks.bug import Bug
 
 
 class PatchEvaluationStrategy(ABC):
@@ -16,11 +19,36 @@ class PatchEvaluationStrategy(ABC):
         pass
 
     @final
-    def _handle_none(self) -> Any:
+    def __handle_none(self) -> Any:
         """
         Handles the case where the generation is None. For now, we simply return None.
         """
         return None
+
+    def ast_match(self, fixed_code: str, candidate_code: str) -> bool:
+        # Write the fixed code to a temporary file
+        fixed_code_file = tempfile.NamedTemporaryFile(
+            mode="w", suffix=".java", delete=True
+        )
+        fixed_code_file.write(fixed_code)
+        fixed_code_file.flush()
+
+        # Write the candidate code to a temporary file
+        candidate_code_file = tempfile.NamedTemporaryFile(
+            mode="w", suffix=".java", delete=True
+        )
+        candidate_code_file.write(candidate_code)
+        candidate_code_file.flush()
+
+        # Run the AST matcher on the two files
+        run = subprocess.run(
+            f"java -jar gumtree-spoon-ast-diff.jar {fixed_code_file.name} {candidate_code_file.name}",
+            shell=True,
+            capture_output=True,
+        )
+
+        # Return True if "no AST change" in the output
+        return "no AST change" in run.stdout.decode("utf-8")
 
     @final
     def evaluate(self, bug: Bug, sample: dict) -> Optional[List[dict]]:
@@ -32,6 +60,6 @@ class PatchEvaluationStrategy(ABC):
         """
         # Implements the logic common to all generation strategies
         if sample["generation"] is None:
-            return self._handle_none()
+            return self.__handle_none()
 
         return self._evaluate_impl(bug, sample)

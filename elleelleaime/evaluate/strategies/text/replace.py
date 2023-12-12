@@ -25,11 +25,13 @@ class ReplaceEvaluationStrategy(PatchEvaluationStrategy):
         evaluation = []
 
         for generation in sample["generation"]:
+            # If the generation is None, we skip the evaluation
             if generation is None:
                 evaluation.append(
                     {
                         "generation": None,
                         "exact_match": False,
+                        "ast_match": False,
                         "compile": False,
                         "test": False,
                     }
@@ -64,57 +66,75 @@ class ReplaceEvaluationStrategy(PatchEvaluationStrategy):
                         for x, y in zip(generation_no_comments, fixed_code)
                     ]
                 ),
+                "ast_match": False,
                 "compile": False,
                 "test": False,
             }
 
-            if generation is not None:
-                try:
-                    # Note: this diff is inverted, i.e. the target file is the buggy file
-                    diff = PatchSet(bug.get_ground_truth())
+            # If the generation is an exact match, there is no need to evaluate the AST, compile or test
+            if result["exact_match"]:
+                result["ast_match"] = True
+                result["compile"] = True
+                result["test"] = True
+                evaluation.append(result)
+                continue
 
-                    # Checkout the buggy code
-                    bug.checkout(buggy_path, fixed=False)
+            try:
+                # Note: this diff is inverted, i.e. the target file is the buggy file
+                diff = PatchSet(bug.get_ground_truth())
 
-                    # Locate and load the buggy file
-                    buggy_file_path = os.path.join(
-                        buggy_path,
-                        diff[0].target_file[2:]
-                        if diff[0].target_file.startswith("b/")
-                        else diff[0].target_file,
+                # Checkout the buggy code
+                bug.checkout(buggy_path, fixed=False)
+
+                # Locate and load the buggy file
+                buggy_file_path = os.path.join(
+                    buggy_path,
+                    diff[0].target_file[2:]
+                    if diff[0].target_file.startswith("b/")
+                    else diff[0].target_file,
+                )
+                with open(buggy_file_path, "r", encoding="ISO-8859-1") as f:
+                    buggy_code = f.read()
+
+                # Check that buggy code exists
+                if sample["buggy_code"] not in buggy_code:
+                    logging.error(
+                        f"Could not find buggy code in {buggy_file_path} for {sample['identifier']}"
                     )
-                    with open(buggy_file_path, "r", encoding="ISO-8859-1") as f:
-                        buggy_code = f.read()
+                    break
 
-                    # Replace the buggy code with the generated code
-                    if sample["buggy_code"] not in buggy_code:
-                        logging.warning(
-                            f"Could not find buggy code in {buggy_file_path} for {sample['identifier']}"
-                        )
-                    else:
-                        buggy_code = buggy_code.replace(
-                            sample["buggy_code"], generation
-                        )
+                # Get the fixed and candidate code
+                fixed_code = buggy_code.replace(
+                    sample["buggy_code"], sample["fixed_code"]
+                )
+                candidate_code = buggy_code.replace(sample["buggy_code"], generation)
 
-                        # Write the buggy code to the file
-                        with open(
-                            buggy_file_path,
-                            "w",
-                            encoding="ISO-8859-1",
-                            errors="replace",
-                        ) as f:
-                            f.write(buggy_code)
-                        # Evaluate the buggy code
-                        compilation_result = bug.compile(buggy_path)
-                        result["compile"] = compilation_result.is_passing()
-                        if result["compile"]:
-                            test_result = bug.test(buggy_path)
-                            result["test"] = test_result.is_passing()
-                finally:
-                    shutil.rmtree(buggy_path)
+                # Compute AST Match
+                result["ast_match"] = self.ast_match(fixed_code, candidate_code)
+                # If the AST matches, there is no need to compile or test
+                if result["ast_match"]:
+                    result["compile"] = True
+                    result["test"] = True
+                    evaluation.append(result)
+                    continue
 
-            evaluation.append(result)
-            if evaluation[-1]["test"]:
-                logging.info(f"Found a plausible patch for {sample['identifier']}!")
+                # Compute plausible match
+                # Write the buggy code to the file
+                with open(
+                    buggy_file_path,
+                    "w",
+                    encoding="ISO-8859-1",
+                    errors="replace",
+                ) as f:
+                    f.write(buggy_code)
+                # Evaluate the buggy code
+                compilation_result = bug.compile(buggy_path)
+                result["compile"] = compilation_result.is_passing()
+                if result["compile"]:
+                    test_result = bug.test(buggy_path)
+                    result["test"] = test_result.is_passing()
+                evaluation.append(result)
+            finally:
+                shutil.rmtree(buggy_path)
 
         return evaluation
