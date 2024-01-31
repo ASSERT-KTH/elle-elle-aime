@@ -137,9 +137,14 @@ class ZeroShotClozePrompting(PromptingStrategy):
             if middle.strip() != "":
                 for line in middle.splitlines(keepends=True):
                     buggy_comment += "//" + line
-            prompt = prefix[1] + buggy_comment + "<FILL_ME>\n" + suffix[1]
+            prompt = (
+                prefix[1]
+                + buggy_comment
+                + f"{self.generate_masking_prompt('', 0)}\n"
+                + suffix[1]
+            )
         else:
-            prompt = prefix[1] + "<FILL_ME>\n" + suffix[1]
+            prompt = prefix[1] + f"{self.generate_masking_prompt('', 0)}\n" + suffix[1]
 
         return prompt
 
