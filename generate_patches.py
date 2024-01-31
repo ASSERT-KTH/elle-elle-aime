@@ -60,7 +60,7 @@ def entry_point(
 
     # Write results to jsonl file
     benchmark = samples_path.split("_")[1]
-    prompt_strategy = samples_path.split("_")[2].split(".")[0]
+    prompt_strategy = samples_path.split("_", maxsplit=2)[2].split(".")[0]
     kwargs_str = "_".join([f"{k}={v}" for k, v in kwargs.items()])
     write_jsonl(
         f"candidates_{benchmark}_{prompt_strategy}_{model_name}_{kwargs_str}.jsonl.gz",

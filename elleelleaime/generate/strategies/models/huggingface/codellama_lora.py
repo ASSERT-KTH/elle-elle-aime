@@ -1,6 +1,13 @@
 from elleelleaime.generate.strategies.strategy import PatchGenerationStrategy
 from dataclasses import dataclass
+from accelerate import dispatch_model
 from transformers import LlamaForCausalLM, CodeLlamaTokenizer
+from peft import PeftModel
+from transformers import (
+    AutoTokenizer, 
+    AutoModelForCausalLM, 
+    BitsAndBytesConfig,
+)
 from typing import Any
 
 import torch
@@ -18,28 +25,12 @@ class GenerateSettings:
     num_return_sequences: int = 10
 
 
-class CodeLlamaHFModels(PatchGenerationStrategy):
+class CodeLlamaLoRAHFModels(PatchGenerationStrategy):
     __SUPPORTED_MODELS = {
-        "codellama/CodeLlama-7b-hf",
-        "codellama/CodeLlama-13b-hf",
-        "codellama/CodeLlama-7b-Instruct-hf",
-        "codellama/CodeLlama-13b-Instruct-hf",
         # TODO: make this a regex
-        "ASSERT-KTH/RepairLlama13B-ftf-full-5k-1epoch",
-        "ASSERT-KTH/RepairLlama13B-ftf-full-5k-labelall-1epoch",
-        "/proj/berzelius-2023-175/users/x_andaf/training_logs/codellama7b-ftf-5k",
-        "/proj/berzelius-2023-175/users/x_andaf/training_logs/codellama7b-closure-ftf-5k",
-        "/proj/berzelius-2023-175/users/x_andaf/training_logs/codellama7b-closure-25epochs-5k",
-        "/proj/berzelius-2023-175/users/x_andaf/training_logs/codellama7b-closure-25epochs",
-        "/proj/berzelius-2023-175/users/x_andaf/training_logs/codellama7b-databind-25epochs-5k",
-        "/proj/berzelius-2023-175/users/x_andaf/training_logs/codellama7b-databind-25epochs",
-        "/proj/berzelius-2023-175/users/x_andaf/training_logs/codellama7b-closure-fim-gradientac",
-        "/proj/berzelius-2023-175/users/x_andaf/training_logs/codellama7b-closure-fim-gac-llr",
-        "/proj/berzelius-2023-175/users/x_andaf/training_logs/codellama7b-closure-fim-4k",
-        "/proj/berzelius-2023-175/users/x_andaf/training_logs/codellama7b-databind-fim-llr-4k",
-        "/proj/berzelius-2023-175/users/x_andaf/training_logs/codellama7b-databind-fim",
-        "/proj/berzelius-2023-175/users/x_andaf/training_logs/codellama7b-fft-best",
-        "/proj/berzelius-2023-175/users/x_andaf/training_logs/codellama7b-fft-best-llr",
+        "/proj/berzelius-2023-175/users/x_andaf/training_logs/codellama7b-closure-fim-lora",
+        "/proj/berzelius-2023-175/users/x_andaf/training_logs/codellama7b-closure-fim-lora/checkpoint-802",
+        "ASSERT-KTH/RepairLLaMA-Optimal-IOR",
     }
 
     __GENERATION_STRATEGIES = {
@@ -71,7 +62,7 @@ class CodeLlamaHFModels(PatchGenerationStrategy):
         self.generate_settings = self.__GENERATION_STRATEGIES[
             kwargs.get("generation_strategy", "beam_search")
         ]
-        self.generate_settings.max_new_tokens = kwargs.get("max_new_tokens", 256)
+        self.generate_settings.max_new_tokens = kwargs.get("max_new_tokens", 128)
         self.generate_settings.num_return_sequences = kwargs.get(
             "num_return_sequences", 10
         )
@@ -85,19 +76,38 @@ class CodeLlamaHFModels(PatchGenerationStrategy):
 
         # Setup kwargs
         kwargs = dict(
-            torch_dtype=torch.bfloat16,
+            torch_dtype=torch.float16,
+            load_in_8bit=True,
+            trust_remote_code=True,
+            quantization_config=BitsAndBytesConfig(
+                load_in_8bit=True,
+                llm_int8_threshold=6.0
+            ),
         )
 
         # Load the model and tokenizer
         with self.__MODELS_LOCK:
             if self.__MODELS_LOADED:
                 return
-            self.__TOKENIZER = CodeLlamaTokenizer.from_pretrained(self.model_name)
+            self.__TOKENIZER = AutoTokenizer.from_pretrained(self.model_name)
             self.__TOKENIZER.pad_token = self.__TOKENIZER.eos_token
             self.__TOKENIZER.pad_token_id = self.__TOKENIZER.pad_token_id
-            self.__MODEL = LlamaForCausalLM.from_pretrained(
-                self.model_name, device_map="auto", **kwargs
+            model = AutoModelForCausalLM.from_pretrained(
+                "codellama/CodeLlama-7b-hf",
+                device_map=None,
+                **kwargs
             )
+            self.__MODEL = PeftModel.from_pretrained(
+                model,
+                self.model_name,
+                torch_dtype=torch.float16,
+                adapter_name="project",
+            )
+            # self.__MODEL.load_adapter("ASSERT-KTH/RepairLLaMA-Optimal-IOR", adapter_name="task")
+            if not hasattr(self.__MODEL, "hf_device_map"):
+                self.__MODEL.cuda()
+            # self.__MODEL.add_weighted_adapter(["task","project"], [1.0, 1.0], "repair", combination_type="cat")
+            # self.__MODEL.set_adapter("repair")
             self.__MODELS_LOADED = True
 
     def _generate_impl(self, prompt: str) -> Any:
@@ -121,15 +131,18 @@ class CodeLlamaHFModels(PatchGenerationStrategy):
             return None
 
         with torch.no_grad():
-            generated_ids = self.__MODEL.generate(
-                input_ids,
-                max_new_tokens=self.generate_settings.max_new_tokens,
-                num_beams=self.generate_settings.num_beams,
-                num_return_sequences=self.generate_settings.num_return_sequences,
-                early_stopping=True,
-                do_sample=self.generate_settings.do_sample,
-                temperature=self.generate_settings.temperature,
-            )
+            try:
+                generated_ids = self.__MODEL.generate(
+                    input_ids=input_ids,
+                    max_new_tokens=self.generate_settings.max_new_tokens,
+                    num_beams=self.generate_settings.num_beams,
+                    num_return_sequences=self.generate_settings.num_return_sequences,
+                    early_stopping=True,
+                    do_sample=self.generate_settings.do_sample,
+                    temperature=self.generate_settings.temperature,
+                )
+            except torch.cuda.OutOfMemoryError:
+                return None
 
         input_len = input_ids.shape[1]
         fillings_ids = generated_ids[:, input_len:]

@@ -11,6 +11,9 @@ from elleelleaime.generate.strategies.models.huggingface.codellama import (
 from elleelleaime.generate.strategies.models.huggingface.starcoder import (
     StarCoderHFModels,
 )
+from elleelleaime.generate.strategies.models.huggingface.codellama_lora import (
+    CodeLlamaLoRAHFModels,
+)
 
 from typing import Tuple
 
@@ -50,6 +53,83 @@ class PatchGenerationStrategyRegistry:
             StarCoderHFModels,
             ("bigcode/starcoderplus",),
         ),
+        # TODO: make this a regex
+        "repairllama13b-ftf-full-5k-1epoch": (
+            CodeLlamaHFModels,
+            ("ASSERT-KTH/RepairLlama13B-ftf-full-5k-1epoch",),
+        ),
+        "repairllama13b-ftf-full-5k-labelall-1epoch": (
+            CodeLlamaHFModels,
+            ("ASSERT-KTH/RepairLlama13B-ftf-full-5k-labelall-1epoch",),
+        ),
+        "codellama7b-closure-ftf-5k": (
+            CodeLlamaHFModels,
+            ("/proj/berzelius-2023-175/users/x_andaf/training_logs/codellama7b-closure-ftf-5k",)
+        ),
+        "codellama7b-closure-25epochs-5k": (
+            CodeLlamaHFModels,
+            ("/proj/berzelius-2023-175/users/x_andaf/training_logs/codellama7b-closure-25epochs-5k",)
+        ),
+        "codellama7b-closure-25epochs": (
+            CodeLlamaHFModels,
+            ("/proj/berzelius-2023-175/users/x_andaf/training_logs/codellama7b-closure-25epochs",)
+        ),
+        "codellama7b-databind-25epochs-5k": (
+            CodeLlamaHFModels,
+            ("/proj/berzelius-2023-175/users/x_andaf/training_logs/codellama7b-databind-25epochs-5k",)
+        ),
+        "codellama7b-databind-25epochs": (
+            CodeLlamaHFModels,
+            ("/proj/berzelius-2023-175/users/x_andaf/training_logs/codellama7b-databind-25epochs",)
+        ),
+        "codellama7b-closure-fim-gradientac": (
+            CodeLlamaHFModels,
+            ("/proj/berzelius-2023-175/users/x_andaf/training_logs/codellama7b-closure-fim-gradientac",)
+        ),
+        "codellama7b-closure-fim-gradientac": (
+            CodeLlamaHFModels,
+            ("/proj/berzelius-2023-175/users/x_andaf/training_logs/codellama7b-closure-fim-gradientac",)
+        ),
+        "codellama7b-closure-fim-gac-llr": (
+            CodeLlamaHFModels,
+            ("/proj/berzelius-2023-175/users/x_andaf/training_logs/codellama7b-closure-fim-gac-llr",)
+        ),
+        "codellama7b-closure-fim-4k": (
+            CodeLlamaHFModels,
+            ("/proj/berzelius-2023-175/users/x_andaf/training_logs/codellama7b-closure-fim-4k",)
+        ),
+        "codellama7b-databind-fim-llr-4k": (
+            CodeLlamaHFModels,
+            ("/proj/berzelius-2023-175/users/x_andaf/training_logs/codellama7b-databind-fim-llr-4k",)
+        ),
+        "codellama7b-ftf-5k": (
+            CodeLlamaHFModels,
+            ("/proj/berzelius-2023-175/users/x_andaf/training_logs/codellama7b-ftf-5k",)
+        ),
+        "codellama7b-closure-fim-lora": (
+            CodeLlamaLoRAHFModels,
+            ("/proj/berzelius-2023-175/users/x_andaf/training_logs/codellama7b-closure-fim-lora",)
+        ),
+        "codellama7b-closure-fim-lora-checkpoint": (
+            CodeLlamaLoRAHFModels,
+            ("/proj/berzelius-2023-175/users/x_andaf/training_logs/codellama7b-closure-fim-lora/checkpoint-802",)
+        ),
+        "codellama7b-closure-lora-mix": (
+            CodeLlamaLoRAHFModels,
+            ("/proj/berzelius-2023-175/users/x_andaf/training_logs/codellama7b-closure-fim-lora/checkpoint-802",)
+        ),
+        "repairllama-lora": (
+            CodeLlamaLoRAHFModels,
+            ("ASSERT-KTH/RepairLLaMA-Optimal-IOR",)
+        ),
+        "codellama7b-best": (
+            CodeLlamaHFModels,
+            ("/proj/berzelius-2023-175/users/x_andaf/training_logs/codellama7b-fft-best",)
+        ),
+        "codellama7b-best-llr": (
+            CodeLlamaHFModels,
+            ("/proj/berzelius-2023-175/users/x_andaf/training_logs/codellama7b-fft-best-llr",)
+        )
     }
 
     @classmethod
