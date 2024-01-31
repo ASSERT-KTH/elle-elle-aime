@@ -122,7 +122,7 @@ class TestEvaluatePatches:
 
         assert sample["evaluation"][0]["compile"] == True
         assert sample["evaluation"][0]["test"] == True
-        assert sample["evaluation"][0]["exact_match"] == True
+        assert sample["evaluation"][0]["ast_match"] == True
         assert sample["evaluation"][0]["exact_match"] == False
 
     def test_incorrect_patch(self):
