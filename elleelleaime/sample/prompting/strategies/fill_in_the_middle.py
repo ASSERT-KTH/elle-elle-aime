@@ -6,6 +6,8 @@ from elleelleaime.core.benchmarks.bug import Bug
 from elleelleaime.core.utils.java_tools.java import (
     extract_single_function,
     compute_diff,
+    remove_java_comments,
+    remove_empty_lines,
 )
 
 
@@ -35,45 +37,55 @@ class FillInTheMiddlePrompting(PromptingStrategy):
         self.prefix_token: str = model_kwargs["prefix_token"]
         self.middle_token: str = model_kwargs["middle_token"]
         self.sufix_token: str = model_kwargs["sufix_token"]
+        self.keep_buggy_code: bool = kwargs.get("keep_buggy_code", False)
+        self.keep_comments: bool = kwargs.get("keep_comments", False)
 
-    def find_code(self, file_path: str, line_numbers: List[int]) -> str:
-        """
-        Finds the code corresponding to the given line numbers in the given file.
-        """
-        code = ""
-        with open(file_path, "r", encoding="ISO-8859-1") as file:
-            for idx, line in enumerate(file.readlines()):
-                if idx + 1 in line_numbers:
-                    code += line
-        return code
+    def build_fim_prompt(self, buggy_code: str, fixed_code: str) -> str:
+        fdiff = compute_diff(buggy_code, fixed_code)
 
-    def is_single_chunk(self, diff_str: str) -> bool:
-        """
-        Return True if the sample's ground truth is a single chunk.
-        Single chunk means that there is only one hunk in the ground truth and that the changes are all contiguous.
-        """
-        diff = PatchSet(diff_str)
-        # Check if there is only one hunk
-        if len(diff) == 1 and len(diff[0]) == 1:
-            # Check if the changes are contiguous
-            hunk = diff[0][0]
-            i = 0
-            found_change = False
-            while i < len(hunk):
-                # Find a change
-                if hunk[i].is_added or hunk[i].is_removed:
-                    if found_change:
-                        return False
-                    found_change = True
-                    # Skip over the remainder of the added/removed chunk
-                    while i < len(hunk) and (hunk[i].is_added or hunk[i].is_removed):
-                        i += 1
-                # Skip over the unchanged chunk
-                else:
-                    i += 1
-            return True
+        # Iterate over the diff to get the prefix, middle, and suffix parts
+        prefix = [True, ""]
+        middle = ""
+        suffix = [False, ""]
+        for line in fdiff:
+            if any(line.startswith(x) for x in ["---", "+++", "@@"]):
+                continue
+            elif any(line.startswith(x) for x in ["+", "-"]):
+                prefix[0] = False
+                suffix[0] = True
+                middle += suffix[1]
+                suffix[1] = ""
+                if line.startswith("-"):
+                    middle += line[1:]
+            else:
+                if prefix[0]:
+                    prefix[1] += line[1:]
+                elif suffix[0]:
+                    suffix[1] += line[1:]
+
+        if self.keep_buggy_code:
+            buggy_comment = "// buggy code\n"
+            if middle.strip() != "":
+                for line in middle.splitlines(keepends=True):
+                    buggy_comment += "//" + line
+            prompt = (
+                f"{self.prefix_token}"
+                + prefix[1]
+                + buggy_comment
+                + f"{self.sufix_token}"
+                + suffix[1]
+                + f"{self.middle_token}"
+            )
         else:
-            return False
+            prompt = (
+                f"{self.prefix_token}"
+                + prefix[1]
+                + f"{self.sufix_token}"
+                + suffix[1]
+                + f"{self.middle_token}"
+            )
+
+        return prompt
 
     def cloze_prompt(
         self, bug: Bug
@@ -86,42 +98,24 @@ class FillInTheMiddlePrompting(PromptingStrategy):
         Returns:
             Tuple: A tuple of the form (buggy_code, fixed_code, prompt).
         """
-        if not self.is_single_chunk(bug.get_ground_truth()):
-            return None, None, None
-
         result = extract_single_function(bug)
 
         if result is None:
             return None, None, None
 
         buggy_code, fixed_code = result
-        fdiff = compute_diff(buggy_code, fixed_code)
 
-        # Iterate over both the buggy and fixed code to generate the prompt
-        prompt = f"{self.prefix_token}"
-        i = 0
-        while i < len(fdiff):
-            # Ignore garbage
-            if any(fdiff[i].startswith(x) for x in ["---", "+++", "@@"]):
-                i += 1
-            # Skip over the chunk
-            elif any(fdiff[i].startswith(x) for x in ["+", "-"]):
-                # Skip over the remainder of the added/removed chunk
-                while i < len(fdiff) and any(
-                    fdiff[i].startswith(x) for x in ["+", "-"]
-                ):
-                    i += 1
-                prompt += f"{self.sufix_token}"
-            # Include unchanged lines
-            else:
-                prompt += fdiff[i][1:]
-                i += 1
+        if not self.keep_comments:
+            buggy_code_prompt = remove_java_comments(buggy_code)
+            fixed_code_prompt = remove_java_comments(fixed_code)
+        else:
+            buggy_code_prompt = buggy_code
+            fixed_code_prompt = fixed_code
 
-        # Deal with whole function removal/addition
-        if not self.sufix_token in prompt:
-            prompt += f"{self.sufix_token}"
+        buggy_code_prompt = remove_empty_lines(buggy_code_prompt)
+        fixed_code_prompt = remove_empty_lines(fixed_code_prompt)
 
-        prompt += f"{self.middle_token}"
+        prompt = self.build_fim_prompt(buggy_code_prompt, fixed_code_prompt)
 
         return buggy_code, fixed_code, prompt
 
