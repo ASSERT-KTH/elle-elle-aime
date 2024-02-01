@@ -1,8 +1,5 @@
 import subprocess
-import backoff
 import shutil
-import re
-from elleelleaime.core.benchmarks.benchmark import Benchmark
 
 from elleelleaime.core.benchmarks.bug import Bug
 from elleelleaime.core.benchmarks.test_result import TestResult

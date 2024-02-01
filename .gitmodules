@@ -10,3 +10,6 @@
 [submodule "benchmarks/human-eval-java"]
 	path = benchmarks/human-eval-java
 	url = https://github.com/ASSERT-KTH/human-eval-java.git
+[submodule "benchmarks/quixbugs"]
+	path = benchmarks/quixbugs
+	url = https://github.com/andre15silva/QuixBugs.git
