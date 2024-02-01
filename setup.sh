@@ -6,3 +6,5 @@ git submodule update;
 cd benchmarks/defects4j;
 cpanm --installdeps .;
 ./init.sh;
+
+docker pull openjdk:11;
