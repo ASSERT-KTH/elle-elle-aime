@@ -42,7 +42,7 @@ class PatchEvaluationStrategy(ABC):
 
         # Run the AST matcher on the two files
         run = subprocess.run(
-            f"java -jar gumtree-spoon-ast-diff.jar {fixed_code_file.name} {candidate_code_file.name}",
+            f'docker run --rm --volume ".:/elleelleaime" --volume "{tempfile.gettempdir()}:{tempfile.gettempdir()}" --workdir "/elleelleaime" openjdk:11 java -jar gumtree-spoon-ast-diff.jar {fixed_code_file.name} {candidate_code_file.name}',
             shell=True,
             capture_output=True,
         )
