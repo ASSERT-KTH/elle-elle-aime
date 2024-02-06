@@ -1,5 +1,4 @@
 from .strategy import PromptingStrategy
-from .strategies.zero_shot_single_hunk import ZeroShotSingleHunkPrompting
 from .strategies.zero_shot_cloze import ZeroShotClozePrompting
 from .strategies.fill_in_the_middle import FillInTheMiddlePrompting
 from .strategies.function_to_function import FunctionToFunctionPrompting
@@ -11,7 +10,6 @@ class PromptStrategyRegistry:
     """
 
     __STRATEGIES: dict[str, type] = {
-        "zero-shot-single-hunk": ZeroShotSingleHunkPrompting,
         "zero-shot-cloze": ZeroShotClozePrompting,
         "fill-in-the-middle": FillInTheMiddlePrompting,
         "function-to-function": FunctionToFunctionPrompting,

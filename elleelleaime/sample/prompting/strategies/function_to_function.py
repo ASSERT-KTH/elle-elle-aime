@@ -1,4 +1,4 @@
-from typing import Optional, Tuple
+from typing import Optional, Tuple, Union
 from unidiff import PatchSet
 
 from elleelleaime.sample.prompting.strategy import PromptingStrategy
@@ -12,7 +12,7 @@ class FunctionToFunctionPrompting(PromptingStrategy):
     """
 
     def __init__(self, **kwargs):
-        super().__init__()
+        super().__init__("function-to-function")
 
         self.model_name: str = kwargs.get("model_name", "").strip().lower()
         # TODO: add_fault_localization
@@ -39,18 +39,29 @@ class FunctionToFunctionPrompting(PromptingStrategy):
 
         return buggy_code, fixed_code, prompt
 
-    def prompt(self, bug: Bug) -> Tuple[Optional[str], Optional[str], Optional[str]]:
+    def prompt(self, bug: Bug) -> dict[str, Optional[Union[str, Bug]]]:
         """
         Returns the prompt for the given bug.
 
         :param bug: The bug to generate the prompt for.
         """
+        result = {
+            "identifier": bug.get_identifier(),
+            "buggy_code": None,
+            "fixed_code": None,
+            "prompt_strategy": self.strategy_name,
+            "prompt": None,
+            "ground_truth": bug.get_ground_truth(),
+        }
 
         diff = PatchSet(bug.get_ground_truth())
         # This strategy only supports single-file prompts
         if len(diff) != 1:
-            return None, None, None
+            return result
 
-        buggy_code, fixed_code, prompt = self.function_to_function(bug)
-
-        return buggy_code, fixed_code, prompt
+        (
+            result["buggy_code"],
+            result["fixed_code"],
+            result["prompt"],
+        ) = self.function_to_function(bug)
+        return result
