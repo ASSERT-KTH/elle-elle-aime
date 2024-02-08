@@ -1,19 +1,19 @@
 from abc import ABC, abstractmethod
 from elleelleaime.core.benchmarks.bug import Bug
 
-from typing import Tuple, Optional
+from typing import Optional, Union
 
 
 class PromptingStrategy(ABC):
-    def __init__(self, **kwargs):
-        pass
+    def __init__(self, strategy_name: str, **kwargs):
+        self.strategy_name = strategy_name
 
     @abstractmethod
-    def prompt(self, bug: Bug) -> Tuple[Optional[str], Optional[str], Optional[str]]:
+    def prompt(self, bug: Bug) -> dict[str, Optional[Union[str, Bug]]]:
         """
         Returns the prompt for the given bug.
 
         :param bug: The bug to generate the prompt for.
-        :return: A tuple of the form (buggy_code, fixed_code, prompt) or None if the prompt cannot be generated.
+        :return: A dictionary containing the prompt and other relevant information.
         """
         pass

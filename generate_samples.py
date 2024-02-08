@@ -20,29 +20,7 @@ def generate_sample(
     """
 
     prompt_strategy_obj = PromptStrategyRegistry.get_strategy(prompt_strategy, **kwargs)
-    prompt = prompt_strategy_obj.prompt(bug)
-
-    # Check if prompt was generated
-    if prompt is None:
-        return {
-            "identifier": bug.get_identifier(),
-            "buggy_code": None,
-            "fixed_code": None,
-            "prompt_strategy": prompt_strategy,
-            "prompt": None,
-            "ground_truth": bug.get_ground_truth(),
-        }
-
-    # Unpack the prompt
-    buggy_code, fixed_code, prompt = prompt
-    return {
-        "identifier": bug.get_identifier(),
-        "buggy_code": buggy_code,
-        "fixed_code": fixed_code,
-        "prompt_strategy": prompt_strategy,
-        "prompt": prompt,
-        "ground_truth": bug.get_ground_truth(),
-    }
+    return prompt_strategy_obj.prompt(bug)
 
 
 def entry_point(
