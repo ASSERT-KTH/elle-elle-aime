@@ -132,4 +132,6 @@ class BreakerStrategy(MufinStrategy):
             # Expand the spans into prompts
             result.extend(self.expand_spans(bug, function, spans))
 
+            # TODO: Generate hash for each result
+
         return result
