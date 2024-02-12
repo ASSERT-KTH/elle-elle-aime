@@ -14,7 +14,7 @@ import logging
 
 def generate_breaker_samples(
     bug: Bug, sample_strategy: str, **kwargs
-) -> List[dict[str, Optional[Union[str, Bug]]]]:
+) -> List[dict[str, Optional[str]]]:
     """
     Generates the sample for the given bug with the given prompt strategy.
     """
@@ -42,7 +42,7 @@ def entry_point(
 
     # Generate the samples in parallel
     logging.info("Building the samples...")
-    results = []
+    results = {}
 
     with ThreadPoolExecutor(max_workers=n_workers) as executor:
         futures = []
@@ -64,7 +64,11 @@ def entry_point(
         # Wait for the results
         for future in tqdm.tqdm(as_completed(futures), total=len(futures)):
             try:
-                results.extend(future.result())
+                # Get result and check if not already in hash (dedepuplicate)
+                samples = future.result()
+                for sample in samples:
+                    if sample["hash"] not in results:
+                        results[sample["hash"]] = sample
             except Exception as e:
                 logging.error(
                     f"Error while generating sample for bug {future_to_bug[future]}: {traceback.format_exc()}"
@@ -72,7 +76,10 @@ def entry_point(
 
     # Write results to jsonl file
     kwargs_str = "_".join([f"{key}_{value}" for key, value in kwargs.items()])
-    write_jsonl(f"samples_{benchmark}_{sample_strategy}_{kwargs_str}.jsonl.gz", results)
+    write_jsonl(
+        f"samples_{benchmark}_{sample_strategy}_{kwargs_str}.jsonl.gz",
+        list(results.values()),
+    )
 
 
 def main():

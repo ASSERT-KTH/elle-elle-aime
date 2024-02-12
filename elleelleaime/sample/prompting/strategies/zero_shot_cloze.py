@@ -185,7 +185,7 @@ class ZeroShotClozePrompting(PromptingStrategy):
 
         return buggy_code, fixed_code, prompt
 
-    def prompt(self, bug: Bug) -> dict[str, Optional[Union[str, Bug]]]:
+    def prompt(self, bug: Bug) -> dict[str, Optional[str]]:
         """
         Returns the prompt for the given bug.
 

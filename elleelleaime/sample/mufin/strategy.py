@@ -9,7 +9,7 @@ class MufinStrategy(ABC):
         self.strategy_name = strategy_name
 
     @abstractmethod
-    def sample(self, bug: Bug) -> List[dict[str, Optional[Union[str, Bug]]]]:
+    def sample(self, bug: Bug) -> List[dict[str, Optional[str]]]:
         """
         Returns a list of samples for each bug.
 

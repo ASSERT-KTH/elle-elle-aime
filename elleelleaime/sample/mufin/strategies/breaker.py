@@ -8,6 +8,8 @@ from elleelleaime.core.utils.java_tools.java import (
     remove_empty_lines,
 )
 
+import hashlib
+
 
 class BreakerStrategy(MufinStrategy):
     """
@@ -84,7 +86,7 @@ class BreakerStrategy(MufinStrategy):
 
     def expand_spans(
         self, bug: Bug, function: dict[str, str], spans: List[Tuple[int, int]]
-    ) -> List[dict[str, Optional[Union[str, Bug]]]]:
+    ) -> List[dict[str, Optional[str]]]:
         """
         Expands the spans into prompts.
         """
@@ -130,8 +132,14 @@ class BreakerStrategy(MufinStrategy):
         for function in functions:
             spans = self.enumerate_spans(function["clean_function_code"])
             # Expand the spans into prompts
-            result.extend(self.expand_spans(bug, function, spans))
+            prompts = self.expand_spans(bug, function, spans)
 
-            # TODO: Generate hash for each result
+            # Generate hash based on prompt and identifier
+            for p in prompts:
+                p["hash"] = hashlib.md5(
+                    f"{p['prompt']}-{p['identifier']}".encode("utf-8")
+                ).hexdigest()
+
+            result.extend(prompts)
 
         return result
