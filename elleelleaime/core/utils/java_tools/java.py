@@ -1,5 +1,6 @@
 from typing import Optional, Tuple, List
 from unidiff import PatchSet
+from pathlib import Path
 from uuid import uuid4
 import os, tempfile, difflib, shutil
 import re
@@ -89,6 +90,60 @@ def assert_same_diff(original_diff: PatchSet, function_diff: List[str]) -> bool:
     ):
         return False
     return True
+
+
+def extract_functions(
+    bug: Bug,
+    fixed: bool = True,
+    source_directories: List[str] = ["src", "java_programs"],
+) -> List[dict[str, str]]:
+    """
+    Extracts function from the java files of the bug
+    Returns a list of tuples containing (file_path, function_code)
+    """
+    checkout_path = os.path.join(
+        tempfile.gettempdir(), "elleelleaime", bug.get_identifier(), str(uuid4())
+    )
+    result = []
+
+    try:
+        # Checkout the bug
+        bug.checkout(checkout_path, fixed=fixed)
+
+        # Iterate over all *.java files
+        for source_directory in source_directories:
+            for file in Path(checkout_path, source_directory).rglob("*.java"):
+                # Read the code
+                with open(file, "r", encoding="ISO-8859-1") as f:
+                    code = f.read()
+                # Find line numbers
+                line_numbers = [i for i, line in enumerate(code.split("\n"), 1)]
+                # Find functions with javalang
+                functions = {}
+                for line in line_numbers:
+                    function = load_origin_code_node(file, [line])[0]
+                    if function.hash != "":
+                        functions[function.hash] = function
+                # Get the code of each function
+                for function in functions.values():
+                    result.append(
+                        {
+                            "file_path": file.relative_to(checkout_path),
+                            "function_code": find_code(
+                                file,
+                                [
+                                    i
+                                    for i in range(
+                                        function.start_pos, function.end_pos + 1
+                                    )
+                                ],
+                            ),
+                        }
+                    )
+        return result
+    finally:
+        # Remove the checked-out bug
+        shutil.rmtree(checkout_path, ignore_errors=True)
 
 
 def extract_single_function(bug: Bug) -> Optional[Tuple[str, str]]:
