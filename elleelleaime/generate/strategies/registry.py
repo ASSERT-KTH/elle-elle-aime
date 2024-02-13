@@ -62,7 +62,7 @@ class PatchGenerationStrategyRegistry:
             StarCoderHFModels,
             ("bigcode/starcoderbase-7b",),
         ),
-    }elleelleaime/generate/strategies/registry.py
+    }
 
     @classmethod
     def get_generation(cls, name: str, **kwargs) -> PatchGenerationStrategy:
