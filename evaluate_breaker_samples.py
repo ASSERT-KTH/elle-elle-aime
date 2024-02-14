@@ -44,7 +44,6 @@ def entry_point(
     samples_path: str,
     strategy: str = "mufin-replace",
     n_workers: int = 4,
-    correctness: bool = True,
     **kwargs,
 ):
     """
@@ -66,22 +65,21 @@ def entry_point(
     samples = list(stream_jsonl(samples_path))
 
     # Correctness evaluation
-    if correctness:
-        with ThreadPoolExecutor(max_workers=n_workers) as executor:
-            futures = []
-            for sample in tqdm.tqdm(samples):
-                bug = benchmark_obj.get_bug(sample["identifier"])
-                if bug is None:
-                    raise ValueError(f"Unknown bug {sample['identifier']}")
-                futures.append(
-                    executor.submit(evaluate_candidate, bug, sample, strategy, **kwargs)
-                )
+    with ThreadPoolExecutor(max_workers=n_workers) as executor:
+        futures = []
+        for sample in tqdm.tqdm(samples):
+            bug = benchmark_obj.get_bug(sample["identifier"])
+            if bug is None:
+                raise ValueError(f"Unknown bug {sample['identifier']}")
+            futures.append(
+                executor.submit(evaluate_candidate, bug, sample, strategy, **kwargs)
+            )
 
-            logging.info("Evaluating candidates...")
-            results = []
-            for future in tqdm.tqdm(as_completed(futures), total=len(futures)):
-                results.append(future.result())
-            samples = results
+        logging.info("Evaluating candidates...")
+        results = []
+        for future in tqdm.tqdm(as_completed(futures), total=len(futures)):
+            results.append(future.result())
+        samples = results
 
     # Write results to jsonl file
     write_jsonl(
