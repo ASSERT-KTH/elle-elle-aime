@@ -79,6 +79,57 @@ class TestEvaluatePatches:
         return bug, sample
 
     @classmethod
+    def get_plausible_sample(cls):
+        bug = TestEvaluatePatches.DEFECTS4J.get_bug("Chart-1")
+        assert bug is not None
+
+        sample = generate_sample(
+            bug=bug,
+            prompt_strategy=TestEvaluatePatches.PROMPT_STRATEGY,
+            model_name=TestEvaluatePatches.MODEL_NAME,
+        )
+        sample["generation"] = [
+            """    public LegendItemCollection getLegendItems() {
+        LegendItemCollection result = new LegendItemCollection();
+        if (this.plot == null) {
+            return result;
+        }
+        int index = this.plot.getIndexOf(this);
+        CategoryDataset dataset = this.plot.getDataset(index);
+        if (dataset == null)
+        {
+            return result;
+        } else {
+            int a = 0;
+        }
+        int seriesCount = dataset.getRowCount();
+        if (plot.getRowRenderingOrder().equals(SortOrder.ASCENDING)) {
+            for (int i = 0; i < seriesCount; i++) {
+                if (isSeriesVisibleInLegend(i)) {
+                    LegendItem item = getLegendItem(index, i);
+                    if (item != null) {
+                        result.add(item);
+                    }
+                }
+            }
+        }
+        else {
+            for (int i = seriesCount - 1; i >= 0; i--) {
+                if (isSeriesVisibleInLegend(i)) {
+                    LegendItem item = getLegendItem(index, i);
+                    if (item != null) {
+                        result.add(item);
+                    }
+                }
+            }
+        }
+        return result;
+    }
+"""
+        ]
+        return bug, sample
+
+    @classmethod
     def get_incorrect_sample(cls):
         bug = TestEvaluatePatches.DEFECTS4J.get_bug("Chart-1")
         assert bug is not None
@@ -139,5 +190,22 @@ class TestEvaluatePatches:
 
         assert sample["evaluation"][0]["compile"] == True
         assert sample["evaluation"][0]["test"] == False
+        assert sample["evaluation"][0]["exact_match"] == False
+        assert sample["evaluation"][0]["ast_match"] == False
+
+    def test_plausible_patch(self):
+        bug, sample = TestEvaluatePatches.get_plausible_sample()
+
+        sample = evaluate_candidate(
+            bug=bug,
+            sample=sample,
+            strategy=TestEvaluatePatches.EVALUATE_STRATEGY,
+        )
+
+        assert sample["evaluation"] is not None
+        assert len(sample["evaluation"]) == 1
+
+        assert sample["evaluation"][0]["compile"] == True
+        assert sample["evaluation"][0]["test"] == True
         assert sample["evaluation"][0]["exact_match"] == False
         assert sample["evaluation"][0]["ast_match"] == False

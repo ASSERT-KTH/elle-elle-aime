@@ -119,14 +119,14 @@ class ReplaceEvaluationStrategy(PatchEvaluationStrategy):
                     continue
 
                 # Compute plausible match
-                # Write the buggy code to the file
+                # Write the generated code to the file
                 with open(
                     buggy_file_path,
                     "w",
                     encoding="ISO-8859-1",
                     errors="replace",
                 ) as f:
-                    f.write(buggy_code)
+                    f.write(candidate_code)
                 # Evaluate the buggy code
                 compilation_result = bug.compile(buggy_path)
                 result["compile"] = compilation_result.is_passing()
