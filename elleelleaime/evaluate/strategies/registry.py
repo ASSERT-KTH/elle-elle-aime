@@ -1,5 +1,8 @@
 from elleelleaime.evaluate.strategies.strategy import PatchEvaluationStrategy
 from elleelleaime.evaluate.strategies.text.replace import ReplaceEvaluationStrategy
+from elleelleaime.evaluate.strategies.mufin.replace import (
+    MufinReplaceEvaluationStrategy,
+)
 
 
 class PatchEvaluationStrategyRegistry:
@@ -10,6 +13,7 @@ class PatchEvaluationStrategyRegistry:
     def __init__(self, **kwargs):
         self._strategies: dict[str, PatchEvaluationStrategy] = {
             "replace": ReplaceEvaluationStrategy(**kwargs),
+            "mufin-replace": MufinReplaceEvaluationStrategy(**kwargs),
         }
 
     def get_evaluation(self, name: str) -> PatchEvaluationStrategy:
