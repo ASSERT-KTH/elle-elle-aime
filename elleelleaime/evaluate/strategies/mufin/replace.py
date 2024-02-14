@@ -1,5 +1,5 @@
 from typing import Optional, List
-from unidiff import PatchSet
+from pathlib import Path
 from uuid import uuid4
 import os, tempfile, shutil, logging
 
@@ -32,7 +32,7 @@ class MufinReplaceEvaluationStrategy(PatchEvaluationStrategy):
                 )
                 continue
 
-            buggy_path = os.path.join(
+            fixed_path = os.path.join(
                 tempfile.gettempdir(),
                 "elleelleaime",
                 bug.get_identifier(),
@@ -47,10 +47,10 @@ class MufinReplaceEvaluationStrategy(PatchEvaluationStrategy):
 
             try:
                 # Checkout the buggy code
-                bug.checkout(buggy_path, fixed=False)
+                bug.checkout(fixed_path, fixed=True)
 
                 # Locate and load the buggy file
-                file_path = sample["file_path"]
+                file_path = Path(fixed_path, sample["file_path"])
                 with open(file_path, "r", encoding="ISO-8859-1") as f:
                     fixed_code = f.read()
 
@@ -62,10 +62,10 @@ class MufinReplaceEvaluationStrategy(PatchEvaluationStrategy):
                     break
 
                 # Get the fixed and candidate code
-                candidate_code = fixed_code.replace(sample["buggy_code"], generation)
+                candidate_code = fixed_code.replace(sample["fixed_code"], generation)
 
                 # Compute plausible match
-                # Write the buggy code to the file
+                # Write the generated code to the file
                 with open(
                     file_path,
                     "w",
@@ -74,13 +74,13 @@ class MufinReplaceEvaluationStrategy(PatchEvaluationStrategy):
                 ) as f:
                     f.write(candidate_code)
                 # Evaluate the buggy code
-                compilation_result = bug.compile(buggy_path)
+                compilation_result = bug.compile(fixed_path)
                 result["compile"] = compilation_result.is_passing()
                 if result["compile"]:
-                    test_result = bug.test(buggy_path)
+                    test_result = bug.test(fixed_path)
                     result["test"] = test_result.is_passing()
                 evaluation.append(result)
             finally:
-                shutil.rmtree(buggy_path)
+                shutil.rmtree(fixed_path)
 
         return evaluation
