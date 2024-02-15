@@ -1,7 +1,7 @@
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from elleelleaime.core.utils.benchmarks import get_benchmark
+from elleelleaime.core.utils.benchmarks import get_benchmark, Benchmark
 from elleelleaime.core.benchmarks.bug import Bug
-from elleelleaime.core.utils.jsonl import stream_jsonl, write_jsonl
+from elleelleaime.core.utils.jsonl import stream_jsonl, write_jsonl, write_json
 from elleelleaime.evaluate.strategies.registry import PatchEvaluationStrategyRegistry
 
 import fire
@@ -10,6 +10,7 @@ import tqdm
 import logging
 import os
 
+from typing import List
 
 def evaluate_candidate(bug: Bug, sample: dict, strategy: str, **kwargs) -> dict:
     """
@@ -38,12 +39,73 @@ def compilable(evaluation: dict) -> bool:
     """
     return evaluation["compile"]
 
+def fail_fail(evaluation: dict) -> bool:
+    """
+    Returns True if the evaluation is a fail-fail.
+    """
+    return not evaluation["compile"] and not evaluation["test"]
+
+def pass_fail(evaluation: dict) -> bool:
+    """
+    Returns True if the evaluation is a pass-fail.
+    """
+    return evaluation["compile"] and not evaluation["test"]
+
+def pass_pass(evaluation: dict) -> bool:
+    """
+    Returns True if the evaluation is a pass-pass.
+    """
+    return evaluation["compile"] and evaluation["test"]
+
+def correctness_evaluation(benchmark_obj: Benchmark, samples: List, strategy: str, n_workers: int, **kwargs) -> List[dict]:
+    logging.info("Evaluating correctness...")
+    with ThreadPoolExecutor(max_workers=n_workers) as executor:
+        futures = []
+        for sample in tqdm.tqdm(samples):
+            bug = benchmark_obj.get_bug(sample["identifier"])
+            if bug is None:
+                raise ValueError(f"Unknown bug {sample['identifier']}")
+            futures.append(
+                executor.submit(evaluate_candidate, bug, sample, strategy, **kwargs)
+            )
+
+        logging.info("Evaluating candidates...")
+        results = []
+        for future in tqdm.tqdm(as_completed(futures), total=len(futures)):
+            results.append(future.result())
+        return results
+
+
+def compute_statistics(samples: List[dict]) -> dict:
+    logging.info("Computing statistics...")
+    statistics = {
+        "samples": 0,
+        "samples_with_prompts": 0,
+        "fail_fail": 0,
+        "pass_fail": 0,
+        "pass_pass": 0,
+        "compilable": 0,
+        "test": 0,
+    }
+    for sample in samples:
+        statistics["samples"] += 1
+        statistics["samples_with_prompts"] += 1 if "prompt" in sample and sample["prompt"] is not None else 0
+        for evaluation in sample["evaluation"]:
+            statistics["fail_fail"] += fail_fail(evaluation)
+            statistics["pass_fail"] += pass_fail(evaluation)
+            statistics["pass_pass"] += pass_pass(evaluation)
+            statistics["compilable"] += compilable(evaluation)
+            statistics["test"] += test(evaluation)
+            
+    return statistics
+
 
 def entry_point(
     benchmark: str,
     samples_path: str,
     strategy: str = "mufin-replace",
     n_workers: int = 4,
+    correctness: bool = True,
     **kwargs,
 ):
     """
@@ -65,22 +127,21 @@ def entry_point(
     samples = list(stream_jsonl(samples_path))
 
     # Correctness evaluation
-    with ThreadPoolExecutor(max_workers=n_workers) as executor:
-        futures = []
-        for sample in tqdm.tqdm(samples):
-            bug = benchmark_obj.get_bug(sample["identifier"])
-            if bug is None:
-                raise ValueError(f"Unknown bug {sample['identifier']}")
-            futures.append(
-                executor.submit(evaluate_candidate, bug, sample, strategy, **kwargs)
-            )
+    if correctness:
+        samples = correctness_evaluation(benchmark_obj, samples, strategy, n_workers, **kwargs)
 
-        logging.info("Evaluating candidates...")
-        results = []
-        for future in tqdm.tqdm(as_completed(futures), total=len(futures)):
-            results.append(future.result())
-        samples = results
-
+    # Statistics
+    if kwargs.get("statistics", False):
+        statistics = compute_statistics(samples)
+        
+        # Write statistics to file
+        write_json(
+            os.path.join(
+                dir_path, f"statistics_{benchmark}_{prompt_strategy}_{model_name}.json"
+            ),
+            statistics,
+        )
+        
     # Write results to jsonl file
     write_jsonl(
         os.path.join(
