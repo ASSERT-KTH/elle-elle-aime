@@ -12,6 +12,7 @@ import os
 
 from typing import List
 
+
 def evaluate_candidate(bug: Bug, sample: dict, strategy: str, **kwargs) -> dict:
     """
     Evaluates the candidate patch for the given sample.
@@ -39,11 +40,13 @@ def compilable(evaluation: dict) -> bool:
     """
     return evaluation["compile"]
 
+
 def fail_fail(evaluation: dict) -> bool:
     """
     Returns True if the evaluation is a fail-fail.
     """
     return not evaluation["compile"] and not evaluation["test"]
+
 
 def pass_fail(evaluation: dict) -> bool:
     """
@@ -51,13 +54,17 @@ def pass_fail(evaluation: dict) -> bool:
     """
     return evaluation["compile"] and not evaluation["test"]
 
+
 def pass_pass(evaluation: dict) -> bool:
     """
     Returns True if the evaluation is a pass-pass.
     """
     return evaluation["compile"] and evaluation["test"]
 
-def correctness_evaluation(benchmark_obj: Benchmark, samples: List, strategy: str, n_workers: int, **kwargs) -> List[dict]:
+
+def correctness_evaluation(
+    benchmark_obj: Benchmark, samples: List, strategy: str, n_workers: int, **kwargs
+) -> List[dict]:
     logging.info("Evaluating correctness...")
     with ThreadPoolExecutor(max_workers=n_workers) as executor:
         futures = []
@@ -89,14 +96,16 @@ def compute_statistics(samples: List[dict]) -> dict:
     }
     for sample in samples:
         statistics["samples"] += 1
-        statistics["samples_with_prompts"] += 1 if "prompt" in sample and sample["prompt"] is not None else 0
+        statistics["samples_with_prompts"] += (
+            1 if "prompt" in sample and sample["prompt"] is not None else 0
+        )
         for evaluation in sample["evaluation"]:
             statistics["fail_fail"] += fail_fail(evaluation)
             statistics["pass_fail"] += pass_fail(evaluation)
             statistics["pass_pass"] += pass_pass(evaluation)
             statistics["compilable"] += compilable(evaluation)
             statistics["test"] += test(evaluation)
-            
+
     return statistics
 
 
@@ -128,12 +137,14 @@ def entry_point(
 
     # Correctness evaluation
     if correctness:
-        samples = correctness_evaluation(benchmark_obj, samples, strategy, n_workers, **kwargs)
+        samples = correctness_evaluation(
+            benchmark_obj, samples, strategy, n_workers, **kwargs
+        )
 
     # Statistics
     if kwargs.get("statistics", False):
         statistics = compute_statistics(samples)
-        
+
         # Write statistics to file
         write_json(
             os.path.join(
@@ -141,7 +152,7 @@ def entry_point(
             ),
             statistics,
         )
-        
+
     # Write results to jsonl file
     write_jsonl(
         os.path.join(
