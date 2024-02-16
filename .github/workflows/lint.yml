@@ -5,7 +5,7 @@ jobs:
   lint:
     strategy:
       matrix:
-        src-dir: ["./elleelleaime", "./tests"]
+        src-dir: ["./elleelleaime", "./tests", "./*.py"]
 
     runs-on: ubuntu-latest
 
