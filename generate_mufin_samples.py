@@ -12,7 +12,7 @@ import tqdm
 import logging
 
 
-def generate_breaker_samples(
+def generate_mufin_samples(
     bug: Bug, sample_strategy: str, **kwargs
 ) -> List[dict[str, Optional[str]]]:
     """
@@ -51,7 +51,7 @@ def entry_point(
         future_to_bug = {}
         for bug in benchmark_obj.get_bugs():
             future = executor.submit(
-                generate_breaker_samples, bug, sample_strategy, **kwargs
+                generate_mufin_samples, bug, sample_strategy, **kwargs
             )
             future_to_bug[future] = bug
             futures.append(future)
