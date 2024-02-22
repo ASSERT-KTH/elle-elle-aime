@@ -63,6 +63,7 @@ class MufinStrategy(MufinProcessStrategy):
         # Iterate over the diff to get the prefix, middle, and suffix parts
         prefix = [True, ""]
         middle = ""
+        target = ""
         suffix = [False, ""]
         for line in fdiff:
             if any(line.startswith(x) for x in ["---", "+++", "@@"]):
@@ -71,9 +72,12 @@ class MufinStrategy(MufinProcessStrategy):
                 prefix[0] = False
                 suffix[0] = True
                 middle += suffix[1]
+                target += suffix[1]
                 suffix[1] = ""
                 if line.startswith("-"):
                     middle += line[1:]
+                elif line.startswith("+"):
+                    target += line[1:]
             else:
                 if prefix[0]:
                     prefix[1] += line[1:]
@@ -104,7 +108,7 @@ class MufinStrategy(MufinProcessStrategy):
                 + f"{self.middle_token}"
             )
 
-        return prompt, middle
+        return prompt, target
 
     def breaker_prompt(
         self,
@@ -172,7 +176,6 @@ class MufinStrategy(MufinProcessStrategy):
         ):
             return []
         for i, generation in enumerate(bug["generation"]):
-            # TODO: function to generate breaker prompt
             prompt, target = self.breaker_prompt(bug, generation, bug["evaluation"][i])
             if prompt and target:
                 results.append(
@@ -181,7 +184,6 @@ class MufinStrategy(MufinProcessStrategy):
                         "target": target,
                     }
                 )
-            # TODO: function to generate fixer prompt
             prompt, target = self.fixer_prompt(bug, generation, bug["evaluation"][i])
             if prompt and target:
                 results.append(
