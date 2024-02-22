@@ -1,5 +1,6 @@
 from .strategy import MufinStrategy
 from .strategies.breaker import BreakerStrategy
+from .strategies.eval import EvalStrategy
 
 
 class MufinStrategyRegistry:
@@ -9,6 +10,7 @@ class MufinStrategyRegistry:
 
     __STRATEGIES: dict[str, type] = {
         "mufin-breaker": BreakerStrategy,
+        "mufin-eval": EvalStrategy,
     }
 
     @classmethod

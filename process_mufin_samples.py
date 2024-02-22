@@ -56,7 +56,8 @@ def entry_point(
     kwargs_str = "-".join([f"{k}={v}" for k, v in kwargs.items()])
     write_jsonl(
         os.path.join(
-            dir_path, f"training_{benchmark}_{prompt_strategy}_{model_name}_{kwargs_str}.jsonl"
+            dir_path,
+            f"training_{benchmark}_{prompt_strategy}_{model_name}_{kwargs_str}.jsonl",
         ),
         samples,
     )
