@@ -2,6 +2,9 @@ from generate_samples import generate_sample
 from elleelleaime.core.utils.benchmarks import get_benchmark
 from elleelleaime.core.benchmarks.benchmark import Benchmark
 
+from concurrent.futures import ThreadPoolExecutor, as_completed
+import tqdm
+
 
 class TestFillInTheMiddleSamplesStarCoder:
     DEFECTS4J: Benchmark
@@ -13,6 +16,35 @@ class TestFillInTheMiddleSamplesStarCoder:
         TestFillInTheMiddleSamplesStarCoder.DEFECTS4J = get_benchmark("defects4j")
         assert TestFillInTheMiddleSamplesStarCoder.DEFECTS4J is not None
         TestFillInTheMiddleSamplesStarCoder.DEFECTS4J.initialize()
+
+    def test_all_fim_starcoder(self):
+        with ThreadPoolExecutor(max_workers=8) as executor:
+            futures = []
+
+            # Launch a thread for each bug
+            future_to_bug = {}
+            bugs_with_prompt = 0
+            for bug in TestFillInTheMiddleSamplesStarCoder.DEFECTS4J.get_bugs():
+                kwargs = {"model_name": TestFillInTheMiddleSamplesStarCoder.MODEL_NAME}
+                future = executor.submit(
+                    generate_sample,
+                    bug,
+                    TestFillInTheMiddleSamplesStarCoder.PROMPT_STRATEGY,
+                    **kwargs
+                )
+                future_to_bug[future] = bug
+                futures.append(future)
+
+            # Wait for all threads to finish
+            for future in tqdm.tqdm(as_completed(futures)):
+                bug = future_to_bug[future]
+                sample = future.result()
+                assert sample is not None
+                if sample["prompt"] is not None:
+                    bugs_with_prompt += 1
+
+        # Assert that we have generated samples for all bugs
+        assert bugs_with_prompt == 490
 
     def test_closure_46(self):
         bug = TestFillInTheMiddleSamplesStarCoder.DEFECTS4J.get_bug("Closure-46")

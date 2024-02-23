@@ -2,6 +2,9 @@ from generate_mufin_samples import generate_mufin_samples
 from elleelleaime.core.utils.benchmarks import get_benchmark
 from elleelleaime.core.benchmarks.benchmark import Benchmark
 
+from concurrent.futures import ThreadPoolExecutor, as_completed
+import tqdm
+
 
 class TestGenerateBreakerSamples:
     QUIXBUGS: Benchmark
@@ -49,6 +52,35 @@ class TestGenerateEvalSamples:
         TestGenerateEvalSamples.DEFECTS4J = get_benchmark("defects4j")
         assert TestGenerateEvalSamples.DEFECTS4J is not None
         TestGenerateEvalSamples.DEFECTS4J.initialize()
+
+    def test_all_mufin_eval(self):
+        with ThreadPoolExecutor(max_workers=8) as executor:
+            futures = []
+
+            # Launch a thread for each bug
+            future_to_bug = {}
+            bugs_with_prompt = 0
+            for bug in TestGenerateEvalSamples.DEFECTS4J.get_bugs():
+                kwargs = {"model_name": TestGenerateEvalSamples.MODEL_NAME}
+                future = executor.submit(
+                    generate_mufin_samples,
+                    bug,
+                    TestGenerateEvalSamples.SAMPLE_STRATEGY,
+                    **kwargs
+                )
+                future_to_bug[future] = bug
+                futures.append(future)
+
+            # Wait for all threads to finish
+            for future in tqdm.tqdm(as_completed(futures)):
+                bug = future_to_bug[future]
+                sample = future.result()[0]
+                assert sample is not None
+                if sample["prompt"] is not None:
+                    bugs_with_prompt += 1
+
+        # Assert that we have generated samples for all bugs
+        assert bugs_with_prompt == 490
 
     def test_closure_115(self):
         bug = TestGenerateEvalSamples.DEFECTS4J.get_bug("Closure-115")
