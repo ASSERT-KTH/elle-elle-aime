@@ -7,3 +7,6 @@
 [submodule "benchmarks/quixbugs"]
 	path = benchmarks/quixbugs
 	url = https://github.com/andre15silva/QuixBugs.git
+[submodule "benchmarks/bears"]
+	path = benchmarks/bears
+	url = https://github.com/andre15silva/bears-benchmark.git
