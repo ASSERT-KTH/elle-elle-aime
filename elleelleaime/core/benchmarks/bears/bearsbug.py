@@ -90,6 +90,4 @@ class BearsBug(Bug):
             shell=True,
             capture_output=True,
         )
-        print(run.stdout.decode("utf-8"))
-        print(run.stderr.decode("utf-8"))
         return TestResult(run.returncode == 0)
