@@ -115,4 +115,6 @@ class TestQuixBugs:
             for future in tqdm.tqdm(concurrent.futures.as_completed(futures)):
                 result = future.result()
                 if not result:
-                    print(f"Failed for {futures_to_bugs[future].get_identifier()}")
+                    assert (
+                        result
+                    ), f"Failed for {futures_to_bugs[future].get_identifier()}"

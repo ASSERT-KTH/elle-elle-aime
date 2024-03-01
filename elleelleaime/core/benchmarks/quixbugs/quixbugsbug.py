@@ -11,6 +11,18 @@ class QuixBugsBug(Bug):
     The class for representing QuixBugs bugs
     """
 
+    graph_bugs = {
+        "breadth_first_search",
+        "depth_first_search",
+        "detect_cycle",
+        "minimum_spanning_tree",
+        "reverse_linked_list",
+        "shortest_path_length",
+        "shortest_path_lengths",
+        "shortest_paths",
+        "topological_ordering",
+    }
+
     def checkout(self, path: str, fixed: bool = False) -> bool:
         # Remove the directory if it exists
         shutil.rmtree(path, ignore_errors=True)
@@ -24,8 +36,12 @@ class QuixBugsBug(Bug):
 
         # Checkout the bug is the same as copying the entire benchmark
         # Copy source files
-        cmd = f"cd {self.benchmark.get_path()}; mkdir {path}/java_programs; cp {'correct_java_programs' if fixed else 'java_programs'}/{self.identifier}.java {path}/java_programs/; cp java_programs/Node.java {path}/java_programs/; cp java_programs/WeightedEdge.java {path}/java_programs/"
+        cmd = f"cd {self.benchmark.get_path()}; mkdir {path}/java_programs; cp {'correct_java_programs' if fixed else 'java_programs'}/{self.identifier}.java {path}/java_programs/"
         run = subprocess.run(cmd, shell=True, capture_output=True, check=True)
+        # Copy graph source files if bug is graph-based
+        if self.identifier.lower() in self.graph_bugs:
+            cmd = f"cd {self.benchmark.get_path()}; cp java_programs/Node.java {path}/java_programs/; cp java_programs/WeightedEdge.java {path}/java_programs/"
+            run = subprocess.run(cmd, shell=True, capture_output=True, check=True)
         # Copy test files
         cmd = f"cd {self.benchmark.get_path()}; mkdir -p {path}/java_testcases/junit; cp java_testcases/junit/{self.identifier}_TEST.java {path}/java_testcases/junit; cp java_testcases/junit/QuixFixOracleHelper.java {path}/java_testcases/junit"
         run = subprocess.run(cmd, shell=True, capture_output=True, check=True)
