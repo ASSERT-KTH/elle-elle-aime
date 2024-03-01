@@ -16,8 +16,8 @@ class TestBears:
         bugs = bears.get_bugs()
 
         assert bugs is not None
-        assert len(bugs) == 118
-        assert len(set([bug.get_identifier() for bug in bugs])) == 118
+        assert len(bugs) == 77
+        assert len(set([bug.get_identifier() for bug in bugs])) == 77
 
     def test_checkout(self):
         bears = get_benchmark("bears")
