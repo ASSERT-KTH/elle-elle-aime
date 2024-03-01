@@ -18,7 +18,6 @@ def generate_mufin_samples(
     """
     Generates the sample for the given bug with the given prompt strategy.
     """
-
     sample_strategy_obj = MufinStrategyRegistry.get_strategy(sample_strategy, **kwargs)
     return sample_strategy_obj.sample(bug)
 

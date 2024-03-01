@@ -29,7 +29,7 @@ class BreakerStrategy(MufinStrategy):
     def __init__(self, **kwargs):
         super().__init__("mufin-breaker")
 
-        self.model_name: str = kwargs.get("model_name", "").strip().lower()
+        self.model_name: str = kwargs.get("model_name", "starcoder").strip().lower()
         assert (
             self.model_name in self.MODEL_DICT.keys()
         ), f"Unknown model name: {kwargs.get('model_name', None)}"
