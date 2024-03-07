@@ -1,5 +1,6 @@
 from .strategy import MufinProcessStrategy
 from .strategies.mufin import MufinStrategy
+from .strategies.mufinv1 import MufinV1Strategy
 
 
 class MufinStrategyRegistry:
@@ -9,6 +10,7 @@ class MufinStrategyRegistry:
 
     __STRATEGIES: dict[str, type] = {
         "mufin": MufinStrategy,
+        "mufinv1": MufinV1Strategy,
     }
 
     @classmethod
