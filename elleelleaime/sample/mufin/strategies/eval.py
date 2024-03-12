@@ -74,7 +74,7 @@ class EvalStrategy(MufinStrategy):
                 for line in middle.splitlines(keepends=True):
                     buggy_comment += "//" + line
             prompt = (
-                f"{self.mode_token}"
+                f"{self.mode_token}\n"
                 + f"{self.prefix_token}"
                 + prefix[1]
                 + buggy_comment
@@ -84,7 +84,7 @@ class EvalStrategy(MufinStrategy):
             )
         else:
             prompt = (
-                f"{self.mode_token}"
+                f"{self.mode_token}\n"
                 + f"{self.prefix_token}"
                 + prefix[1]
                 + f"{self.sufix_token}"
