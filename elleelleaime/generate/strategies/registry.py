@@ -11,6 +11,9 @@ from elleelleaime.generate.strategies.models.huggingface.codellama import (
 from elleelleaime.generate.strategies.models.huggingface.starcoder import (
     StarCoderHFModels,
 )
+from elleelleaime.generate.strategies.models.huggingface.santacoder import (
+    SantaCoderHFModels,
+)
 
 from typing import Tuple
 
@@ -63,7 +66,7 @@ class PatchGenerationStrategyRegistry:
             ("bigcode/starcoderbase-7b",),
         ),
         "santacoder": (
-            StarCoderHFModels,
+            SantaCoderHFModels,
             ("bigcode/santacoder",),
         ),
     }

@@ -19,14 +19,9 @@ class GenerateSettings:
     max_new_tokens: int = 1024
 
 
-class StarCoderHFModels(PatchGenerationStrategy):
+class SantaCoderHFModels(PatchGenerationStrategy):
     __SUPPORTED_MODELS = {
-        "bigcode/starcoderbase",
-        "bigcode/starcoder",
-        "bigcode/starcoderplus",
-        "bigcode/starcoderbase-1b",
-        "bigcode/starcoderbase-3b",
-        "bigcode/starcoderbase-7b",
+        "bigcode/santacoder",
     }
 
     __GENERATION_STRATEGIES = {
@@ -47,14 +42,14 @@ class StarCoderHFModels(PatchGenerationStrategy):
     def __init__(self, model_name: str, **kwargs) -> None:
         assert (
             model_name in self.__SUPPORTED_MODELS
-        ), f"Model {model_name} not supported by StarCoderHFModels"
+        ), f"Model {model_name} not supported by SantaCoderHFModels"
         self.model_name = model_name
         self.__load_model()
         # Generation settings
         assert (
             kwargs.get("generation_strategy", "beam_search")
             in self.__GENERATION_STRATEGIES
-        ), f"Generation strategy {kwargs.get('generation_strategy', 'beam_search')} not supported by StarCoderHFModels"
+        ), f"Generation strategy {kwargs.get('generation_strategy', 'beam_search')} not supported by SantaCoderHFModels"
         self.generate_settings = self.__GENERATION_STRATEGIES[
             kwargs.get("generation_strategy", "beam_search")
         ]
@@ -113,12 +108,12 @@ class StarCoderHFModels(PatchGenerationStrategy):
 
         # Reorganize the function with the fillings
         # The prompt is organized as follows:
-        # <fim_prefix><prefix><fim_suffix><suffix><fim_middle>
+        # <fim-prefix><prefix><fim-suffix><suffix><fim-middle>
         # We want to achieve
         # <prefix><middle><suffix>
         # where <middle> is the the filling
-        prefix = prompt.split("<fim_prefix>")[1].split("<fim_suffix>")[0]
-        suffix = prompt.split("<fim_suffix>")[1].split("<fim_middle>")[0]
+        prefix = prompt.split("<fim-prefix>")[1].split("<fim-suffix>")[0]
+        suffix = prompt.split("<fim-suffix>")[1].split("<fim-middle>")[0]
 
         fillings = [prefix + filling + suffix for filling in fillings]
 
