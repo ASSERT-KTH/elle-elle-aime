@@ -23,6 +23,11 @@ class FillInTheMiddlePrompting(PromptingStrategy):
             "middle_token": "<fim_middle>",
             "sufix_token": "<fim_suffix>",
         },
+        "santacoder": {
+            "prefix_token": "<fim-prefix>",
+            "middle_token": "<fim-middle>",
+            "sufix_token": "<fim-suffix>",
+        }
         # Add the model you want to use here
     }
 

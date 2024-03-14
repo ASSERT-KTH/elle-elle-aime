@@ -62,6 +62,10 @@ class PatchGenerationStrategyRegistry:
             StarCoderHFModels,
             ("bigcode/starcoderbase-7b",),
         ),
+        "santacoder": (
+            StarCoderHFModels,
+            ("bigcode/santacoder",),
+        ),
     }
 
     @classmethod
