@@ -140,11 +140,18 @@ class ZeroShotClozePrompting(PromptingStrategy):
             prompt = (
                 prefix[1]
                 + buggy_comment
-                + f"{self.generate_masking_prompt('', 0)}\n"
+                + f"{self.generate_masking_prompt(middle, 0)}\n"
                 + suffix[1]
             )
         else:
-            prompt = prefix[1] + f"{self.generate_masking_prompt('', 0)}\n" + suffix[1]
+            prompt = prefix[1] + f"{self.generate_masking_prompt(middle, 0)}\n" + suffix[1]
+
+        # Deal with whole-function addition/removal
+        if prompt == "":
+            prompt = f"{self.generate_masking_prompt('', 0)}"
+
+        if self.extra_mask_token:
+            prompt += f"{self.generate_masking_prompt('', 1)}\n"
 
         return prompt
 
