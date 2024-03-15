@@ -22,7 +22,7 @@ class ZeroShotClozePrompting(PromptingStrategy):
         "incoder": {
             "mask_token": "<|mask:{}|>",
             "extra_mask_token": True,
-            "single_chunk": False,
+            "single_chunk": True,
         },
         "codellama": {
             "mask_token": "<FILL_ME>",
