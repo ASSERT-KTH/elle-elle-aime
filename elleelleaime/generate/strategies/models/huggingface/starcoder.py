@@ -24,6 +24,9 @@ class StarCoderHFModels(PatchGenerationStrategy):
         "bigcode/starcoderbase",
         "bigcode/starcoder",
         "bigcode/starcoderplus",
+        "bigcode/starcoderbase-1b",
+        "bigcode/starcoderbase-3b",
+        "bigcode/starcoderbase-7b",
     }
 
     __GENERATION_STRATEGIES = {

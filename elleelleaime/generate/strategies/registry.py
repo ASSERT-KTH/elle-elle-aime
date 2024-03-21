@@ -50,6 +50,18 @@ class PatchGenerationStrategyRegistry:
             StarCoderHFModels,
             ("bigcode/starcoderplus",),
         ),
+        "starcoderbase-1b": (
+            StarCoderHFModels,
+            ("bigcode/starcoderbase-1b",),
+        ),
+        "starcoderbase-3b": (
+            StarCoderHFModels,
+            ("bigcode/starcoderbase-3b",),
+        ),
+        "starcoderbase-7b": (
+            StarCoderHFModels,
+            ("bigcode/starcoderbase-7b",),
+        ),
     }
 
     @classmethod
