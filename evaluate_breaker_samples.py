@@ -1,13 +1,20 @@
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from unidiff import PatchSet
 from elleelleaime.core.utils.benchmarks import get_benchmark, Benchmark
 from elleelleaime.core.benchmarks.bug import Bug
 from elleelleaime.core.utils.jsonl import stream_jsonl, write_jsonl, write_json
 from elleelleaime.evaluate.strategies.registry import PatchEvaluationStrategyRegistry
+from elleelleaime.core.utils.java_tools.java import (
+    remove_java_comments,
+    remove_empty_lines,
+)
 
 import fire
 import sys
 import tqdm
 import logging
+import shutil
+import difflib
 import os
 
 from typing import List
@@ -109,6 +116,45 @@ def compute_statistics(samples: List[dict]) -> dict:
     return statistics
 
 
+def export_patches(samples: list, dir_path: str) -> None:
+    """
+    Exports the patches to text files in structured directories.
+    """
+    # Remove the existing patches directory
+    patches_dir = os.path.join(dir_path, "good_bugs")
+    if os.path.exists(patches_dir):
+        shutil.rmtree(patches_dir)
+    os.makedirs(patches_dir)
+
+    for i, sample in enumerate(tqdm.tqdm(samples)):
+        if not sample["generation"] or all(
+            candidate["generation"] is None for candidate in sample["evaluation"]
+        ):
+            continue
+
+        # Write prompt, target diff to file
+        for candidate in sample["evaluation"]:
+            if not candidate["generation"]:
+                continue
+
+            # Check if patches are good
+            if not pass_fail(candidate):
+                continue
+ 
+            # Compute diff between generated code and buggy code
+            fixed_code = remove_empty_lines(remove_java_comments(sample["fixed_code"].strip()))
+            buggy_code = remove_empty_lines(remove_java_comments(candidate["generation"].strip()))
+
+            diff = "".join(difflib.unified_diff(
+                fixed_code.splitlines(keepends=True),
+                buggy_code.splitlines(keepends=True),
+                n=max(len(fixed_code), len(buggy_code)),
+            ))
+
+            with open(os.path.join(patches_dir, f"{sample['identifier']}_{i}.diff"), "w") as f:
+                f.writelines(diff)
+
+
 def entry_point(
     benchmark: str,
     samples_path: str,
@@ -152,6 +198,10 @@ def entry_point(
             ),
             statistics,
         )
+
+    # Export diffs to files
+    if kwargs.get("export", False):
+        export = export_patches(samples, dir_path)
 
     # Write results to jsonl file
     write_jsonl(
