@@ -12,7 +12,7 @@ Supported benchmarks:
 Requires python3.9 (or latest) and python-poetry
 The repository uses many submodules.
 ```bash
-git clone --recurse-submodules ssh://github.com/ASSERT-KTH/elle-elle-aime.git
+git clone --recurse-submodules https://github.com/ASSERT-KTH/elle-elle-aime.git
 cd elle-elle-aime
 poetry install # installs dependencies
 
