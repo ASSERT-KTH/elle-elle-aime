@@ -1,0 +1,15 @@
+WANDB_PROJECT=MUFIN TRANSFORMERS_CACHE="/proj/berzelius-2023-175/users/x_andaf/.cache" python mufin_ft.py \
+  --model_path="bigcode/starcoderbase-1b" \
+  --dataset_name="training_quixbugs_mufin-$MODE_starcoderbase-1b_model_name=starcoder-critic=$CRITIC-FIXER.jsonl" \
+  --seq_length 1024 \
+  --max_steps $STEPS \
+  --batch_size 16 \
+  --input_column_name="prompt" \
+  --output_column_name="target" \
+  --gradient_accumulation_steps 1\
+  --learning_rate $LR \
+  --lr_scheduler_type="cosine" \
+  --num_warmup_steps 30 \
+  --weight_decay 0.1 \
+  --output_dir="/proj/berzelius-2023-175/users/x_andaf/training_logs/mufin/$CRITIC/$ROUND-$MODE-$STEPS-FIXERONLY" \
+  --run_name="$ROUND-$MODE-$CRITIC-$STEPS-FIXERONLY"

@@ -1,0 +1,13 @@
+#!/bin/bash
+#
+#SBATCH -J MUFIN
+#SBATCH -t 4:00:00
+#SBATCH -N 1
+#SBATCH --gpus 1
+#SBATCH -C "thin"
+
+export WANDB_PROJECT=MUFIN
+export WANDB_DIR=/proj/berzelius-2023-175/users/x_andaf/training_logs/
+export LR=5e-5; export ROUND="round0"; export MODE="breaker"; export CRITIC="keepall"; export STEPS=1000;
+
+apptainer exec --nv elleelleaime.sif ./run_mufin_ft.sh

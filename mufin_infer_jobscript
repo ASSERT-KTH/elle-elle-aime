@@ -1,0 +1,13 @@
+#!/bin/bash
+#
+#SBATCH -J MUFIN
+#SBATCH -t 2:00:00
+#SBATCH -N 1
+#SBATCH --gpus 1
+#SBATCH -C "thin"
+
+export WANDB_PROJECT=MUFIN
+export WANDB_DIR=/proj/berzelius-2023-175/users/x_andaf/training_logs/
+export TRANSFORMERS_CACHE="/proj/berzelius-2023-175/users/x_andaf/.cache"
+
+apptainer exec --nv elleelleaime.sif python generate_patches.py samples_defects4j_mufin-eval_.jsonl.gz mufin-round0-breaker-keepall-900-sl --n_workers 1 --generation_strategy beam_search --num_beams 10 --num_return_sequences 10
