@@ -121,9 +121,12 @@ def extract_functions(
                 # Find functions with javalang
                 functions = {}
                 for line in line_numbers:
-                    function = load_origin_code_node(file, [line])[0]
-                    if function.hash != "":
-                        functions[function.hash] = function
+                    try:
+                        function = load_origin_code_node(file, [line])[0]
+                        if function.hash != "":
+                            functions[function.hash] = function
+                    except Exception as e:
+                        continue
                 # Get the code of each function
                 for function in functions.values():
                     result.append(
