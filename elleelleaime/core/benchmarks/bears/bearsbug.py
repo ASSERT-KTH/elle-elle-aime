@@ -78,7 +78,7 @@ class BearsBug(Bug):
 
     def compile(self, path: str) -> CompileResult:
         run = subprocess.run(
-            f"cd {self.benchmark.get_path()} && python scripts/compile_bug.py --bugId {self.identifier} --workspace {path}",
+            f"cd {self.benchmark.get_path()} && timeout {5*60} python scripts/compile_bug.py --bugId {self.identifier} --workspace {path}",
             shell=True,
             capture_output=True,
         )
@@ -86,7 +86,7 @@ class BearsBug(Bug):
 
     def test(self, path: str) -> TestResult:
         run = subprocess.run(
-            f"cd {self.benchmark.get_path()} && python scripts/run_tests_bug.py --bugId {self.identifier} --workspace {path}",
+            f"cd {self.benchmark.get_path()} && timeout {30*60} python scripts/run_tests_bug.py --bugId {self.identifier} --workspace {path}",
             shell=True,
             capture_output=True,
         )
