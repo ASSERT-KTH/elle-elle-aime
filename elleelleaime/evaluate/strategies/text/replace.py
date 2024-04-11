@@ -109,15 +109,6 @@ class ReplaceEvaluationStrategy(PatchEvaluationStrategy):
                 )
                 candidate_code = buggy_code.replace(sample["buggy_code"], generation)
 
-                # Compute AST Match
-                result["ast_match"] = self.ast_match(fixed_code, candidate_code)
-                # If the AST matches, there is no need to compile or test
-                if result["ast_match"]:
-                    result["compile"] = True
-                    result["test"] = True
-                    evaluation.append(result)
-                    continue
-
                 # Compute plausible match
                 # Write the generated code to the file
                 with open(
@@ -127,12 +118,18 @@ class ReplaceEvaluationStrategy(PatchEvaluationStrategy):
                     errors="replace",
                 ) as f:
                     f.write(candidate_code)
+
                 # Evaluate the buggy code
                 compilation_result = bug.compile(buggy_path)
                 result["compile"] = compilation_result.is_passing()
+                # If it compiles, test the code
                 if result["compile"]:
                     test_result = bug.test(buggy_path)
                     result["test"] = test_result.is_passing()
+                    # If the tests pass, check if the ASTs match
+                    # Note: we do not for AST matching before because the ast matcher returns false positives in some cases
+                    if result["test"]:
+                        result["ast_match"] = self.ast_match(fixed_code, candidate_code)
                 evaluation.append(result)
             finally:
                 shutil.rmtree(buggy_path)
