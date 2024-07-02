@@ -40,7 +40,7 @@ class ReplaceEvaluationStrategy(PatchEvaluationStrategy):
 
             buggy_path = os.path.join(
                 tempfile.gettempdir(),
-                "elleelleaime",
+                os.getenv("TMP_BASE_OUT_DIR", "elleelleaime"),
                 bug.get_identifier(),
                 str(uuid4()),
             )

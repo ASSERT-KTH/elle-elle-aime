@@ -32,7 +32,7 @@ class BearsBug(Bug):
 
             # Copy the benchmark elsewhere to avoid conflicts
             temp_benchmark_path = Path(
-                tempfile.gettempdir(), "elleelleaime", str(uuid4())
+                tempfile.gettempdir(), os.getenv("TMP_BASE_OUT_DIR", "elleelleaime"), str(uuid4())
             )
             shutil.copytree(
                 self.benchmark.get_path(), temp_benchmark_path, dirs_exist_ok=True

@@ -10,3 +10,6 @@
 [submodule "benchmarks/bears"]
 	path = benchmarks/bears
 	url = https://github.com/andre15silva/bears-benchmark.git
+[submodule "benchmarks/gitbug-java"]
+	path = benchmarks/gitbug-java
+	url = https://github.com/gitbugactions/gitbug-java.git
