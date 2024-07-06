@@ -36,7 +36,7 @@ class GitBugJava(Benchmark):
         bids = {bid.decode("utf-8") for bid in run.stdout.split()}
         logging.info("Found %3d bugs" % len(bids))
 
-        for bid in tqdm.tqdm(bids, "Loading GitBug-Java bugs..."):
+        for bid in tqdm.tqdm(bids, "Loading GitBug-Java"):
             pid = bid.rsplit("-", 1)[0]
             diff = ""
             with open(f"{self.path}/data/bugs/{pid}.json", "r") as f:

@@ -39,6 +39,7 @@ class TestClozeSamplesCodeLLaMA:
 
     DEFECTS4J: Benchmark
     HUMANEVALJAVA: Benchmark
+    GITBUGJAVA: Benchmark
     PROMPT_STRATEGY: str = "zero-shot-cloze"
     MODEL_NAME: str = "codellama"
 
@@ -50,6 +51,9 @@ class TestClozeSamplesCodeLLaMA:
         TestClozeSamplesCodeLLaMA.HUMANEVALJAVA = get_benchmark("humanevaljava")
         assert TestClozeSamplesCodeLLaMA.HUMANEVALJAVA is not None
         TestClozeSamplesCodeLLaMA.HUMANEVALJAVA.initialize()
+        TestClozeSamplesCodeLLaMA.GITBUGJAVA = get_benchmark("gitbugjava")
+        assert TestClozeSamplesCodeLLaMA.GITBUGJAVA is not None
+        TestClozeSamplesCodeLLaMA.GITBUGJAVA.initialize()
 
     def test_closure_46(self):
         bug = TestClozeSamplesCodeLLaMA.DEFECTS4J.get_bug("Closure-46")
@@ -712,3 +716,48 @@ class TestClozeSamplesCodeLLaMA:
         assert sample["prompt"] is not None
         assert "//        return x | y;" in sample["prompt"]
         assert sample["prompt"].count("<FILL_ME>") == 1
+
+    def test_traccar_traccar_37ed394724c0(self):
+        bug = TestClozeSamplesCodeLLaMA.GITBUGJAVA.get_bug(
+            "traccar-traccar-37ed394724c0"
+        )
+        assert bug is not None
+
+        sample = generate_sample(
+            bug=bug,
+            prompt_strategy=TestClozeSamplesCodeLLaMA.PROMPT_STRATEGY,
+            model_name=TestClozeSamplesCodeLLaMA.MODEL_NAME,
+            keep_buggy_code=True,
+        )
+
+        # Assert we are dealing with the correct bug and strategy
+        assert sample["identifier"] == "traccar-traccar-37ed394724c0"
+        assert sample["prompt_strategy"] == "zero-shot-cloze"
+
+        # Assert that the prompt is properly constructed
+        assert sample["prompt"] is not None
+        assert (
+            "//                    position.set(Position.KEY_BATTERY_LEVEL, buf.readUnsignedByte() * 100 / 6);"
+            in sample["prompt"]
+        )
+        assert sample["prompt"].count("<FILL_ME>") == 1
+
+    def test_BrightSpots_rcv_688920f27706(self):
+        bug = TestClozeSamplesCodeLLaMA.GITBUGJAVA.get_bug(
+            "BrightSpots-rcv-688920f27706"
+        )
+        assert bug is not None
+
+        sample = generate_sample(
+            bug=bug,
+            prompt_strategy=TestClozeSamplesCodeLLaMA.PROMPT_STRATEGY,
+            model_name=TestClozeSamplesCodeLLaMA.MODEL_NAME,
+            keep_buggy_code=True,
+        )
+
+        # Assert we are dealing with the correct bug and strategy
+        assert sample["identifier"] == "BrightSpots-rcv-688920f27706"
+        assert sample["prompt_strategy"] == "zero-shot-cloze"
+
+        # Assert that the prompt is properly constructed
+        assert sample["prompt"] is None

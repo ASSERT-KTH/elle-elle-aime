@@ -41,7 +41,9 @@ def compute_diff(
 
 
 # Check if the computed diff is equivalent to the original diff
-def assert_same_diff(original_diff: PatchSet, function_diff: List[str]) -> bool:
+def assert_same_diff(
+    original_diff: PatchSet, function_diff: List[str], original_inverted: bool = False
+) -> bool:
     """
     Checks if the computed diff is equivalent to the original diff
     """
@@ -54,10 +56,10 @@ def assert_same_diff(original_diff: PatchSet, function_diff: List[str]) -> bool:
     for file in original_diff:
         for hunk in file:
             for line in hunk:
-                if line.is_added:
+                if line.is_added if original_inverted else line.is_removed:
                     original_removed_lines.append(line.value.strip())
                     original_source += line.value
-                elif line.is_removed:
+                elif line.is_removed if original_inverted else line.is_added:
                     original_added_lines.append(line.value.strip())
                     original_target += line.value
                 elif line.is_context:
@@ -80,7 +82,7 @@ def assert_same_diff(original_diff: PatchSet, function_diff: List[str]) -> bool:
         else:
             new_source += line[1:]
             new_target += line[1:]
-    # Check that all the
+    # Check that all the lines are present in both diffs
     if (
         any([line not in original_source for line in new_removed_lines])
         or any([line not in original_target for line in new_added_lines])
@@ -117,18 +119,32 @@ def extract_single_function(bug: Bug) -> Optional[Tuple[str, str]]:
         # Note: this diff is inverted, i.e. the target file is the buggy file
         diff = PatchSet(bug.get_ground_truth())
 
-        buggy_file_path = os.path.join(
-            buggy_path,
-            diff[0].target_file[2:]
-            if diff[0].target_file.startswith("b/")
-            else diff[0].target_file,
-        )
-        fixed_file_path = os.path.join(
-            fixed_path,
-            diff[0].source_file[2:]
-            if diff[0].source_file.startswith("a/")
-            else diff[0].source_file,
-        )
+        if bug.is_ground_truth_inverted():
+            buggy_file_path = os.path.join(
+                buggy_path,
+                diff[0].target_file[2:]
+                if diff[0].target_file.startswith("b/")
+                else diff[0].target_file,
+            )
+            fixed_file_path = os.path.join(
+                fixed_path,
+                diff[0].source_file[2:]
+                if diff[0].source_file.startswith("a/")
+                else diff[0].source_file,
+            )
+        else:
+            buggy_file_path = os.path.join(
+                buggy_path,
+                diff[0].source_file[2:]
+                if diff[0].source_file.startswith("a/")
+                else diff[0].source_file,
+            )
+            fixed_file_path = os.path.join(
+                fixed_path,
+                diff[0].target_file[2:]
+                if diff[0].target_file.startswith("b/")
+                else diff[0].target_file,
+            )
 
         # Find the methods of each hunk
         buggy_methods = []
@@ -182,13 +198,19 @@ def extract_single_function(bug: Bug) -> Optional[Tuple[str, str]]:
         # If the diffs are not equivalent, we try to fix the function diff by setting the fixed_code and buggy_code to empty
         # If on of these works we assume it as correct (since the diff is now equivalent to the original one)
         fdiff = compute_diff(buggy_code, fixed_code)
-        if not assert_same_diff(diff, fdiff):
+        if not assert_same_diff(
+            diff, fdiff, original_inverted=bug.is_ground_truth_inverted()
+        ):
             fdiff = compute_diff(buggy_code, "")
-            if assert_same_diff(diff, fdiff):
+            if assert_same_diff(
+                diff, fdiff, original_inverted=bug.is_ground_truth_inverted()
+            ):
                 fixed_code = ""
             else:
                 fdiff = compute_diff("", fixed_code)
-                if assert_same_diff(diff, fdiff):
+                if assert_same_diff(
+                    diff, fdiff, original_inverted=bug.is_ground_truth_inverted()
+                ):
                     buggy_code = ""
                 else:
                     return None

@@ -16,8 +16,7 @@ class GitBugJavaBug(Bug):
     """
 
     def __init__(self, benchmark: Benchmark, bid: str, ground_truth: str) -> None:
-        self.bid = bid
-        super().__init__(benchmark, bid, ground_truth)
+        super().__init__(benchmark, bid, ground_truth, False)
 
     @backoff.on_exception(
         backoff.constant, subprocess.CalledProcessError, interval=1, max_tries=3
@@ -28,7 +27,7 @@ class GitBugJavaBug(Bug):
 
         # Checkout the bug
         checkout_run = subprocess.run(
-            f"{self.benchmark.get_bin()} checkout {self.bid} {path} {'--fixed' if fixed else ''}",
+            f"{self.benchmark.get_bin()} checkout {self.identifier} {path} {'--fixed' if fixed else ''}",
             shell=True,
             capture_output=True,
             check=True,

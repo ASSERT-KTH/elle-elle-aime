@@ -1,5 +1,6 @@
 import subprocess
 import shutil
+from elleelleaime.core.benchmarks.benchmark import Benchmark
 
 from elleelleaime.core.benchmarks.bug import Bug
 from elleelleaime.core.benchmarks.test_result import TestResult
@@ -10,6 +11,9 @@ class HumanEvalJavaBug(Bug):
     """
     The class for representing HumanEvalJava bugs
     """
+
+    def __init__(self, benchmark: Benchmark, bid: str, ground_truth: str) -> None:
+        super().__init__(benchmark, bid, ground_truth, True)
 
     def checkout(self, path: str, fixed: bool = False) -> bool:
         # Remove the directory if it exists
