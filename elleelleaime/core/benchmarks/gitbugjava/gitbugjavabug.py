@@ -53,7 +53,6 @@ class GitBugJavaBug(Bug):
                 timeout=30 * 60,
                 env=env,
             )
-            print(run.stdout.decode("utf-8"))
 
             m = re.search(r"Failing tests: ([0-9]+)", run.stdout.decode("utf-8"))
             return TestResult(

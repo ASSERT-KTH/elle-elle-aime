@@ -11,6 +11,5 @@ cd ../..;
 cd benchmarks/gitbug-java;
 chmod +x gitbug-java;
 poetry install --no-root;
-poetry run ./gitbug-java setup;
 
 docker pull openjdk:11;
