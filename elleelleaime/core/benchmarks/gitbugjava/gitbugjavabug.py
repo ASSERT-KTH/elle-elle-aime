@@ -43,9 +43,9 @@ class GitBugJavaBug(Bug):
     def test(self, path: str) -> TestResult:
         try:
             env = os.environ.copy()
-            env[
-                "PATH"
-            ] = f"{self.benchmark.path}:{self.benchmark.path}/bin:{env['PATH']}"
+            env["PATH"] = (
+                f"{self.benchmark.path}:{self.benchmark.path}/bin:{env['PATH']}"
+            )
             run = subprocess.run(
                 f"{self.benchmark.get_bin()} run {path}",
                 shell=True,

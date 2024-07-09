@@ -90,16 +90,20 @@ class ReplaceEvaluationStrategy(PatchEvaluationStrategy):
                 if bug.is_ground_truth_inverted():
                     buggy_file_path = os.path.join(
                         buggy_path,
-                        diff[0].target_file[2:]
-                        if diff[0].target_file.startswith("b/")
-                        else diff[0].target_file,
+                        (
+                            diff[0].target_file[2:]
+                            if diff[0].target_file.startswith("b/")
+                            else diff[0].target_file
+                        ),
                     )
                 else:
                     buggy_file_path = os.path.join(
                         buggy_path,
-                        diff[0].source_file[2:]
-                        if diff[0].source_file.startswith("a/")
-                        else diff[0].source_file,
+                        (
+                            diff[0].source_file[2:]
+                            if diff[0].source_file.startswith("a/")
+                            else diff[0].source_file
+                        ),
                     )
 
                 with open(buggy_file_path, "r", encoding="ISO-8859-1") as f:
