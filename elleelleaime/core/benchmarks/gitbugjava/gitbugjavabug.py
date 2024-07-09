@@ -26,11 +26,8 @@ class GitBugJavaBug(Bug):
         shutil.rmtree(path, ignore_errors=True)
 
         # Checkout the bug
-        checkout_run = subprocess.run(
-            f"{self.benchmark.get_bin()} checkout {self.identifier} {path} {'--fixed' if fixed else ''}",
-            shell=True,
-            capture_output=True,
-            check=True,
+        checkout_run = self.benchmark.run_command(
+            f"checkout {self.identifier} {path} {'--fixed' if fixed else ''}"
         )
 
         return checkout_run.returncode == 0
@@ -42,16 +39,8 @@ class GitBugJavaBug(Bug):
 
     def test(self, path: str) -> TestResult:
         try:
-            env = os.environ.copy()
-            env["PATH"] = (
-                f"{self.benchmark.path}:{self.benchmark.path}/bin:{env['PATH']}"
-            )
-            run = subprocess.run(
-                f"{self.benchmark.get_bin()} run {path}",
-                shell=True,
-                capture_output=True,
-                timeout=30 * 60,
-                env=env,
+            run = self.benchmark.run_command(
+                f"run {path}", check=False, timeout=30 * 60
             )
 
             m = re.search(r"Failing tests: ([0-9]+)", run.stdout.decode("utf-8"))
