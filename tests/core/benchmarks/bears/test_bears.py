@@ -9,6 +9,7 @@ import tqdm
 import concurrent.futures
 
 
+@pytest.mark.skip(reason="Bears will be deprecated")
 class TestBears:
     def test_get_benchmark(self):
         bears = get_benchmark("bears")
