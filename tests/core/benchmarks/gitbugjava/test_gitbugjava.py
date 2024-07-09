@@ -102,7 +102,7 @@ class TestGitBugJava:
             shutil.rmtree(fixed_path, ignore_errors=True)
 
     @pytest.mark.skipif(
-        os.environ.get("CI") is None,
+        os.environ.get("CI"),
         reason="This test requires completing GitBug-Java's setup, which is too heavy for CI.",
     )
     def test_run_bugs(self):
