@@ -2,6 +2,8 @@ from pathlib import Path
 from elleelleaime.core.benchmarks.benchmark import Benchmark
 from elleelleaime.core.benchmarks.gitbugjava.gitbugjavabug import GitBugJavaBug
 
+from typing import Optional
+
 import subprocess
 import logging
 import tqdm
@@ -23,7 +25,7 @@ class GitBugJava(Benchmark):
         return self.bin
 
     def run_command(
-        self, command: str, check: bool = True, timeout: int = 0
+        self, command: str, check: bool = True, timeout: Optional[int] = None
     ) -> subprocess.CompletedProcess:
         env = os.environ.copy()
         # We need to clear the VIRTUAL_ENV variable to be able to run gitbug-java commands inside its own virtualenv
