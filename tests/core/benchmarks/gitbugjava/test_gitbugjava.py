@@ -53,7 +53,7 @@ class TestGitBugJava:
             shutil.rmtree(fixed_path, ignore_errors=True)
 
     @pytest.mark.skipif(
-        os.environ.get("CI") is None,
+        os.environ.get("CI") is not None,
         reason="This test requires completing GitBug-Java's setup, which is too heavy for CI.",
     )
     def test_checkout_bugs(self):
@@ -106,7 +106,7 @@ class TestGitBugJava:
             shutil.rmtree(fixed_path, ignore_errors=True)
 
     @pytest.mark.skipif(
-        os.environ.get("CI") is None,
+        os.environ.get("CI") is not None,
         reason="This test requires completing GitBug-Java's setup, which is too heavy for CI.",
     )
     def test_run_bugs(self):
