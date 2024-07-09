@@ -11,5 +11,9 @@ cd ../..;
 cd benchmarks/gitbug-java;
 chmod +x gitbug-java;
 poetry install --no-root;
+# Skip setup if in CI
+if [ -z "$CI" ]; then
+  poetry run ./gitbug-java setup;
+fi
 
 docker pull openjdk:11;

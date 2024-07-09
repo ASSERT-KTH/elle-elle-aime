@@ -14,7 +14,9 @@ class GitBugJava(Benchmark):
     """
 
     # TODO: add GitBug-Java to benchmarks sub-modules
-    def __init__(self, path: Path = Path("benchmarks/gitbug-java").absolute()) -> None:
+    def __init__(
+        self, path: Path = Path("/home/andre/Repos/gitbugs-java").absolute()
+    ) -> None:
         super().__init__("gitbugjava", path)
         self.bin = f"cd {self.path} && poetry env use python3.12 > /dev/null && poetry run {path.joinpath('gitbug-java')}"
 

@@ -6,6 +6,7 @@ import uuid
 import shutil
 import tqdm
 import pytest
+import os
 import concurrent.futures
 
 
@@ -100,6 +101,10 @@ class TestGitBugJava:
             shutil.rmtree(buggy_path, ignore_errors=True)
             shutil.rmtree(fixed_path, ignore_errors=True)
 
+    @pytest.mark.skipif(
+        os.environ.get("CI") is None,
+        reason="This test requires completing GitBug-Java's setup, which is too heavy for CI.",
+    )
     def test_run_bugs(self):
         gitbugjava = get_benchmark("gitbugjava")
         assert gitbugjava is not None
