@@ -2,6 +2,9 @@ from generate_samples import generate_sample
 from elleelleaime.core.utils.benchmarks import get_benchmark
 from elleelleaime.core.benchmarks.benchmark import Benchmark
 
+import pytest
+import os
+
 
 class TestClozeSamplesCodeLLaMA:
     """
@@ -717,6 +720,10 @@ class TestClozeSamplesCodeLLaMA:
         assert "//        return x | y;" in sample["prompt"]
         assert sample["prompt"].count("<FILL_ME>") == 1
 
+    @pytest.mark.skipif(
+        os.environ.get("CI") is not None,
+        reason="This test requires completing GitBug-Java's setup, which is too heavy for CI.",
+    )
     def test_traccar_traccar_37ed394724c0(self):
         bug = TestClozeSamplesCodeLLaMA.GITBUGJAVA.get_bug(
             "traccar-traccar-37ed394724c0"
@@ -742,6 +749,10 @@ class TestClozeSamplesCodeLLaMA:
         )
         assert sample["prompt"].count("<FILL_ME>") == 1
 
+    @pytest.mark.skipif(
+        os.environ.get("CI") is not None,
+        reason="This test requires completing GitBug-Java's setup, which is too heavy for CI.",
+    )
     def test_BrightSpots_rcv_688920f27706(self):
         bug = TestClozeSamplesCodeLLaMA.GITBUGJAVA.get_bug(
             "BrightSpots-rcv-688920f27706"
