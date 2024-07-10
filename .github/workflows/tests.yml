@@ -5,12 +5,6 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - name: Set CI env variable
-        run: echo "CI=true" >> "$GITHUB_ENV"
-
-      - name: Echo CI env variable
-        run: echo $CI
-
       - uses: actions/checkout@v3
 
       - uses: jlumbroso/free-disk-space@main
@@ -54,4 +48,4 @@ jobs:
           sudo apt-get install -y dos2unix
 
       - name: Build and run tests
-        run: python -m poetry run python -m pytest -sxv tests/
+        run: CI=true && python -m poetry run python -m pytest -sxv tests/
