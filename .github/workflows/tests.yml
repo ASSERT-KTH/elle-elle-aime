@@ -6,7 +6,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Set CI env variable
-        run: echo "CI=true" >> "$GITHUB_ENV" 
+        run: echo "CI=true" >> "$GITHUB_ENV"
+
+      - name: Echo CI env variable
+        run: echo $CI
 
       - uses: actions/checkout@v3
 
