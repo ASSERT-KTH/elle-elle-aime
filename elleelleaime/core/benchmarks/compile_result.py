@@ -1,8 +1,11 @@
+from typing import Optional
+
+
 class CompileResult:
-    def __init__(self, result: bool) -> None:
+    def __init__(self, result: Optional[bool]) -> None:
         self.result = result
 
-    def is_passing(self) -> bool:
+    def is_passing(self) -> Optional[bool]:
         return self.result
 
     def __repr__(self) -> str:

@@ -136,7 +136,7 @@ class ReplaceEvaluationStrategy(PatchEvaluationStrategy):
                 compilation_result = bug.compile(buggy_path)
                 result["compile"] = compilation_result.is_passing()
                 # If it compiles, test the code
-                if result["compile"]:
+                if result["compile"] or result["compile"] is None:
                     test_result = bug.test(buggy_path)
                     result["test"] = test_result.is_passing()
                     # If the tests pass, check if the ASTs match

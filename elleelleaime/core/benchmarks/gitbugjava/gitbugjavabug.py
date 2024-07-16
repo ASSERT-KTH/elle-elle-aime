@@ -33,9 +33,7 @@ class GitBugJavaBug(Bug):
         return checkout_run.returncode == 0
 
     def compile(self, path: str) -> CompileResult:
-        raise NotImplementedError(
-            "GitBug-Java does not support compilation of bugs, only execution of the entire test pipeline."
-        )
+        return CompileResult(None)
 
     def test(self, path: str) -> TestResult:
         try:
