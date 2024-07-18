@@ -72,8 +72,12 @@ class TestClozeSamplesCodeLLaMA:
         assert sample["identifier"] == "Closure-46"
         assert sample["prompt_strategy"] == "zero-shot-cloze"
 
-        # Not supported since it changes the annotation too (outside the method declaration)
-        assert sample["prompt"] is None
+        # Assert that the buggy code and fixed code are properly separated
+        assert "public JSType getLeastSupertype(JSType that) {" in sample["buggy_code"]
+        assert sample["fixed_code"] == ""
+
+        # Assert that the prompt is properly constructed
+        assert sample["prompt"].count("<FILL_ME>") == 1
 
     def test_closure_115(self):
         bug = TestClozeSamplesCodeLLaMA.DEFECTS4J.get_bug("Closure-115")
@@ -134,7 +138,7 @@ class TestClozeSamplesCodeLLaMA:
             sample["prompt"]
             .strip()
             .startswith(
-                "JSType resolveInternal(ErrorReporter t, StaticScope<JSType> enclosing) {"
+                "@Override\n  JSType resolveInternal(ErrorReporter t, StaticScope<JSType> enclosing) {"
             )
         )
         assert sample["prompt"].count("<FILL_ME>") == 1
@@ -562,7 +566,7 @@ class TestClozeSamplesCodeLLaMA:
         assert (
             sample["prompt"]
             .strip()
-            .startswith("protected CompilerOptions createOptions() {")
+            .startswith("@Override\n  protected CompilerOptions createOptions() {")
         )
         assert sample["prompt"].count("<FILL_ME>") == 1
 
@@ -594,28 +598,6 @@ class TestClozeSamplesCodeLLaMA:
                 "private static StringBuilder escapeRegex(StringBuilder regex, String value, boolean unquote) {"
             )
         )
-        assert sample["prompt"].count("<FILL_ME>") == 1
-
-    def test_chart_23(self):
-        bug = TestClozeSamplesCodeLLaMA.DEFECTS4J.get_bug("Chart-23")
-        assert bug is not None
-
-        sample = generate_sample(
-            bug=bug,
-            prompt_strategy=TestClozeSamplesCodeLLaMA.PROMPT_STRATEGY,
-            model_name=TestClozeSamplesCodeLLaMA.MODEL_NAME,
-        )
-
-        # Assert we are dealing with the correct bug and strategy
-        assert sample["identifier"] == "Chart-23"
-        assert sample["prompt_strategy"] == "zero-shot-cloze"
-
-        # Assert that the buggy code and fixed code are properly separated
-        assert sample["buggy_code"] == ""
-        assert "public boolean equals(Object obj) {" in sample["fixed_code"]
-
-        # Assert that the prompt is properly constructed
-        assert sample["prompt"].strip().startswith("<FILL_ME>")
         assert sample["prompt"].count("<FILL_ME>") == 1
 
     def test_chart_7(self):

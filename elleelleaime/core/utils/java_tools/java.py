@@ -1,23 +1,12 @@
 from typing import Optional, Tuple, List
 from unidiff import PatchSet
 from uuid import uuid4
+from pathlib import Path
 import os, tempfile, difflib, shutil
+import subprocess
 import re
 
 from elleelleaime.core.benchmarks.bug import Bug
-from elleelleaime.core.utils.java_tools.java_lang import load_origin_code_node
-
-
-def find_code(file_path: str, line_numbers: List[int]) -> str:
-    """
-    Finds the code corresponding to the given line numbers in the given file.
-    """
-    code = ""
-    with open(file_path, "r", encoding="ISO-8859-1") as file:
-        for idx, line in enumerate(file.readlines()):
-            if idx + 1 in line_numbers:
-                code += line
-    return code
 
 
 def compute_diff(
@@ -93,6 +82,64 @@ def assert_same_diff(
     return True
 
 
+def get_target_filename(diff: PatchSet) -> str:
+    """
+    Returns the target filename of the diff
+    """
+    return (
+        diff[0].target_file[2:]
+        if diff[0].target_file.startswith("b/")
+        else diff[0].target_file
+    )
+
+
+def get_source_filename(diff: PatchSet) -> str:
+    """
+    Returns the source filename of the diff
+    """
+    return (
+        diff[0].source_file[2:]
+        if diff[0].source_file.startswith("a/")
+        else diff[0].source_file
+    )
+
+
+def get_modified_source_lines(diff: PatchSet) -> List[int]:
+    """
+    Returns the line numbers of the modified source code
+    """
+    removed_lines = []
+    context_lines = []
+    for hunk in diff[0]:
+        for line in hunk:
+            if line.is_removed:
+                removed_lines.append(line.source_line_no)
+            elif line.is_context:
+                context_lines.append(line.source_line_no)
+
+    # Take median value of context lines (to avoid getting lines outside the function)
+    context_lines = context_lines[len(context_lines) // 2 : len(context_lines) // 2 + 1]
+    return removed_lines if len(removed_lines) > 0 else context_lines
+
+
+def get_modified_target_lines(diff: PatchSet) -> List[int]:
+    """
+    Returns the line numbers of the modified target code
+    """
+    added_lines = []
+    context_lines = []
+    for hunk in diff[0]:
+        for line in hunk:
+            if line.is_added:
+                added_lines.append(line.target_line_no)
+            elif line.is_context:
+                context_lines.append(line.target_line_no)
+
+    # Take median value of context lines (to avoid getting lines outside the function)
+    context_lines = context_lines[len(context_lines) // 2 : len(context_lines) // 2 + 1]
+    return added_lines if len(added_lines) > 0 else context_lines
+
+
 def extract_single_function(bug: Bug) -> Optional[Tuple[str, str]]:
     """
     Extracts the buggy and fixed code of single-function bugs.
@@ -120,85 +167,41 @@ def extract_single_function(bug: Bug) -> Optional[Tuple[str, str]]:
         diff = PatchSet(bug.get_ground_truth())
 
         if bug.is_ground_truth_inverted():
-            buggy_file_path = os.path.join(
-                buggy_path,
-                (
-                    diff[0].target_file[2:]
-                    if diff[0].target_file.startswith("b/")
-                    else diff[0].target_file
-                ),
-            )
-            fixed_file_path = os.path.join(
-                fixed_path,
-                (
-                    diff[0].source_file[2:]
-                    if diff[0].source_file.startswith("a/")
-                    else diff[0].source_file
-                ),
-            )
+            buggy_file_path = Path(buggy_path, get_target_filename(diff))
+            modified_buggy_lines = get_modified_target_lines(diff)
+            fixed_file_path = Path(fixed_path, get_source_filename(diff))
+            modified_fixed_lines = get_modified_source_lines(diff)
         else:
-            buggy_file_path = os.path.join(
-                buggy_path,
-                (
-                    diff[0].source_file[2:]
-                    if diff[0].source_file.startswith("a/")
-                    else diff[0].source_file
-                ),
-            )
-            fixed_file_path = os.path.join(
-                fixed_path,
-                (
-                    diff[0].target_file[2:]
-                    if diff[0].target_file.startswith("b/")
-                    else diff[0].target_file
-                ),
-            )
+            buggy_file_path = Path(buggy_path, get_source_filename(diff))
+            modified_buggy_lines = get_modified_source_lines(diff)
+            fixed_file_path = Path(fixed_path, get_target_filename(diff))
+            modified_fixed_lines = get_modified_target_lines(diff)
 
-        # Find the methods of each hunk
-        buggy_methods = []
-        fixed_methods = []
-        allowed_node_types = ["MethodDeclaration", "ConstructorDeclaration"]
-        for hunk in diff[0]:
-            buggy_methods.append(
-                load_origin_code_node(
-                    buggy_file_path,
-                    [x.target_line_no for x in hunk.target_lines()],
-                    allowed_node_types,
-                )[0]
-            )
-            fixed_methods.append(
-                load_origin_code_node(
-                    fixed_file_path,
-                    [x.source_line_no for x in hunk.source_lines()],
-                    allowed_node_types,
-                )[0]
-            )
-
-        # Verify that all hunk make changes in the same method
-        buggy_method = buggy_methods[0]
-        fixed_method = fixed_methods[0]
-        for buggy_method, fixed_method in zip(buggy_methods, fixed_methods):
-            if buggy_method != buggy_methods[0] or fixed_method != fixed_methods[0]:
-                return None
-
-        # Get the buggy and fixed code with line numbers
-        # If the ast nodes are not of the correct type, then we have a whole-function removal/addition
-        buggy_code = (
-            find_code(
-                buggy_file_path,
-                [i for i in range(buggy_method.start_pos, buggy_method.end_pos + 1)],
-            )
-            if buggy_method is not None
-            else ""
+        # Run code extractor for the buggy function
+        lines_args = " ".join([f"--lines {line}" for line in modified_buggy_lines])
+        run = subprocess.run(
+            f'docker run --rm --volume ".:/elleelleaime" --volume "{buggy_file_path.parent.absolute()}:{buggy_file_path.parent.absolute()}" --workdir "/elleelleaime"'
+            + f" openjdk:11 java -jar extractor.jar -i {buggy_file_path.absolute()} {lines_args}",
+            shell=True,
+            capture_output=True,
         )
-        fixed_code = (
-            find_code(
-                fixed_file_path,
-                [i for i in range(fixed_method.start_pos, fixed_method.end_pos + 1)],
-            )
-            if fixed_method is not None
-            else ""
+        if run.returncode != 0:
+            buggy_code = ""
+        else:
+            buggy_code = run.stdout.decode("utf-8")
+
+        # Run code extractor for the fixed function
+        lines_args = " ".join([f"--lines {line}" for line in modified_fixed_lines])
+        run = subprocess.run(
+            f'docker run --rm --volume ".:/elleelleaime" --volume "{fixed_file_path.parent.absolute()}:{fixed_file_path.parent.absolute()}" --workdir "/elleelleaime"'
+            + f" openjdk:11 java -jar extractor.jar -i {fixed_file_path.absolute()} {lines_args}",
+            shell=True,
+            capture_output=True,
         )
+        if run.returncode != 0:
+            fixed_code = ""
+        else:
+            fixed_code = run.stdout.decode("utf-8")
 
         # HACK: sometimes we are not able to properly retrieve the code at the function-level
         # This happens in cases suchas Closure-46 where a whole function is removed
