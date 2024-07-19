@@ -96,7 +96,7 @@ class TestFillInTheMiddleSamplesStarCoder:
             sample["prompt"]
             .strip()
             .startswith(
-                "<fim_prefix>  JSType resolveInternal(ErrorReporter t, StaticScope<JSType> enclosing) {"
+                "<fim_prefix>  @Override\n  JSType resolveInternal(ErrorReporter t, StaticScope<JSType> enclosing) {"
             )
         )
         assert sample["prompt"].endswith("<fim_middle>")
