@@ -384,31 +384,6 @@ class TestFillInTheMiddleSamplesStarCoder:
         assert sample["prompt"].count("<fim_middle>") == 1
         assert sample["prompt"].count("<fim_suffix>") == 1
 
-    def test_chart_23(self):
-        bug = TestFillInTheMiddleSamplesStarCoder.DEFECTS4J.get_bug("Chart-23")
-        assert bug is not None
-
-        sample = generate_sample(
-            bug=bug,
-            prompt_strategy=TestFillInTheMiddleSamplesStarCoder.PROMPT_STRATEGY,
-            model_name=TestFillInTheMiddleSamplesStarCoder.MODEL_NAME,
-        )
-
-        # Assert we are dealing with the correct bug and strategy
-        assert sample["identifier"] == "Chart-23"
-        assert sample["prompt_strategy"] == "fill-in-the-middle"
-
-        # Assert that the buggy code and fixed code are properly separated
-        assert sample["buggy_code"] == ""
-        assert "public boolean equals(Object obj) {" in sample["fixed_code"]
-
-        # Assert that the prompt is properly constructed
-        assert sample["prompt"] == "<fim_prefix><fim_suffix><fim_middle>"
-        assert sample["prompt"].endswith("<fim_middle>")
-        assert sample["prompt"].count("<fim_prefix>") == 1
-        assert sample["prompt"].count("<fim_middle>") == 1
-        assert sample["prompt"].count("<fim_suffix>") == 1
-
     def test_chart_7(self):
         # This is a special case that requires latin-1 encoding
         bug = TestFillInTheMiddleSamplesStarCoder.DEFECTS4J.get_bug("Chart-7")

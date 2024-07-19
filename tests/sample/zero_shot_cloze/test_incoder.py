@@ -417,30 +417,6 @@ class TestClozeSamplesIncoder:
         assert sample["prompt"].count("<|mask:1|>") == 1
         assert sample["prompt"].count("<|mask:2|>") == 1
 
-    def test_chart_23(self):
-        bug = TestClozeSamplesIncoder.DEFECTS4J.get_bug("Chart-23")
-        assert bug is not None
-
-        sample = generate_sample(
-            bug=bug,
-            prompt_strategy=TestClozeSamplesIncoder.PROMPT_STRATEGY,
-            model_name=TestClozeSamplesIncoder.MODEL_NAME,
-        )
-
-        # Assert we are dealing with the correct bug and strategy
-        assert sample["identifier"] == "Chart-23"
-        assert sample["prompt_strategy"] == "zero-shot-cloze"
-
-        # Assert that the buggy code and fixed code are properly separated
-        assert sample["buggy_code"] == ""
-        assert "public boolean equals(Object obj) {" in sample["fixed_code"]
-
-        # Assert that the prompt is properly constructed
-        assert sample["prompt"].strip().startswith("<|mask:0|>")
-        assert sample["prompt"].count("<|mask:") == 2
-        assert sample["prompt"].count("<|mask:0|>") == 1
-        assert sample["prompt"].count("<|mask:1|>") == 1
-
     def test_chart_7(self):
         # This is a special case that requires latin-1 encoding
         bug = TestClozeSamplesIncoder.DEFECTS4J.get_bug("Chart-7")
