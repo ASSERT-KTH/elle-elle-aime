@@ -89,7 +89,7 @@ class TestFunctionToFunctionSamples:
             sample["prompt"]
             .strip()
             .startswith(
-                "@Override\n  JSType resolveInternal(ErrorReporter t, StaticScope<JSType> enclosing) {"
+                "/**\n   * Resolve the referenced type within the enclosing scope.\n   */"
             )
         )
         assert sample["prompt"] == sample["buggy_code"]
