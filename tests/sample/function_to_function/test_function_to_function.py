@@ -59,7 +59,9 @@ class TestFunctionToFunctionSamples:
         assert (
             sample["prompt"]
             .strip()
-            .startswith("private CanInlineResult canInlineReferenceDirectly(")
+            .startswith(
+                "/**\n   * Determines whether a function can be inlined at a particular call site."
+            )
         )
         assert sample["prompt"] == sample["buggy_code"]
 
