@@ -61,8 +61,9 @@ class TestClozeSamplesIncoder:
         assert sample["identifier"] == "Closure-46"
         assert sample["prompt_strategy"] == "zero-shot-cloze"
 
-        # Not supported since it changes the annotation too (outside the method declaration)
-        assert sample["prompt"] is None
+        # Assert that the buggy code and fixed code are properly separated
+        assert "public JSType getLeastSupertype(JSType that) {" in sample["buggy_code"]
+        assert sample["fixed_code"] == ""
 
     def test_closure_115(self):
         bug = TestClozeSamplesIncoder.DEFECTS4J.get_bug("Closure-115")
