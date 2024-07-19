@@ -342,7 +342,9 @@ class TestFillInTheMiddleSamplesStarCoder:
         assert (
             sample["prompt"]
             .strip()
-            .startswith("<fim_prefix>  protected CompilerOptions createOptions() {")
+            .startswith(
+                "<fim_prefix>  @Override\n  protected CompilerOptions createOptions() {"
+            )
         )
         assert sample["prompt"].endswith("<fim_middle>")
         assert sample["prompt"].count("<fim_prefix>") == 1

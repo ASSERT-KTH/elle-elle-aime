@@ -378,7 +378,7 @@ class TestClozeSamplesIncoder:
         assert (
             sample["prompt"]
             .strip()
-            .startswith("protected CompilerOptions createOptions() {")
+            .startswith("@Override\n  protected CompilerOptions createOptions() {")
         )
         assert sample["prompt"].count("<|mask:") == 2
         assert sample["prompt"].count("<|mask:0|>") == 1

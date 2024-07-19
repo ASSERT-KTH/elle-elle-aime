@@ -312,7 +312,7 @@ class TestFunctionToFunctionSamples:
         assert (
             sample["prompt"]
             .strip()
-            .startswith("protected CompilerOptions createOptions() {")
+            .startswith("@Override\n  protected CompilerOptions createOptions() {")
         )
         assert sample["prompt"] == sample["buggy_code"]
 
