@@ -54,7 +54,7 @@ class HumanEvalJavaBug(Bug):
 
     def compile(self, path: str) -> CompileResult:
         run = subprocess.run(
-            f"cd {path}; timeout {5*60} mvn compile",
+            f'docker run --rm --volume "{path}:{path}" --workdir "{path}" maven:3.9.8-eclipse-temurin-8 timeout {5*60} mvn compile',
             shell=True,
             capture_output=True,
         )
@@ -62,7 +62,7 @@ class HumanEvalJavaBug(Bug):
 
     def test(self, path: str) -> TestResult:
         run = subprocess.run(
-            f"cd {path}; timeout {30*60} mvn test -Dtest=TEST_{self.get_identifier()}",
+            f'docker run --rm --volume "{path}:{path}" --workdir "{path}" maven:3.9.8-eclipse-temurin-8 timeout {30*60} mvn test -Dtest=TEST_{self.get_identifier()}',
             shell=True,
             capture_output=True,
         )

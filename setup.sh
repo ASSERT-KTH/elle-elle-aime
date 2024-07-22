@@ -17,3 +17,4 @@ if [ -z "$CI" ]; then
 fi
 
 docker pull openjdk:11;
+docker pull maven:3.9.8-eclipse-temurin-8;
