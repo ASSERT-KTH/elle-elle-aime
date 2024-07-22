@@ -123,7 +123,7 @@ class TestFunctionToFunctionSamples:
         assert (
             sample["prompt"]
             .strip()
-            .startswith("public Range getDataRange(ValueAxis axis) {")
+            .startswith("/**\n     * Returns the range for the specified axis.")
         )
         assert sample["prompt"] == sample["buggy_code"]
 
@@ -199,13 +199,7 @@ class TestFunctionToFunctionSamples:
         )
 
         # Assert that the prompt is properly constructed
-        assert (
-            sample["prompt"]
-            .strip()
-            .startswith(
-                "private void visitGetProp(NodeTraversal t, Node n, Node parent) {"
-            )
-        )
+        assert sample["prompt"].strip().startswith("/**\n   * Visits a GETPROP node.")
         assert sample["prompt"] == sample["buggy_code"]
 
     def test_closure_5(self):
@@ -229,7 +223,9 @@ class TestFunctionToFunctionSamples:
         assert (
             sample["prompt"]
             .strip()
-            .startswith("private boolean isInlinableObject(List<Reference> refs) {")
+            .startswith(
+                "/**\n     * Counts the number of direct (full) references to an object."
+            )
         )
         assert sample["prompt"] == sample["buggy_code"]
 
@@ -254,7 +250,11 @@ class TestFunctionToFunctionSamples:
 
         # Assert that the prompt is properly constructed
         assert (
-            sample["prompt"].strip().startswith("public boolean equals(Object obj) {")
+            sample["prompt"]
+            .strip()
+            .startswith(
+                "/**\n     * Tests the list for equality with another object (typically also a list)."
+            )
         )
         assert sample["prompt"] == sample["buggy_code"]
 
@@ -280,7 +280,7 @@ class TestFunctionToFunctionSamples:
             sample["prompt"]
             .strip()
             .startswith(
-                "public static Number createNumber(final String str) throws NumberFormatException"
+                "/**\n     * <p>Turns a string value into a java.lang.Number.</p>\n     *"
             )
         )
         assert sample["prompt"] == sample["buggy_code"]
@@ -341,9 +341,7 @@ class TestFunctionToFunctionSamples:
         assert (
             sample["prompt"]
             .strip()
-            .startswith(
-                "private static StringBuilder escapeRegex(StringBuilder regex, String value, boolean unquote) {"
-            )
+            .startswith("/**\n     * Escape constant fields into regular expression")
         )
         assert sample["prompt"] == sample["buggy_code"]
 
@@ -365,7 +363,9 @@ class TestFunctionToFunctionSamples:
         assert (
             sample["prompt"]
             .strip()
-            .startswith("private void updateBounds(TimePeriod period, int index) {")
+            .startswith(
+                "/**\n     * Update the index values for the maximum and minimum bounds."
+            )
         )
         assert sample["prompt"] == sample["buggy_code"]
 
@@ -392,6 +392,8 @@ class TestFunctionToFunctionSamples:
         assert (
             sample["prompt"]
             .strip()
-            .startswith("static String stripLeadingAndTrailingQuotes(String str)")
+            .startswith(
+                "/**\n     * Remove the leading and trailing quotes from <code>str</code>."
+            )
         )
         assert sample["prompt"] == sample["buggy_code"]
