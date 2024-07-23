@@ -109,7 +109,9 @@ class TestClozeSamplesCodeLLaMA:
         assert (
             sample["prompt"]
             .strip()
-            .startswith("private CanInlineResult canInlineReferenceDirectly(")
+            .startswith(
+                "/**\n   * Determines whether a function can be inlined at a particular call site."
+            )
         )
         assert sample["prompt"].count("<FILL_ME>") == 1
 
@@ -138,7 +140,7 @@ class TestClozeSamplesCodeLLaMA:
             sample["prompt"]
             .strip()
             .startswith(
-                "@Override\n  JSType resolveInternal(ErrorReporter t, StaticScope<JSType> enclosing) {"
+                "/**\n   * Resolve the referenced type within the enclosing scope.\n   */"
             )
         )
         assert sample["prompt"].count("<FILL_ME>") == 1
@@ -173,7 +175,7 @@ class TestClozeSamplesCodeLLaMA:
         assert (
             sample["prompt"]
             .strip()
-            .startswith("public Range getDataRange(ValueAxis axis) {")
+            .startswith("/**\n     * Returns the range for the specified axis.")
         )
         assert sample["prompt"].count("<FILL_ME>") == 1
 
@@ -253,13 +255,7 @@ class TestClozeSamplesCodeLLaMA:
         )
 
         # Assert that the prompt is properly constructed
-        assert (
-            sample["prompt"]
-            .strip()
-            .startswith(
-                "private void visitGetProp(NodeTraversal t, Node n, Node parent) {"
-            )
-        )
+        assert sample["prompt"].strip().startswith("/**\n   * Visits a GETPROP node.")
         assert sample["prompt"].count("<FILL_ME>") == 1
 
     def test_chart_1_keep_buggy_code(self):
@@ -271,6 +267,7 @@ class TestClozeSamplesCodeLLaMA:
             prompt_strategy=TestClozeSamplesCodeLLaMA.PROMPT_STRATEGY,
             model_name=TestClozeSamplesCodeLLaMA.MODEL_NAME,
             keep_buggy_code=True,
+            keep_comments=False,
         )
 
         # Assert we are dealing with the correct bug and strategy
@@ -326,6 +323,7 @@ class TestClozeSamplesCodeLLaMA:
             prompt_strategy=TestClozeSamplesCodeLLaMA.PROMPT_STRATEGY,
             model_name=TestClozeSamplesCodeLLaMA.MODEL_NAME,
             keep_buggy_code=True,
+            keep_comments=False,
         )
 
         # Assert we are dealing with the correct bug and strategy
@@ -378,6 +376,7 @@ class TestClozeSamplesCodeLLaMA:
             prompt_strategy=TestClozeSamplesCodeLLaMA.PROMPT_STRATEGY,
             model_name=TestClozeSamplesCodeLLaMA.MODEL_NAME,
             keep_buggy_code=True,
+            keep_comments=False,
         )
 
         # Assert we are dealing with the correct bug and strategy
@@ -418,6 +417,7 @@ class TestClozeSamplesCodeLLaMA:
             prompt_strategy=TestClozeSamplesCodeLLaMA.PROMPT_STRATEGY,
             model_name=TestClozeSamplesCodeLLaMA.MODEL_NAME,
             keep_buggy_code=True,
+            keep_comments=False,
         )
 
         # Assert we are dealing with the correct bug and strategy
@@ -478,7 +478,9 @@ class TestClozeSamplesCodeLLaMA:
         assert (
             sample["prompt"]
             .strip()
-            .startswith("private boolean isInlinableObject(List<Reference> refs) {")
+            .startswith(
+                "/**\n     * Counts the number of direct (full) references to an object."
+            )
         )
         assert sample["prompt"].count("<FILL_ME>") == 1
 
@@ -504,7 +506,11 @@ class TestClozeSamplesCodeLLaMA:
 
         # Assert that the prompt is properly constructed
         assert (
-            sample["prompt"].strip().startswith("public boolean equals(Object obj) {")
+            sample["prompt"]
+            .strip()
+            .startswith(
+                "/**\n     * Tests the list for equality with another object (typically also a list)."
+            )
         )
         assert sample["prompt"].count("<FILL_ME>") == 1
 
@@ -531,7 +537,7 @@ class TestClozeSamplesCodeLLaMA:
             sample["prompt"]
             .strip()
             .startswith(
-                "public static Number createNumber(final String str) throws NumberFormatException"
+                "/**\n     * <p>Turns a string value into a java.lang.Number.</p>\n     *"
             )
         )
         assert sample["prompt"].count("<FILL_ME>") == 1
@@ -594,9 +600,7 @@ class TestClozeSamplesCodeLLaMA:
         assert (
             sample["prompt"]
             .strip()
-            .startswith(
-                "private static StringBuilder escapeRegex(StringBuilder regex, String value, boolean unquote) {"
-            )
+            .startswith("/**\n     * Escape constant fields into regular expression")
         )
         assert sample["prompt"].count("<FILL_ME>") == 1
 
@@ -619,7 +623,9 @@ class TestClozeSamplesCodeLLaMA:
         assert (
             sample["prompt"]
             .strip()
-            .startswith("private void updateBounds(TimePeriod period, int index) {")
+            .startswith(
+                "/**\n     * Update the index values for the maximum and minimum bounds."
+            )
         )
         assert sample["prompt"].count("<FILL_ME>") == 1
 

@@ -38,7 +38,7 @@ class FillInTheMiddlePrompting(PromptingStrategy):
         self.middle_token: str = model_kwargs["middle_token"]
         self.sufix_token: str = model_kwargs["sufix_token"]
         self.keep_buggy_code: bool = kwargs.get("keep_buggy_code", False)
-        self.keep_comments: bool = kwargs.get("keep_comments", False)
+        self.keep_comments: bool = kwargs.get("keep_comments", True)
 
     def build_fim_prompt(self, buggy_code: str, fixed_code: str) -> str:
         fdiff = compute_diff(buggy_code, fixed_code)

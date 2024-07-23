@@ -63,7 +63,7 @@ class TestFillInTheMiddleSamplesStarCoder:
             sample["prompt"]
             .strip()
             .startswith(
-                "<fim_prefix>  private CanInlineResult canInlineReferenceDirectly("
+                "<fim_prefix>  /**\n   * Determines whether a function can be inlined at a particular call site."
             )
         )
         assert sample["prompt"].endswith("<fim_middle>")
@@ -96,7 +96,7 @@ class TestFillInTheMiddleSamplesStarCoder:
             sample["prompt"]
             .strip()
             .startswith(
-                "<fim_prefix>  @Override\n  JSType resolveInternal(ErrorReporter t, StaticScope<JSType> enclosing) {"
+                "<fim_prefix>  /**\n   * Resolve the referenced type within the enclosing scope.\n   */"
             )
         )
         assert sample["prompt"].endswith("<fim_middle>")
@@ -134,7 +134,9 @@ class TestFillInTheMiddleSamplesStarCoder:
         assert (
             sample["prompt"]
             .strip()
-            .startswith("<fim_prefix>    public Range getDataRange(ValueAxis axis) {")
+            .startswith(
+                "<fim_prefix>    /**\n     * Returns the range for the specified axis."
+            )
         )
         assert sample["prompt"].endswith("<fim_middle>")
         assert sample["prompt"].count("<fim_prefix>") == 1
@@ -218,7 +220,7 @@ class TestFillInTheMiddleSamplesStarCoder:
 
         # Assert that the prompt is properly constructed
         assert sample["prompt"].startswith(
-            "<fim_prefix>  private void visitGetProp(NodeTraversal t, Node n, Node parent) {"
+            "<fim_prefix>  /**\n   * Visits a GETPROP node."
         )
         assert sample["prompt"].endswith("<fim_middle>")
         assert sample["prompt"].count("<fim_prefix>") == 1
@@ -245,7 +247,7 @@ class TestFillInTheMiddleSamplesStarCoder:
 
         # Assert that the prompt is properly constructed
         assert sample["prompt"].startswith(
-            "<fim_prefix>    private boolean isInlinableObject(List<Reference> refs) {"
+            "<fim_prefix>    /**\n     * Counts the number of direct (full) references to an object."
         )
         assert sample["prompt"].endswith("<fim_middle>")
         assert sample["prompt"].count("<fim_prefix>") == 1
@@ -274,7 +276,7 @@ class TestFillInTheMiddleSamplesStarCoder:
 
         # Assert that the prompt is properly constructed
         assert sample["prompt"].startswith(
-            "<fim_prefix>    public boolean equals(Object obj) {"
+            "<fim_prefix>    /**\n     * Tests the list for equality with another object (typically also a list)."
         )
         assert sample["prompt"].endswith("<fim_middle>")
         assert sample["prompt"].count("<fim_prefix>") == 1
@@ -304,7 +306,7 @@ class TestFillInTheMiddleSamplesStarCoder:
             sample["prompt"]
             .strip()
             .startswith(
-                "<fim_prefix>    public static Number createNumber(final String str) throws NumberFormatException"
+                "<fim_prefix>    /**\n     * <p>Turns a string value into a java.lang.Number.</p>\n     *"
             )
         )
         assert sample["prompt"].endswith("<fim_middle>")
@@ -376,7 +378,7 @@ class TestFillInTheMiddleSamplesStarCoder:
             sample["prompt"]
             .strip()
             .startswith(
-                "<fim_prefix>    private static StringBuilder escapeRegex(StringBuilder regex, String value, boolean unquote) {"
+                "<fim_prefix>    /**\n     * Escape constant fields into regular expression"
             )
         )
         assert sample["prompt"].endswith("<fim_middle>")
@@ -404,7 +406,7 @@ class TestFillInTheMiddleSamplesStarCoder:
             sample["prompt"]
             .strip()
             .startswith(
-                "<fim_prefix>    private void updateBounds(TimePeriod period, int index) {"
+                "<fim_prefix>    /**\n     * Update the index values for the maximum and minimum bounds."
             )
         )
         assert sample["prompt"].endswith("<fim_middle>")
