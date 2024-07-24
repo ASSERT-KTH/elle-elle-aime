@@ -994,12 +994,12 @@ typing = ["typing-extensions (>=4.8)"]
 
 [[package]]
 name = "fire"
-version = "0.5.0"
+version = "0.6.0"
 description = "A library for automatically generating command line interfaces."
 optional = false
 python-versions = "*"
 files = [
-    {file = "fire-0.5.0.tar.gz", hash = "sha256:a6b0d49e98c8963910021f92bba66f65ab440da2982b78eb1bbf95a0a34aacc6"},
+    {file = "fire-0.6.0.tar.gz", hash = "sha256:54ec5b996ecdd3c0309c800324a0703d6da512241bc73b553db959d98de0aa66"},
 ]
 
 [package.dependencies]
@@ -5162,4 +5162,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.9,<3.13"
-content-hash = "aef34aadb182ccdefafd1d1acb86c747fd68d69c5be0da36b244cd1918a0a226"
+content-hash = "2a02af191357455f2ffb74677a8b15393db088651fdb4e38650fe9e6e660be8c"
