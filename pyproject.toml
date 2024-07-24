@@ -38,7 +38,7 @@ wandb = "^0.15.10"
 evaluate = "^0.4.0"
 ninja = "^1.11.1"
 packaging = "^23.1"
-safetensors = "^0.3.3"
+safetensors = "^0.4.0"
 trl = "^0.7.1"
 
 [tool.poetry.group.dev.dependencies]
