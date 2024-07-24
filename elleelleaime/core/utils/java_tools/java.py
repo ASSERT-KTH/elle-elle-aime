@@ -189,9 +189,6 @@ def extract_single_function(bug: Bug) -> Optional[Tuple[str, str]]:
             buggy_code = ""
         else:
             buggy_code = run.stdout.decode("utf-8")
-            # Remove last "\n" if present
-            if buggy_code[-1] == "\n":
-                buggy_code = buggy_code[:-1]
 
         # Run code extractor for the fixed function
         lines_args = " ".join([f"--lines {line}" for line in modified_fixed_lines])
@@ -205,9 +202,6 @@ def extract_single_function(bug: Bug) -> Optional[Tuple[str, str]]:
             fixed_code = ""
         else:
             fixed_code = run.stdout.decode("utf-8")
-            # Remove last "\n" if present
-            if fixed_code[-1] == "\n":
-                fixed_code = fixed_code[:-1]
 
         # HACK: sometimes we are not able to properly retrieve the code at the function-level
         # This happens in cases suchas Closure-46 where a whole function is removed
