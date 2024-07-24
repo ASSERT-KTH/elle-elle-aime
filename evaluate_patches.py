@@ -33,28 +33,28 @@ def exact_match(evaluation: dict) -> bool:
     """
     Returns True if the evaluation is an exact match.
     """
-    return evaluation["exact_match"]
+    return bool(evaluation["exact_match"])
 
 
 def ast_match(evaluation: dict) -> bool:
     """
     Returns True if the evaluation is an AST match.
     """
-    return evaluation["ast_match"]
+    return bool(evaluation["ast_match"])
 
 
 def plausible(evaluation: dict) -> bool:
     """
     Returns True if the evaluation is plausible.
     """
-    return evaluation["compile"] and evaluation["test"]
+    return bool(evaluation["test"])
 
 
 def compilable(evaluation: dict) -> bool:
     """
     Returns True if the evaluation is compilable.
     """
-    return evaluation["compile"]
+    return bool(evaluation["compile"])
 
 
 def is_single_chunk(sample: dict) -> bool:
