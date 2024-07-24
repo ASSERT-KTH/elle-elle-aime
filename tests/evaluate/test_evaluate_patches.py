@@ -520,3 +520,43 @@ class TestEvaluatePatchesGitBugJava:
         assert sample["evaluation"][0]["test"] == True
         assert sample["evaluation"][0]["exact_match"] == False
         assert sample["evaluation"][0]["ast_match"] == False
+
+    def test_mthmulders_mcs_eff905bef8d8(self):
+        """This test is for a specific bug in GitBug-Java that we faced an issue in locating the buggy code of during evaluation."""
+        bug = TestEvaluatePatchesGitBugJava.GITBUGJAVA.get_bug(
+            "mthmulders-mcs-eff905bef8d8"
+        )
+        assert bug is not None
+
+        sample = generate_sample(
+            bug=bug,
+            prompt_strategy=TestEvaluatePatchesGitBugJava.PROMPT_STRATEGY,
+            model_name=TestEvaluatePatchesGitBugJava.MODEL_NAME,
+        )
+
+        sample["generation"] = [
+            """    private void printRow(final Help.TextTable table, final SearchResponse.Response.Doc doc) {
+        var lastUpdated = DATE_TIME_FORMATTER.format(
+                Instant.ofEpochMilli(doc.timestamp()).atZone(ZoneId.systemDefault())
+        );
+
+        table.addRowValues(
+            doc.id() + ":" + doc.latestVersion(), lastUpdated
+        );
+    }
+"""
+        ]
+
+        sample = evaluate_candidate(
+            bug=bug,
+            sample=sample,
+            strategy=TestEvaluatePatchesGitBugJava.EVALUATE_STRATEGY,
+        )
+
+        assert sample["evaluation"] is not None
+        assert len(sample["evaluation"]) == 1
+
+        assert sample["evaluation"][0]["compile"] == None
+        assert sample["evaluation"][0]["test"] == True
+        assert sample["evaluation"][0]["ast_match"] == True
+        assert sample["evaluation"][0]["exact_match"] == False
