@@ -4,23 +4,19 @@ Framework to use LLMs for automated program repair.
 
 Supported benchmarks: 
   * Defects4J
-  * Bugs-dot-jar
-  * Refactory
+  * HumanEval-Java
+  * GitBug-Java
   
 ## Installation
 
-Requires python3.9 (or latest) and python-poetry
-The repository uses many submodules.
-```bash
-git clone --recurse-submodules https://github.com/ASSERT-KTH/elle-elle-aime.git
-cd elle-elle-aime
-poetry install # installs dependencies
+Requires python3.9 (or latest) and python-poetry.
 
-# for D4J
-cd benchmarks/defects4j/
-./init.sh
-cd ../../
+To setup elle-elle-aime, run the following command:
+```bash
+./setup.sh
 ```
+Note: By default, GitBug-Java will be installed. This benchmark is heavy (requires ~130GiB free). If you do not need to use GitBug-Java you can comment out the commands in `setup.sh` that refer to it before running the script.
+
 ## Execution
 
 Be sure to be in the correct environment:
@@ -44,7 +40,7 @@ Example of how to evaluate the generated patches:
 ```bash
 python evaluate_patches.py defects4j evaluation_defects4j_zero-shot-cloze_codellama-7B.jsonl.gz --correctness
 ```
-The option `--correctness`, enabled by default, will enable compilation and test execution of the generated patches.
+The option `--correctness`, enabled by default, enables compilation and test execution of the generated patches.
 
 ---
 
