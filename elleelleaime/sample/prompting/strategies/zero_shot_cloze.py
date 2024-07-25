@@ -4,7 +4,7 @@ import re
 
 from elleelleaime.sample.prompting.strategy import PromptingStrategy
 from elleelleaime.core.benchmarks.bug import Bug
-from elleelleaime.core.utils.java_tools.java import (
+from elleelleaime.core.utils.java.java import (
     extract_single_function,
     compute_diff,
     remove_java_comments,

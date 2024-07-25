@@ -7,7 +7,7 @@ from unidiff import PatchSet
 from pathlib import Path
 from uuid import uuid4
 
-from elleelleaime.core.utils.java_tools.java import (
+from elleelleaime.core.utils.java.java import (
     extract_single_function,
     get_source_filename,
     get_target_filename,
