@@ -4,7 +4,7 @@ import re
 
 from elleelleaime.sample.prompting.strategy import PromptingStrategy
 from elleelleaime.core.benchmarks.bug import Bug
-from elleelleaime.core.utils.java_tools.java import (
+from elleelleaime.core.utils.java.java import (
     extract_single_function,
     compute_diff,
     remove_java_comments,
@@ -43,7 +43,7 @@ class ZeroShotClozePrompting(PromptingStrategy):
         self.original_mask_token: str = model_kwargs["mask_token"]
         self.extra_mask_token: bool = model_kwargs.get("extra_mask_token", False)
         self.keep_buggy_code: bool = kwargs.get("keep_buggy_code", False)
-        self.keep_comments: bool = kwargs.get("keep_comments", False)
+        self.keep_comments: bool = kwargs.get("keep_comments", True)
 
     def generate_masking_prompt(self, line_to_replace: str, mask_id: int) -> str:
         """Generate the mask token to be inserted, according to the mask idx."""

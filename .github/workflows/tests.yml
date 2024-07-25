@@ -11,7 +11,7 @@ jobs:
 
       - uses: actions/setup-python@v4
         with:
-          python-version: '3.11'
+          python-version: '3.12'
 
       - name: Install poetry
         run: |
@@ -48,4 +48,4 @@ jobs:
           sudo apt-get install -y dos2unix
 
       - name: Build and run tests
-        run: python -m poetry run python -m pytest -sxv tests/
+        run: CI=true && python -m poetry run python -m pytest -sxv tests/

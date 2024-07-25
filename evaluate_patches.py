@@ -33,28 +33,28 @@ def exact_match(evaluation: dict) -> bool:
     """
     Returns True if the evaluation is an exact match.
     """
-    return evaluation["exact_match"]
+    return bool(evaluation["exact_match"])
 
 
 def ast_match(evaluation: dict) -> bool:
     """
     Returns True if the evaluation is an AST match.
     """
-    return evaluation["ast_match"]
+    return bool(evaluation["ast_match"])
 
 
 def plausible(evaluation: dict) -> bool:
     """
     Returns True if the evaluation is plausible.
     """
-    return evaluation["compile"] and evaluation["test"]
+    return bool(evaluation["test"])
 
 
 def compilable(evaluation: dict) -> bool:
     """
     Returns True if the evaluation is compilable.
     """
-    return evaluation["compile"]
+    return bool(evaluation["compile"])
 
 
 def is_single_chunk(sample: dict) -> bool:
@@ -280,7 +280,7 @@ def entry_point(
 ):
     """
     Evaluates the candidate patches given the samples,
-    and writes the results to f"evaluation_{benchmark}_{prompt_strategy}_{model_name}.jsonl.gz"
+    and writes the results to f"evaluation_{benchmark}_{prompt_strategy}_{model_name}.jsonl"
 
     There are several modes to run this script:
         - Correctness: correctness=True (default) evaluates the candidate patches for correctness with the given strategy.
@@ -365,7 +365,7 @@ def entry_point(
     # Write results to jsonl file
     write_jsonl(
         os.path.join(
-            dir_path, f"evaluation_{benchmark}_{prompt_strategy}_{model_name}.jsonl.gz"
+            dir_path, f"evaluation_{benchmark}_{prompt_strategy}_{model_name}.jsonl"
         ),
         samples,
     )

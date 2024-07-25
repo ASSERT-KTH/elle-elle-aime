@@ -35,7 +35,7 @@ def entry_point(
 ):
     """
     Generates the candidate patches given the samples and the model,
-    and writes the results to f"candidates_{benchmark}_{prompt_strategy}_{model_name}.jsonl.gz"
+    and writes the results to f"candidates_{benchmark}_{prompt_strategy}_{model_name}.jsonl"
     """
     results = []
 
@@ -63,7 +63,7 @@ def entry_point(
     prompt_strategy = samples_path.split("_")[2].split(".")[0]
     kwargs_str = "_".join([f"{k}={v}" for k, v in kwargs.items()])
     write_jsonl(
-        f"candidates_{benchmark}_{prompt_strategy}_{model_name}_{kwargs_str}.jsonl.gz",
+        f"candidates_{benchmark}_{prompt_strategy}_{model_name}_{kwargs_str}.jsonl",
         results,
     )
 

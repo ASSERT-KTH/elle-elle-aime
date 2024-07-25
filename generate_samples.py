@@ -31,7 +31,7 @@ def entry_point(
 ):
     """
     Generates the test samples for the bugs of the given benchmark with the given
-    prompt strategy, and writes the results to f"samples_{dataset}_{prompt_strategy}.jsonl.gz"
+    prompt strategy, and writes the results to f"samples_{dataset}_{prompt_strategy}.jsonl"
     """
 
     # Get the benchmark, check if it exists, and initialize it
@@ -70,7 +70,7 @@ def entry_point(
 
     # Write results to jsonl file
     kwargs_str = "_".join([f"{key}_{value}" for key, value in kwargs.items()])
-    write_jsonl(f"samples_{benchmark}_{prompt_strategy}_{kwargs_str}.jsonl.gz", results)
+    write_jsonl(f"samples_{benchmark}_{prompt_strategy}_{kwargs_str}.jsonl", results)
 
 
 def main():

@@ -19,7 +19,7 @@ class Defects4JBug(Bug):
     ) -> None:
         self.pid = pid
         self.bid = bid
-        super().__init__(benchmark, f"{pid}-{bid}", ground_truth)
+        super().__init__(benchmark, f"{pid}-{bid}", ground_truth, True)
 
     @backoff.on_exception(
         backoff.constant, subprocess.CalledProcessError, interval=1, max_tries=3

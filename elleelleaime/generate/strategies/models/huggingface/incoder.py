@@ -127,9 +127,11 @@ class IncoderHFModels(PatchGenerationStrategy):
                 outputs, clean_up_tokenization_spaces=False
             )
             detok_hypo_strs = [
-                detok_hypo_str[len(BOS) :]
-                if detok_hypo_str.startswith(BOS)
-                else detok_hypo_str
+                (
+                    detok_hypo_str[len(BOS) :]
+                    if detok_hypo_str.startswith(BOS)
+                    else detok_hypo_str
+                )
                 for detok_hypo_str in detok_hypo_strs
             ]
             for output in detok_hypo_strs:

@@ -3,7 +3,7 @@ from unidiff import PatchSet
 
 from elleelleaime.sample.prompting.strategy import PromptingStrategy
 from elleelleaime.core.benchmarks.bug import Bug
-from elleelleaime.core.utils.java_tools.java import extract_single_function
+from elleelleaime.core.utils.java.java import extract_single_function
 
 
 class FunctionToFunctionPrompting(PromptingStrategy):

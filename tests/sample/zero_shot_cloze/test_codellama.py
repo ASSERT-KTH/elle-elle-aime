@@ -2,6 +2,9 @@ from generate_samples import generate_sample
 from elleelleaime.core.utils.benchmarks import get_benchmark
 from elleelleaime.core.benchmarks.benchmark import Benchmark
 
+import pytest
+import os
+
 
 class TestClozeSamplesCodeLLaMA:
     """
@@ -39,6 +42,7 @@ class TestClozeSamplesCodeLLaMA:
 
     DEFECTS4J: Benchmark
     HUMANEVALJAVA: Benchmark
+    GITBUGJAVA: Benchmark
     PROMPT_STRATEGY: str = "zero-shot-cloze"
     MODEL_NAME: str = "codellama"
 
@@ -50,6 +54,9 @@ class TestClozeSamplesCodeLLaMA:
         TestClozeSamplesCodeLLaMA.HUMANEVALJAVA = get_benchmark("humanevaljava")
         assert TestClozeSamplesCodeLLaMA.HUMANEVALJAVA is not None
         TestClozeSamplesCodeLLaMA.HUMANEVALJAVA.initialize()
+        TestClozeSamplesCodeLLaMA.GITBUGJAVA = get_benchmark("gitbugjava")
+        assert TestClozeSamplesCodeLLaMA.GITBUGJAVA is not None
+        TestClozeSamplesCodeLLaMA.GITBUGJAVA.initialize()
 
     def test_closure_46(self):
         bug = TestClozeSamplesCodeLLaMA.DEFECTS4J.get_bug("Closure-46")
@@ -65,8 +72,12 @@ class TestClozeSamplesCodeLLaMA:
         assert sample["identifier"] == "Closure-46"
         assert sample["prompt_strategy"] == "zero-shot-cloze"
 
-        # Not supported since it changes the annotation too (outside the method declaration)
-        assert sample["prompt"] is None
+        # Assert that the buggy code and fixed code are properly separated
+        assert "public JSType getLeastSupertype(JSType that) {" in sample["buggy_code"]
+        assert sample["fixed_code"] == ""
+
+        # Assert that the prompt is properly constructed
+        assert sample["prompt"].count("<FILL_ME>") == 1
 
     def test_closure_115(self):
         bug = TestClozeSamplesCodeLLaMA.DEFECTS4J.get_bug("Closure-115")
@@ -98,7 +109,9 @@ class TestClozeSamplesCodeLLaMA:
         assert (
             sample["prompt"]
             .strip()
-            .startswith("private CanInlineResult canInlineReferenceDirectly(")
+            .startswith(
+                "/**\n   * Determines whether a function can be inlined at a particular call site."
+            )
         )
         assert sample["prompt"].count("<FILL_ME>") == 1
 
@@ -127,7 +140,7 @@ class TestClozeSamplesCodeLLaMA:
             sample["prompt"]
             .strip()
             .startswith(
-                "JSType resolveInternal(ErrorReporter t, StaticScope<JSType> enclosing) {"
+                "/**\n   * Resolve the referenced type within the enclosing scope.\n   */"
             )
         )
         assert sample["prompt"].count("<FILL_ME>") == 1
@@ -162,7 +175,7 @@ class TestClozeSamplesCodeLLaMA:
         assert (
             sample["prompt"]
             .strip()
-            .startswith("public Range getDataRange(ValueAxis axis) {")
+            .startswith("/**\n     * Returns the range for the specified axis.")
         )
         assert sample["prompt"].count("<FILL_ME>") == 1
 
@@ -242,13 +255,7 @@ class TestClozeSamplesCodeLLaMA:
         )
 
         # Assert that the prompt is properly constructed
-        assert (
-            sample["prompt"]
-            .strip()
-            .startswith(
-                "private void visitGetProp(NodeTraversal t, Node n, Node parent) {"
-            )
-        )
+        assert sample["prompt"].strip().startswith("/**\n   * Visits a GETPROP node.")
         assert sample["prompt"].count("<FILL_ME>") == 1
 
     def test_chart_1_keep_buggy_code(self):
@@ -260,6 +267,7 @@ class TestClozeSamplesCodeLLaMA:
             prompt_strategy=TestClozeSamplesCodeLLaMA.PROMPT_STRATEGY,
             model_name=TestClozeSamplesCodeLLaMA.MODEL_NAME,
             keep_buggy_code=True,
+            keep_comments=False,
         )
 
         # Assert we are dealing with the correct bug and strategy
@@ -315,6 +323,7 @@ class TestClozeSamplesCodeLLaMA:
             prompt_strategy=TestClozeSamplesCodeLLaMA.PROMPT_STRATEGY,
             model_name=TestClozeSamplesCodeLLaMA.MODEL_NAME,
             keep_buggy_code=True,
+            keep_comments=False,
         )
 
         # Assert we are dealing with the correct bug and strategy
@@ -367,6 +376,7 @@ class TestClozeSamplesCodeLLaMA:
             prompt_strategy=TestClozeSamplesCodeLLaMA.PROMPT_STRATEGY,
             model_name=TestClozeSamplesCodeLLaMA.MODEL_NAME,
             keep_buggy_code=True,
+            keep_comments=False,
         )
 
         # Assert we are dealing with the correct bug and strategy
@@ -407,6 +417,7 @@ class TestClozeSamplesCodeLLaMA:
             prompt_strategy=TestClozeSamplesCodeLLaMA.PROMPT_STRATEGY,
             model_name=TestClozeSamplesCodeLLaMA.MODEL_NAME,
             keep_buggy_code=True,
+            keep_comments=False,
         )
 
         # Assert we are dealing with the correct bug and strategy
@@ -467,7 +478,9 @@ class TestClozeSamplesCodeLLaMA:
         assert (
             sample["prompt"]
             .strip()
-            .startswith("private boolean isInlinableObject(List<Reference> refs) {")
+            .startswith(
+                "/**\n     * Counts the number of direct (full) references to an object."
+            )
         )
         assert sample["prompt"].count("<FILL_ME>") == 1
 
@@ -493,7 +506,11 @@ class TestClozeSamplesCodeLLaMA:
 
         # Assert that the prompt is properly constructed
         assert (
-            sample["prompt"].strip().startswith("public boolean equals(Object obj) {")
+            sample["prompt"]
+            .strip()
+            .startswith(
+                "/**\n     * Tests the list for equality with another object (typically also a list)."
+            )
         )
         assert sample["prompt"].count("<FILL_ME>") == 1
 
@@ -520,7 +537,7 @@ class TestClozeSamplesCodeLLaMA:
             sample["prompt"]
             .strip()
             .startswith(
-                "public static Number createNumber(final String str) throws NumberFormatException"
+                "/**\n     * <p>Turns a string value into a java.lang.Number.</p>\n     *"
             )
         )
         assert sample["prompt"].count("<FILL_ME>") == 1
@@ -555,7 +572,7 @@ class TestClozeSamplesCodeLLaMA:
         assert (
             sample["prompt"]
             .strip()
-            .startswith("protected CompilerOptions createOptions() {")
+            .startswith("@Override\n  protected CompilerOptions createOptions() {")
         )
         assert sample["prompt"].count("<FILL_ME>") == 1
 
@@ -583,32 +600,8 @@ class TestClozeSamplesCodeLLaMA:
         assert (
             sample["prompt"]
             .strip()
-            .startswith(
-                "private static StringBuilder escapeRegex(StringBuilder regex, String value, boolean unquote) {"
-            )
+            .startswith("/**\n     * Escape constant fields into regular expression")
         )
-        assert sample["prompt"].count("<FILL_ME>") == 1
-
-    def test_chart_23(self):
-        bug = TestClozeSamplesCodeLLaMA.DEFECTS4J.get_bug("Chart-23")
-        assert bug is not None
-
-        sample = generate_sample(
-            bug=bug,
-            prompt_strategy=TestClozeSamplesCodeLLaMA.PROMPT_STRATEGY,
-            model_name=TestClozeSamplesCodeLLaMA.MODEL_NAME,
-        )
-
-        # Assert we are dealing with the correct bug and strategy
-        assert sample["identifier"] == "Chart-23"
-        assert sample["prompt_strategy"] == "zero-shot-cloze"
-
-        # Assert that the buggy code and fixed code are properly separated
-        assert sample["buggy_code"] == ""
-        assert "public boolean equals(Object obj) {" in sample["fixed_code"]
-
-        # Assert that the prompt is properly constructed
-        assert sample["prompt"].strip().startswith("<FILL_ME>")
         assert sample["prompt"].count("<FILL_ME>") == 1
 
     def test_chart_7(self):
@@ -630,7 +623,9 @@ class TestClozeSamplesCodeLLaMA:
         assert (
             sample["prompt"]
             .strip()
-            .startswith("private void updateBounds(TimePeriod period, int index) {")
+            .startswith(
+                "/**\n     * Update the index values for the maximum and minimum bounds."
+            )
         )
         assert sample["prompt"].count("<FILL_ME>") == 1
 
@@ -712,3 +707,56 @@ class TestClozeSamplesCodeLLaMA:
         assert sample["prompt"] is not None
         assert "//        return x | y;" in sample["prompt"]
         assert sample["prompt"].count("<FILL_ME>") == 1
+
+    @pytest.mark.skipif(
+        os.environ.get("CI") is not None,
+        reason="This test requires completing GitBug-Java's setup, which is too heavy for CI.",
+    )
+    def test_traccar_traccar_37ed394724c0(self):
+        bug = TestClozeSamplesCodeLLaMA.GITBUGJAVA.get_bug(
+            "traccar-traccar-37ed394724c0"
+        )
+        assert bug is not None
+
+        sample = generate_sample(
+            bug=bug,
+            prompt_strategy=TestClozeSamplesCodeLLaMA.PROMPT_STRATEGY,
+            model_name=TestClozeSamplesCodeLLaMA.MODEL_NAME,
+            keep_buggy_code=True,
+        )
+
+        # Assert we are dealing with the correct bug and strategy
+        assert sample["identifier"] == "traccar-traccar-37ed394724c0"
+        assert sample["prompt_strategy"] == "zero-shot-cloze"
+
+        # Assert that the prompt is properly constructed
+        assert sample["prompt"] is not None
+        assert (
+            "//                    position.set(Position.KEY_BATTERY_LEVEL, buf.readUnsignedByte() * 100 / 6);"
+            in sample["prompt"]
+        )
+        assert sample["prompt"].count("<FILL_ME>") == 1
+
+    @pytest.mark.skipif(
+        os.environ.get("CI") is not None,
+        reason="This test requires completing GitBug-Java's setup, which is too heavy for CI.",
+    )
+    def test_BrightSpots_rcv_688920f27706(self):
+        bug = TestClozeSamplesCodeLLaMA.GITBUGJAVA.get_bug(
+            "BrightSpots-rcv-688920f27706"
+        )
+        assert bug is not None
+
+        sample = generate_sample(
+            bug=bug,
+            prompt_strategy=TestClozeSamplesCodeLLaMA.PROMPT_STRATEGY,
+            model_name=TestClozeSamplesCodeLLaMA.MODEL_NAME,
+            keep_buggy_code=True,
+        )
+
+        # Assert we are dealing with the correct bug and strategy
+        assert sample["identifier"] == "BrightSpots-rcv-688920f27706"
+        assert sample["prompt_strategy"] == "zero-shot-cloze"
+
+        # Assert that the prompt is properly constructed
+        assert sample["prompt"] is None

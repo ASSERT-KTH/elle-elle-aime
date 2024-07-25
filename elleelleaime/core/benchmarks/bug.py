@@ -11,17 +11,25 @@ class Bug(ABC):
     """
 
     def __init__(
-        self, benchmark: Benchmark, identifier: str, ground_truth: str
+        self,
+        benchmark: Benchmark,
+        identifier: str,
+        ground_truth: str,
+        ground_truth_inverted: bool = False,
     ) -> None:
         self.benchmark = benchmark
         self.identifier = identifier
         self.ground_truth = ground_truth
+        self.ground_truth_inverted: bool = ground_truth_inverted
 
     def get_identifier(self) -> str:
         return self.identifier
 
     def get_ground_truth(self) -> str:
         return self.ground_truth
+
+    def is_ground_truth_inverted(self) -> bool:
+        return self.ground_truth_inverted
 
     @abstractmethod
     def checkout(self, path: str, fixed: bool = False) -> bool:

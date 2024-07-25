@@ -87,12 +87,25 @@ class ReplaceEvaluationStrategy(PatchEvaluationStrategy):
                 bug.checkout(buggy_path, fixed=False)
 
                 # Locate and load the buggy file
-                buggy_file_path = os.path.join(
-                    buggy_path,
-                    diff[0].target_file[2:]
-                    if diff[0].target_file.startswith("b/")
-                    else diff[0].target_file,
-                )
+                if bug.is_ground_truth_inverted():
+                    buggy_file_path = os.path.join(
+                        buggy_path,
+                        (
+                            diff[0].target_file[2:]
+                            if diff[0].target_file.startswith("b/")
+                            else diff[0].target_file
+                        ),
+                    )
+                else:
+                    buggy_file_path = os.path.join(
+                        buggy_path,
+                        (
+                            diff[0].source_file[2:]
+                            if diff[0].source_file.startswith("a/")
+                            else diff[0].source_file
+                        ),
+                    )
+
                 with open(buggy_file_path, "r", encoding="ISO-8859-1") as f:
                     buggy_code = f.read()
 
@@ -123,7 +136,7 @@ class ReplaceEvaluationStrategy(PatchEvaluationStrategy):
                 compilation_result = bug.compile(buggy_path)
                 result["compile"] = compilation_result.is_passing()
                 # If it compiles, test the code
-                if result["compile"]:
+                if result["compile"] or result["compile"] is None:
                     test_result = bug.test(buggy_path)
                     result["test"] = test_result.is_passing()
                     # If the tests pass, check if the ASTs match

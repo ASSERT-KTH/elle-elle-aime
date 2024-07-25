@@ -1,5 +1,6 @@
 import subprocess
 import shutil
+from elleelleaime.core.benchmarks.benchmark import Benchmark
 
 from elleelleaime.core.benchmarks.bug import Bug
 from elleelleaime.core.benchmarks.test_result import TestResult
@@ -10,6 +11,9 @@ class HumanEvalJavaBug(Bug):
     """
     The class for representing HumanEvalJava bugs
     """
+
+    def __init__(self, benchmark: Benchmark, bid: str, ground_truth: str) -> None:
+        super().__init__(benchmark, bid, ground_truth, True)
 
     def checkout(self, path: str, fixed: bool = False) -> bool:
         # Remove the directory if it exists
@@ -50,7 +54,7 @@ class HumanEvalJavaBug(Bug):
 
     def compile(self, path: str) -> CompileResult:
         run = subprocess.run(
-            f"cd {path}; timeout {5*60} mvn compile",
+            f'docker run --rm --volume "{path}:{path}" --workdir "{path}" maven:3.9.8-eclipse-temurin-8 timeout {5*60} mvn compile',
             shell=True,
             capture_output=True,
         )
@@ -58,7 +62,7 @@ class HumanEvalJavaBug(Bug):
 
     def test(self, path: str) -> TestResult:
         run = subprocess.run(
-            f"cd {path}; timeout {30*60} mvn test -Dtest=TEST_{self.get_identifier()}",
+            f'docker run --rm --volume "{path}:{path}" --workdir "{path}" maven:3.9.8-eclipse-temurin-8 timeout {30*60} mvn test -Dtest=TEST_{self.get_identifier()}',
             shell=True,
             capture_output=True,
         )
