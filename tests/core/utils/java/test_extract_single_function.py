@@ -34,7 +34,10 @@ class TestExtractSingleFunction:
 
     def assert_function_in_source_code(self, function: str, bug: Bug, fixed: bool):
         path = Path(
-            tempfile.gettempdir(), "elleelleaime", bug.get_identifier(), str(uuid4())
+            tempfile.gettempdir(),
+            f"elleelleaime-{os.getlogin()}",
+            bug.get_identifier(),
+            str(uuid4()),
         )
         diff = PatchSet(bug.get_ground_truth())
 

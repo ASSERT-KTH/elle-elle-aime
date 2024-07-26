@@ -152,10 +152,16 @@ def extract_single_function(bug: Bug) -> Optional[Tuple[str, str]]:
         Optional[Tuple[str, str]]: None if the bug is not single-function, otherwise a tuple of the form (buggy_code, fixed_code)
     """
     buggy_path = os.path.join(
-        tempfile.gettempdir(), "elleelleaime", bug.get_identifier(), str(uuid4())
+        tempfile.gettempdir(),
+        f"elleelleaime-{os.getlogin()}",
+        bug.get_identifier(),
+        str(uuid4()),
     )
     fixed_path = os.path.join(
-        tempfile.gettempdir(), "elleelleaime", bug.get_identifier(), str(uuid4())
+        tempfile.gettempdir(),
+        f"elleelleaime-{os.getlogin()}",
+        bug.get_identifier(),
+        str(uuid4()),
     )
 
     try:

@@ -6,6 +6,7 @@ import shutil
 import pytest
 import uuid
 import tqdm
+import os, tempfile
 import concurrent.futures
 
 
@@ -22,8 +23,9 @@ class TestQuixBugs:
         assert len(set([bug.get_identifier() for bug in bugs])) == 40
 
     def checkout_bug(self, bug: Bug) -> bool:
-        buggy_path = f"/tmp/elleelleaime/{bug.get_identifier()}-buggy-{uuid.uuid4()}"
-        fixed_path = f"/tmp/elleelleaime/{bug.get_identifier()}-fixed-{uuid.uuid4()}"
+        buggy_path = f"{tempfile.gettempdir()}/elleelleaime-{os.getlogin()}/{bug.get_identifier()}-buggy-{uuid.uuid4()}"
+        fixed_path = f"{tempfile.gettempdir()}/elleelleaime-{os.getlogin()}/{bug.get_identifier()}-fixed-{uuid.uuid4()}"
+
         try:
             # Checkout buggy version
             bug.checkout(buggy_path, fixed=False)
@@ -72,8 +74,8 @@ class TestQuixBugs:
             assert self.checkout_bug(bug), f"Failed checkout for {bug.get_identifier()}"
 
     def run_bug(self, bug: Bug) -> bool:
-        buggy_path = f"/tmp/elleelleaime/{bug.get_identifier()}-buggy-{uuid.uuid4()}"
-        fixed_path = f"/tmp/elleelleaime/{bug.get_identifier()}-fixed-{uuid.uuid4()}"
+        buggy_path = f"{tempfile.gettempdir()}/elleelleaime-{os.getlogin()}/{bug.get_identifier()}-buggy-{uuid.uuid4()}"
+        fixed_path = f"{tempfile.gettempdir()}/elleelleaime-{os.getlogin()}/{bug.get_identifier()}-fixed-{uuid.uuid4()}"
 
         try:
             # Checkout buggy version
