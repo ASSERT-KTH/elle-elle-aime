@@ -30,6 +30,7 @@ bitsandbytes = "^0.43.1"
 wandb = "^0.17.4"
 evaluate = "^0.4.2"
 safetensors = "^0.4.3"
+ruff = "^0.5.5"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.3.1"
