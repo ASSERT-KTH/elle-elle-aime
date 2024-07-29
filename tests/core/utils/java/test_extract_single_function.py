@@ -18,7 +18,6 @@ from elleelleaime.core.benchmarks.bug import Bug
 
 
 class TestExtractSingleFunction:
-
     GITBUGJAVA: Benchmark
     DEFECTS4J: Benchmark
 

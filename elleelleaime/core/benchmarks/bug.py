@@ -71,8 +71,12 @@ class RichBug(Bug):
         self.benchmark = benchmark
         self.identifier = identifier
         self.ground_truth = ground_truth
-        self.ground_truth_inverted: bool = ground_truth_inverted
         self.failing_tests = failing_tests
+        self.ground_truth_inverted: bool = ground_truth_inverted
 
     def get_failing_tests(self) -> dict[str, str]:
         return self.failing_tests
+
+    @abstractmethod
+    def get_src_test_dir(self, path: str) -> str:
+        pass

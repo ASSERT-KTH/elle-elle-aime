@@ -145,3 +145,45 @@ class TestDefects4J:
                 assert (
                     result
                 ), f"Failed run for {futures_to_bugs[future].get_identifier()}"
+
+    def test_get_failing_tests(self):
+        defects4j = get_benchmark("defects4j")
+        assert defects4j is not None
+        defects4j.initialize()
+
+        bugs = defects4j.get_bugs()
+        assert bugs is not None
+
+        for bug in bugs:
+            failing_tests = bug.get_failing_tests()
+            assert failing_tests is not None
+            assert len(failing_tests) > 0
+            assert all(
+                failing_test.strip() != "" for failing_test in failing_tests.keys()
+            )
+            assert all(
+                failing_test.strip() != "" for failing_test in failing_tests.values()
+            )
+
+    def test_get_src_test_dir(self):
+        defects4j = get_benchmark("defects4j")
+        assert defects4j is not None
+        defects4j.initialize()
+
+        bugs = defects4j.get_bugs()
+        assert bugs is not None
+
+        # Run only on the first 3 bugs to not take too long
+        bugs = list(defects4j.get_bugs())[:3]
+        assert bugs is not None
+
+        for bug in bugs:
+            try:
+                path = f"{tempfile.gettempdir()}/elleelleaime-{os.getlogin()}/{bug.get_identifier()}-{uuid.uuid4()}"
+                bug.checkout(path, fixed=False)
+
+                src_test_dir = bug.get_src_test_dir(path)
+                assert src_test_dir is not None
+                assert src_test_dir.strip() != ""
+            finally:
+                shutil.rmtree(path, ignore_errors=True)

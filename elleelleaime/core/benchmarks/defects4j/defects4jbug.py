@@ -85,3 +85,13 @@ class Defects4JBug(RichBug):
         )
         m = re.search(r"Failing tests: ([0-9]+)", run.stdout.decode("utf-8"))
         return TestResult(run.returncode == 0 and m != None and int(m.group(1)) == 0)
+
+    def get_src_test_dir(self, path: str) -> str:
+        run = subprocess.run(
+            f"cd {path}; {self.benchmark.get_bin()} export -p dir.src.tests",
+            shell=True,
+            capture_output=True,
+            check=True,
+        )
+
+        return run.stdout.decode("utf-8").strip()

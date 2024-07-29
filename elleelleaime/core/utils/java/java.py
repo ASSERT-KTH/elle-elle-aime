@@ -6,7 +6,7 @@ import os, tempfile, difflib, shutil
 import subprocess
 import re
 
-from elleelleaime.core.benchmarks.bug import Bug
+from elleelleaime.core.benchmarks.bug import Bug, RichBug
 
 
 def compute_diff(
@@ -151,13 +151,13 @@ def extract_single_function(bug: Bug) -> Optional[Tuple[str, str]]:
     Returns:
         Optional[Tuple[str, str]]: None if the bug is not single-function, otherwise a tuple of the form (buggy_code, fixed_code)
     """
-    buggy_path = os.path.join(
+    buggy_path = Path(
         tempfile.gettempdir(),
         f"elleelleaime-{os.getlogin()}",
         bug.get_identifier(),
         str(uuid4()),
     )
-    fixed_path = os.path.join(
+    fixed_path = Path(
         tempfile.gettempdir(),
         f"elleelleaime-{os.getlogin()}",
         bug.get_identifier(),
@@ -166,8 +166,8 @@ def extract_single_function(bug: Bug) -> Optional[Tuple[str, str]]:
 
     try:
         # Checkout the buggy and fixed versions of the bug
-        bug.checkout(buggy_path, fixed=False)
-        bug.checkout(fixed_path, fixed=True)
+        bug.checkout(str(buggy_path), fixed=False)
+        bug.checkout(str(fixed_path), fixed=True)
 
         # Note: this diff is inverted, i.e. the target file is the buggy file
         diff = PatchSet(bug.get_ground_truth())
@@ -238,6 +238,53 @@ def extract_single_function(bug: Bug) -> Optional[Tuple[str, str]]:
         # Remove the checked-out bugs
         shutil.rmtree(buggy_path, ignore_errors=True)
         shutil.rmtree(fixed_path, ignore_errors=True)
+
+
+def extract_failing_test_cases(bug: RichBug) -> dict[str, str]:
+    """
+    Extracts the code of the failing test cases of a bug.
+
+    Args:
+        bug (Bug): The bug to extract the failing test cases from
+
+    Returns:
+        dict[str, str]: A dictionary mapping failing test cases to their code
+    """
+    failing_test_cases = {}
+    failing_tests = bug.get_failing_tests()
+
+    for failing_test in failing_tests:
+        class_name, method_name = failing_test.split("::")
+
+        path = Path(
+            tempfile.gettempdir(),
+            f"elleelleaime-{os.getlogin()}",
+            bug.get_identifier(),
+            str(uuid4()),
+        )
+        try:
+            bug.checkout(str(path), fixed=False)
+            test_class_path = Path(
+                path,
+                bug.get_src_test_dir(str(path)),
+                f"{class_name.replace('.', '/')}.java",
+            )
+
+            # Run code extractor for the failing test case
+            run = subprocess.run(
+                f'docker run --rm --volume ".:/elleelleaime" --volume "{test_class_path.parent.absolute()}:{test_class_path.parent.absolute()}" --workdir "/elleelleaime"'
+                + f" openjdk:11 java -jar extractor.jar -i {test_class_path.absolute()} --method {method_name}",
+                shell=True,
+                capture_output=True,
+            )
+            if run.returncode == 0:
+                failing_test_cases[failing_test] = run.stdout.decode("utf-8")
+            else:
+                return {}
+        finally:
+            shutil.rmtree(path, ignore_errors=True)
+
+    return failing_test_cases
 
 
 def remove_java_comments(source: str) -> str:
