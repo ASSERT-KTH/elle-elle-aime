@@ -5,6 +5,7 @@ from elleelleaime.core.benchmarks.defects4j.defects4jbug import Defects4JBug
 import subprocess
 import logging
 import tqdm
+import pandas as pd
 
 
 class Defects4J(Benchmark):
@@ -47,10 +48,8 @@ class Defects4J(Benchmark):
         # Initialize dataset
         for pid in pids:
             for bid in bugs[pid]:
-                # Read diff from file
-                diff_path = "benchmarks/defects4j/framework/projects/{}/patches/{}.src.patch".format(
-                    pid, bid
-                )
+                # Extract ground truth diff
+                diff_path = f"benchmarks/defects4j/framework/projects/{pid}/patches/{bid}.src.patch"
                 with open(diff_path, "r", encoding="ISO-8859-1") as diff_file:
                     diff = diff_file.read()
                 self.add_bug(Defects4JBug(self, pid, bid, diff))
