@@ -1,6 +1,7 @@
 import os
 import pytest
 import shutil
+import getpass
 import tempfile
 
 from unidiff import PatchSet
