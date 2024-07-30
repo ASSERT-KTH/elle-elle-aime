@@ -50,7 +50,6 @@ The following code contains a buggy function:
 ```
 
 The code fails the following test:
-### Failing Test
 ```java
 {failing_test_cases[test_case]}
 ```
