@@ -2,24 +2,35 @@ import subprocess
 import backoff
 import shutil
 import re
-from elleelleaime.core.benchmarks.benchmark import Benchmark
 
-from elleelleaime.core.benchmarks.bug import Bug
+from elleelleaime.core.benchmarks.benchmark import Benchmark
+from elleelleaime.core.benchmarks.bug import RichBug
 from elleelleaime.core.benchmarks.test_result import TestResult
 from elleelleaime.core.benchmarks.compile_result import CompileResult
 
 
-class Defects4JBug(Bug):
+class Defects4JBug(RichBug):
     """
     The class for representing Defects4J bugs
     """
 
     def __init__(
-        self, benchmark: Benchmark, pid: str, bid: str, ground_truth: str
+        self,
+        benchmark: Benchmark,
+        pid: str,
+        bid: str,
+        ground_truth: str,
+        failing_tests: dict[str, str],
     ) -> None:
         self.pid = pid
         self.bid = bid
-        super().__init__(benchmark, f"{pid}-{bid}", ground_truth, True)
+        super().__init__(
+            benchmark,
+            f"{pid}-{bid}",
+            ground_truth,
+            failing_tests,
+            ground_truth_inverted=True,
+        )
 
     @backoff.on_exception(
         backoff.constant, subprocess.CalledProcessError, interval=1, max_tries=3
@@ -74,3 +85,13 @@ class Defects4JBug(Bug):
         )
         m = re.search(r"Failing tests: ([0-9]+)", run.stdout.decode("utf-8"))
         return TestResult(run.returncode == 0 and m != None and int(m.group(1)) == 0)
+
+    def get_src_test_dir(self, path: str) -> str:
+        run = subprocess.run(
+            f"cd {path}; {self.benchmark.get_bin()} export -p dir.src.tests",
+            shell=True,
+            capture_output=True,
+            check=True,
+        )
+
+        return run.stdout.decode("utf-8").strip()

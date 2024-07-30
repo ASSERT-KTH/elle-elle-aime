@@ -1,4 +1,5 @@
 from pathlib import Path
+from io import StringIO
 from elleelleaime.core.benchmarks.benchmark import Benchmark
 from elleelleaime.core.benchmarks.defects4j.defects4jbug import Defects4JBug
 
@@ -47,9 +48,37 @@ class Defects4J(Benchmark):
 
         # Initialize dataset
         for pid in pids:
+            # Extract failing test and trigger cause
+            run = subprocess.run(
+                f"{self.bin} query -p {pid} -q 'tests.trigger,tests.trigger.cause'",
+                shell=True,
+                capture_output=True,
+                check=True,
+            )
+            data = run.stdout.decode("utf-8")
+            df = pd.read_csv(StringIO(data), sep=",", names=["bid", "tests", "errors"])
+
             for bid in bugs[pid]:
                 # Extract ground truth diff
                 diff_path = f"benchmarks/defects4j/framework/projects/{pid}/patches/{bid}.src.patch"
                 with open(diff_path, "r", encoding="ISO-8859-1") as diff_file:
                     diff = diff_file.read()
-                self.add_bug(Defects4JBug(self, pid, bid, diff))
+
+                # Extract failing test cases and trigger causes
+                failing_test_cases = df[df["bid"] == bid]["tests"].values[0]
+                trigger_cause = df[df["bid"] == bid]["errors"].values[0]
+
+                failing_tests = {}
+                for failing_test_case in failing_test_cases.split(";"):
+                    cause = trigger_cause.split(f"{failing_test_case} --> ")[1]
+                    # The trigger cause list elements are separated by ";" but sometimes this char is also included in the element itself and is not espaced
+                    # To avoid this we check if there are more any remaining elements and remove them from the string.
+                    if " --> " in cause:
+                        while " --> " in cause:
+                            cause = cause.split(" --> ")[1]
+                        for test in failing_test_case.split(";"):
+                            if test in cause:
+                                cause = cause.replace(test, "")
+                    failing_tests[failing_test_case] = cause.strip()
+
+                self.add_bug(Defects4JBug(self, pid, bid, diff, failing_tests))

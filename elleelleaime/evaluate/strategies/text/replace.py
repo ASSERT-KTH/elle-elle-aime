@@ -1,7 +1,7 @@
 from typing import Optional, List
 from unidiff import PatchSet
 from uuid import uuid4
-import os, tempfile, shutil, logging
+import os, tempfile, shutil, logging, getpass
 
 from ..strategy import PatchEvaluationStrategy
 from elleelleaime.core.benchmarks.bug import Bug
@@ -40,7 +40,7 @@ class ReplaceEvaluationStrategy(PatchEvaluationStrategy):
 
             buggy_path = os.path.join(
                 tempfile.gettempdir(),
-                f"elleelleaime-{os.getlogin()}",
+                f"elleelleaime-{getpass.getuser()}",
                 bug.get_identifier(),
                 str(uuid4()),
             )

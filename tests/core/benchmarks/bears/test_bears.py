@@ -6,7 +6,7 @@ import uuid
 import shutil
 import pytest
 import tqdm
-import os, tempfile
+import getpass, tempfile
 import concurrent.futures
 
 
@@ -24,8 +24,8 @@ class TestBears:
         assert len(set([bug.get_identifier() for bug in bugs])) == 77
 
     def checkout_bug(self, bug: Bug) -> bool:
-        buggy_path = f"{tempfile.gettempdir()}/elleelleaime-{os.getlogin()}/{bug.get_identifier()}-buggy-{uuid.uuid4()}"
-        fixed_path = f"{tempfile.gettempdir()}/elleelleaime-{os.getlogin()}/{bug.get_identifier()}-fixed-{uuid.uuid4()}"
+        buggy_path = f"{tempfile.gettempdir()}/elleelleaime-{getpass.getuser()}/{bug.get_identifier()}-buggy-{uuid.uuid4()}"
+        fixed_path = f"{tempfile.gettempdir()}/elleelleaime-{getpass.getuser()}/{bug.get_identifier()}-fixed-{uuid.uuid4()}"
         try:
             # Checkout buggy version
             ret = bug.checkout(buggy_path, fixed=False)
@@ -78,8 +78,8 @@ class TestBears:
             assert self.checkout_bug(bug), f"Failed checkout for {bug.get_identifier()}"
 
     def run_bug(self, bug: Bug) -> bool:
-        buggy_path = f"{tempfile.gettempdir()}/elleelleaime-{os.getlogin()}/{bug.get_identifier()}-buggy-{uuid.uuid4()}"
-        fixed_path = f"{tempfile.gettempdir()}/elleelleaime-{os.getlogin()}/{bug.get_identifier()}-fixed-{uuid.uuid4()}"
+        buggy_path = f"{tempfile.gettempdir()}/elleelleaime-{getpass.getuser()}/{bug.get_identifier()}-buggy-{uuid.uuid4()}"
+        fixed_path = f"{tempfile.gettempdir()}/elleelleaime-{getpass.getuser()}/{bug.get_identifier()}-fixed-{uuid.uuid4()}"
 
         try:
             # Checkout buggy version

@@ -6,7 +6,7 @@ import uuid
 import shutil
 import tqdm
 import pytest
-import os, tempfile
+import os, tempfile, getpass
 import concurrent.futures
 
 
@@ -24,8 +24,8 @@ class TestGitBugJava:
         assert all(bug.get_ground_truth().strip() != "" for bug in bugs)
 
     def checkout_bug(self, bug: Bug) -> bool:
-        buggy_path = f"{tempfile.gettempdir()}/elleelleaime-{os.getlogin()}/{bug.get_identifier()}-buggy-{uuid.uuid4()}"
-        fixed_path = f"{tempfile.gettempdir()}/elleelleaime-{os.getlogin()}/{bug.get_identifier()}-fixed-{uuid.uuid4()}"
+        buggy_path = f"{tempfile.gettempdir()}/elleelleaime-{getpass.getuser()}/{bug.get_identifier()}-buggy-{uuid.uuid4()}"
+        fixed_path = f"{tempfile.gettempdir()}/elleelleaime-{getpass.getuser()}/{bug.get_identifier()}-fixed-{uuid.uuid4()}"
 
         try:
             # Checkout buggy version
@@ -81,8 +81,8 @@ class TestGitBugJava:
             assert self.checkout_bug(bug), f"Failed checkout for {bug.get_identifier()}"
 
     def run_bug(self, bug: Bug) -> bool:
-        buggy_path = f"{tempfile.gettempdir()}/elleelleaime-{os.getlogin()}/{bug.get_identifier()}-buggy-{uuid.uuid4()}"
-        fixed_path = f"{tempfile.gettempdir()}/elleelleaime-{os.getlogin()}/{bug.get_identifier()}-fixed-{uuid.uuid4()}"
+        buggy_path = f"{tempfile.gettempdir()}/elleelleaime-{getpass.getuser()}/{bug.get_identifier()}-buggy-{uuid.uuid4()}"
+        fixed_path = f"{tempfile.gettempdir()}/elleelleaime-{getpass.getuser()}/{bug.get_identifier()}-fixed-{uuid.uuid4()}"
 
         try:
             # Checkout buggy version

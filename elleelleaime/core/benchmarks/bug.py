@@ -53,3 +53,30 @@ class Bug(ABC):
 
     def __repr__(self) -> str:
         return self.get_identifier()
+
+
+class RichBug(Bug):
+    """
+    Abstract class for representing a bug with additional information from test failures.
+    """
+
+    def __init__(
+        self,
+        benchmark: Benchmark,
+        identifier: str,
+        ground_truth: str,
+        failing_tests: dict[str, str],
+        ground_truth_inverted: bool = False,
+    ) -> None:
+        self.benchmark = benchmark
+        self.identifier = identifier
+        self.ground_truth = ground_truth
+        self.failing_tests = failing_tests
+        self.ground_truth_inverted: bool = ground_truth_inverted
+
+    def get_failing_tests(self) -> dict[str, str]:
+        return self.failing_tests
+
+    @abstractmethod
+    def get_src_test_dir(self, path: str) -> str:
+        pass

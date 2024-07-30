@@ -2,13 +2,12 @@ import subprocess
 import tempfile
 import backoff
 import shutil
-import re
+import getpass
 import os
 
 from pathlib import Path
 from uuid import uuid4
 
-from elleelleaime.core.benchmarks.benchmark import Benchmark
 from elleelleaime.core.benchmarks.bug import Bug
 from elleelleaime.core.benchmarks.test_result import TestResult
 from elleelleaime.core.benchmarks.compile_result import CompileResult
@@ -32,7 +31,7 @@ class BearsBug(Bug):
 
             # Copy the benchmark elsewhere to avoid conflicts
             temp_benchmark_path = Path(
-                tempfile.gettempdir(), f"elleelleaime-{os.getlogin()}", str(uuid4())
+                tempfile.gettempdir(), f"elleelleaime-{getpass.getuser()}", str(uuid4())
             )
             shutil.copytree(
                 self.benchmark.get_path(), temp_benchmark_path, dirs_exist_ok=True
