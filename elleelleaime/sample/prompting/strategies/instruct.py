@@ -59,8 +59,8 @@ With the following test error:
 {failing_test_causes[test_case]}
 ```
 
-Please provide a fixed version of the code:
-        """
+Please provide a fixed version of the buggy function, and only that function:
+"""
 
         return buggy_code, fixed_code, prompt
 
