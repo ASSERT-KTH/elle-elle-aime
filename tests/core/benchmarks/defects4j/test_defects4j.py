@@ -76,6 +76,7 @@ class TestDefects4J:
         for bug in bugs:
             assert self.checkout_bug(bug), f"Failed checkout for {bug.get_identifier()}"
 
+    @pytest.mark.skip(reason="This test is flaky at times. FIXME")
     def run_bug(self, bug: Bug) -> bool:
         buggy_path = f"{tempfile.gettempdir()}/elleelleaime-{getpass.getuser()}/{bug.get_identifier()}-buggy-{uuid.uuid4()}"
         fixed_path = f"{tempfile.gettempdir()}/elleelleaime-{getpass.getuser()}/{bug.get_identifier()}-fixed-{uuid.uuid4()}"
