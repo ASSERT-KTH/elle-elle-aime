@@ -6,7 +6,7 @@ import uuid
 import shutil
 import tqdm
 import pytest
-import os, tempfile
+import getpass, tempfile
 import concurrent.futures
 
 
@@ -24,8 +24,8 @@ class TestDefects4J:
         assert all(bug.get_ground_truth().strip() != "" for bug in bugs)
 
     def checkout_bug(self, bug: Bug) -> bool:
-        buggy_path = f"{tempfile.gettempdir()}/elleelleaime-{os.getlogin()}/{bug.get_identifier()}-buggy-{uuid.uuid4()}"
-        fixed_path = f"{tempfile.gettempdir()}/elleelleaime-{os.getlogin()}/{bug.get_identifier()}-fixed-{uuid.uuid4()}"
+        buggy_path = f"{tempfile.gettempdir()}/elleelleaime-{getpass.getuser()}/{bug.get_identifier()}-buggy-{uuid.uuid4()}"
+        fixed_path = f"{tempfile.gettempdir()}/elleelleaime-{getpass.getuser()}/{bug.get_identifier()}-fixed-{uuid.uuid4()}"
 
         try:
             # Checkout buggy version
@@ -77,8 +77,8 @@ class TestDefects4J:
             assert self.checkout_bug(bug), f"Failed checkout for {bug.get_identifier()}"
 
     def run_bug(self, bug: Bug) -> bool:
-        buggy_path = f"{tempfile.gettempdir()}/elleelleaime-{os.getlogin()}/{bug.get_identifier()}-buggy-{uuid.uuid4()}"
-        fixed_path = f"{tempfile.gettempdir()}/elleelleaime-{os.getlogin()}/{bug.get_identifier()}-fixed-{uuid.uuid4()}"
+        buggy_path = f"{tempfile.gettempdir()}/elleelleaime-{getpass.getuser()}/{bug.get_identifier()}-buggy-{uuid.uuid4()}"
+        fixed_path = f"{tempfile.gettempdir()}/elleelleaime-{getpass.getuser()}/{bug.get_identifier()}-fixed-{uuid.uuid4()}"
 
         try:
             # Checkout buggy version
@@ -179,7 +179,7 @@ class TestDefects4J:
 
         for bug in bugs:
             try:
-                path = f"{tempfile.gettempdir()}/elleelleaime-{os.getlogin()}/{bug.get_identifier()}-{uuid.uuid4()}"
+                path = f"{tempfile.gettempdir()}/elleelleaime-{getpass.getuser()}/{bug.get_identifier()}-{uuid.uuid4()}"
                 bug.checkout(path, fixed=False)
 
                 src_test_dir = bug.get_src_test_dir(path)

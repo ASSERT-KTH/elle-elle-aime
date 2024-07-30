@@ -2,7 +2,7 @@ from typing import Optional, Tuple, List
 from unidiff import PatchSet
 from uuid import uuid4
 from pathlib import Path
-import os, tempfile, difflib, shutil
+import getpass, tempfile, difflib, shutil
 import subprocess
 import re
 
@@ -153,13 +153,13 @@ def extract_single_function(bug: Bug) -> Optional[Tuple[str, str]]:
     """
     buggy_path = Path(
         tempfile.gettempdir(),
-        f"elleelleaime-{os.getlogin()}",
+        f"elleelleaime-{getpass.getuser()}",
         bug.get_identifier(),
         str(uuid4()),
     )
     fixed_path = Path(
         tempfile.gettempdir(),
-        f"elleelleaime-{os.getlogin()}",
+        f"elleelleaime-{getpass.getuser()}",
         bug.get_identifier(),
         str(uuid4()),
     )
@@ -258,7 +258,7 @@ def extract_failing_test_cases(bug: RichBug) -> dict[str, str]:
 
         path = Path(
             tempfile.gettempdir(),
-            f"elleelleaime-{os.getlogin()}",
+            f"elleelleaime-{getpass.getuser()}",
             bug.get_identifier(),
             str(uuid4()),
         )
