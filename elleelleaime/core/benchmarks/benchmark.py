@@ -29,7 +29,7 @@ class Benchmark(ABC):
     def get_path(self) -> pathlib.Path:
         return self.path
 
-    def get_bin(self) -> Optional[pathlib.Path]:
+    def get_bin(self, options: str = "") -> Optional[str]:
         return None
 
     def get_bugs(self) -> Set[Bug]:
