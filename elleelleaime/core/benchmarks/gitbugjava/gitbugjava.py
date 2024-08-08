@@ -16,12 +16,11 @@ class GitBugJava(Benchmark):
     The class for representing the GitBug-Java benchmark.
     """
 
-    # TODO: add GitBug-Java to benchmarks sub-modules
     def __init__(self, path: Path = Path("benchmarks/gitbug-java").absolute()) -> None:
         super().__init__("gitbugjava", path)
         self.bin = f"cd {self.path} && poetry run {path.joinpath('gitbug-java')}"
 
-    def get_bin(self) -> str:
+    def get_bin(self, options: str = "") -> Optional[str]:
         return self.bin
 
     def run_command(
