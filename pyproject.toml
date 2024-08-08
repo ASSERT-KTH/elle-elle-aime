@@ -31,6 +31,7 @@ wandb = "^0.17.4"
 evaluate = "^0.4.2"
 safetensors = "^0.4.3"
 ruff = "^0.5.5"
+flaky = "^3.8.1"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.3.1"

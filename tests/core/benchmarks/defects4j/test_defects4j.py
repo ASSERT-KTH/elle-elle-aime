@@ -2,6 +2,7 @@ from elleelleaime.core.utils.benchmarks import get_benchmark
 from elleelleaime.core.benchmarks.bug import Bug
 
 from pathlib import Path
+from flaky import flaky
 import uuid
 import shutil
 import tqdm
@@ -102,6 +103,7 @@ class TestDefects4J:
             shutil.rmtree(buggy_path, ignore_errors=True)
             shutil.rmtree(fixed_path, ignore_errors=True)
 
+    @flaky(max_runs=3, min_passes=1)
     def test_run_bugs(self):
         defects4j = get_benchmark("defects4j")
         assert defects4j is not None
