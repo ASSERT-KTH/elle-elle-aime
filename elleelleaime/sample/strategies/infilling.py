@@ -1,8 +1,8 @@
-from typing import Optional, Tuple, Union
+from typing import Optional, Tuple
 from unidiff import PatchSet
 import re
 
-from elleelleaime.sample.prompting.strategy import PromptingStrategy
+from elleelleaime.sample.strategy import PromptingStrategy
 from elleelleaime.core.benchmarks.bug import Bug
 from elleelleaime.core.utils.java.java import (
     extract_single_function,
@@ -12,18 +12,13 @@ from elleelleaime.core.utils.java.java import (
 )
 
 
-class ZeroShotClozePrompting(PromptingStrategy):
+class InfillingPrompting(PromptingStrategy):
     """
     Implements the zero-shot cloze style prompt strategy for single diff file.
     """
 
     # MODEL_DICT is a dictionary of model names and their corresponding kwargs
     MODEL_DICT = {
-        "incoder": {
-            "mask_token": "<|mask:{}|>",
-            "extra_mask_token": True,
-            "single_chunk": False,
-        },
         "codellama": {
             "mask_token": "<FILL_ME>",
             "extra_mask_token": False,
