@@ -7,7 +7,7 @@ import pytest
 import os
 
 
-class TestEvaluatePatchesDefects4J:
+class TestEvaluatePatchesReplaceDefects4J:
     DEFECTS4J: Benchmark
     PROMPT_STRATEGY: str = "zero-shot-cloze"
     MODEL_NAME: str = "incoder"
@@ -15,32 +15,32 @@ class TestEvaluatePatchesDefects4J:
 
     @classmethod
     def setup_class(cls):
-        TestEvaluatePatchesDefects4J.DEFECTS4J = get_benchmark("defects4j")
-        assert TestEvaluatePatchesDefects4J.DEFECTS4J is not None
-        TestEvaluatePatchesDefects4J.DEFECTS4J.initialize()
+        TestEvaluatePatchesReplaceDefects4J.DEFECTS4J = get_benchmark("defects4j")
+        assert TestEvaluatePatchesReplaceDefects4J.DEFECTS4J is not None
+        TestEvaluatePatchesReplaceDefects4J.DEFECTS4J.initialize()
 
     @classmethod
     def get_exact_match_sample(cls):
-        bug = TestEvaluatePatchesDefects4J.DEFECTS4J.get_bug("Chart-1")
+        bug = TestEvaluatePatchesReplaceDefects4J.DEFECTS4J.get_bug("Chart-1")
         assert bug is not None
 
         sample = generate_sample(
             bug=bug,
-            prompt_strategy=TestEvaluatePatchesDefects4J.PROMPT_STRATEGY,
-            model_name=TestEvaluatePatchesDefects4J.MODEL_NAME,
+            prompt_strategy=TestEvaluatePatchesReplaceDefects4J.PROMPT_STRATEGY,
+            model_name=TestEvaluatePatchesReplaceDefects4J.MODEL_NAME,
         )
         sample["generation"] = [sample["fixed_code"] + "\n// comment"]
         return bug, sample
 
     @classmethod
     def get_ast_match_sample(cls):
-        bug = TestEvaluatePatchesDefects4J.DEFECTS4J.get_bug("Chart-1")
+        bug = TestEvaluatePatchesReplaceDefects4J.DEFECTS4J.get_bug("Chart-1")
         assert bug is not None
 
         sample = generate_sample(
             bug=bug,
-            prompt_strategy=TestEvaluatePatchesDefects4J.PROMPT_STRATEGY,
-            model_name=TestEvaluatePatchesDefects4J.MODEL_NAME,
+            prompt_strategy=TestEvaluatePatchesReplaceDefects4J.PROMPT_STRATEGY,
+            model_name=TestEvaluatePatchesReplaceDefects4J.MODEL_NAME,
         )
         sample["generation"] = [
             """    public LegendItemCollection getLegendItems() {
@@ -83,13 +83,13 @@ class TestEvaluatePatchesDefects4J:
 
     @classmethod
     def get_plausible_sample(cls):
-        bug = TestEvaluatePatchesDefects4J.DEFECTS4J.get_bug("Chart-1")
+        bug = TestEvaluatePatchesReplaceDefects4J.DEFECTS4J.get_bug("Chart-1")
         assert bug is not None
 
         sample = generate_sample(
             bug=bug,
-            prompt_strategy=TestEvaluatePatchesDefects4J.PROMPT_STRATEGY,
-            model_name=TestEvaluatePatchesDefects4J.MODEL_NAME,
+            prompt_strategy=TestEvaluatePatchesReplaceDefects4J.PROMPT_STRATEGY,
+            model_name=TestEvaluatePatchesReplaceDefects4J.MODEL_NAME,
         )
         sample["generation"] = [
             """    public LegendItemCollection getLegendItems() {
@@ -134,24 +134,24 @@ class TestEvaluatePatchesDefects4J:
 
     @classmethod
     def get_incorrect_sample(cls):
-        bug = TestEvaluatePatchesDefects4J.DEFECTS4J.get_bug("Chart-1")
+        bug = TestEvaluatePatchesReplaceDefects4J.DEFECTS4J.get_bug("Chart-1")
         assert bug is not None
 
         sample = generate_sample(
             bug=bug,
-            prompt_strategy=TestEvaluatePatchesDefects4J.PROMPT_STRATEGY,
-            model_name=TestEvaluatePatchesDefects4J.MODEL_NAME,
+            prompt_strategy=TestEvaluatePatchesReplaceDefects4J.PROMPT_STRATEGY,
+            model_name=TestEvaluatePatchesReplaceDefects4J.MODEL_NAME,
         )
         sample["generation"] = [sample["buggy_code"]]
         return bug, sample
 
     def test_exact_match_patch(self):
-        bug, sample = TestEvaluatePatchesDefects4J.get_exact_match_sample()
+        bug, sample = TestEvaluatePatchesReplaceDefects4J.get_exact_match_sample()
 
         sample = evaluate_candidate(
             bug=bug,
             sample=sample,
-            strategy=TestEvaluatePatchesDefects4J.EVALUATE_STRATEGY,
+            strategy=TestEvaluatePatchesReplaceDefects4J.EVALUATE_STRATEGY,
         )
 
         assert sample["evaluation"] is not None
@@ -163,12 +163,12 @@ class TestEvaluatePatchesDefects4J:
         assert sample["evaluation"][0]["ast_match"] == True
 
     def test_ast_match_patch(self):
-        bug, sample = TestEvaluatePatchesDefects4J.get_ast_match_sample()
+        bug, sample = TestEvaluatePatchesReplaceDefects4J.get_ast_match_sample()
 
         sample = evaluate_candidate(
             bug=bug,
             sample=sample,
-            strategy=TestEvaluatePatchesDefects4J.EVALUATE_STRATEGY,
+            strategy=TestEvaluatePatchesReplaceDefects4J.EVALUATE_STRATEGY,
         )
 
         assert sample["evaluation"] is not None
@@ -180,12 +180,12 @@ class TestEvaluatePatchesDefects4J:
         assert sample["evaluation"][0]["exact_match"] == False
 
     def test_incorrect_patch(self):
-        bug, sample = TestEvaluatePatchesDefects4J.get_incorrect_sample()
+        bug, sample = TestEvaluatePatchesReplaceDefects4J.get_incorrect_sample()
 
         sample = evaluate_candidate(
             bug=bug,
             sample=sample,
-            strategy=TestEvaluatePatchesDefects4J.EVALUATE_STRATEGY,
+            strategy=TestEvaluatePatchesReplaceDefects4J.EVALUATE_STRATEGY,
         )
 
         assert sample["evaluation"] is not None
@@ -197,12 +197,12 @@ class TestEvaluatePatchesDefects4J:
         assert sample["evaluation"][0]["ast_match"] == False
 
     def test_plausible_patch(self):
-        bug, sample = TestEvaluatePatchesDefects4J.get_plausible_sample()
+        bug, sample = TestEvaluatePatchesReplaceDefects4J.get_plausible_sample()
 
         sample = evaluate_candidate(
             bug=bug,
             sample=sample,
-            strategy=TestEvaluatePatchesDefects4J.EVALUATE_STRATEGY,
+            strategy=TestEvaluatePatchesReplaceDefects4J.EVALUATE_STRATEGY,
         )
 
         assert sample["evaluation"] is not None
@@ -218,7 +218,7 @@ class TestEvaluatePatchesDefects4J:
     os.environ.get("CI") is not None,
     reason="This test requires completing GitBug-Java's setup, which is too heavy for CI.",
 )
-class TestEvaluatePatchesGitBugJava:
+class TestEvaluatePatchesReplaceGitBugJava:
     GITBUGJAVA: Benchmark
     PROMPT_STRATEGY: str = "zero-shot-cloze"
     MODEL_NAME: str = "incoder"
@@ -226,36 +226,36 @@ class TestEvaluatePatchesGitBugJava:
 
     @classmethod
     def setup_class(cls):
-        TestEvaluatePatchesGitBugJava.GITBUGJAVA = get_benchmark("gitbugjava")
-        assert TestEvaluatePatchesGitBugJava.GITBUGJAVA is not None
-        TestEvaluatePatchesGitBugJava.GITBUGJAVA.initialize()
+        TestEvaluatePatchesReplaceGitBugJava.GITBUGJAVA = get_benchmark("gitbugjava")
+        assert TestEvaluatePatchesReplaceGitBugJava.GITBUGJAVA is not None
+        TestEvaluatePatchesReplaceGitBugJava.GITBUGJAVA.initialize()
 
     @classmethod
     def get_exact_match_sample(cls):
-        bug = TestEvaluatePatchesGitBugJava.GITBUGJAVA.get_bug(
+        bug = TestEvaluatePatchesReplaceGitBugJava.GITBUGJAVA.get_bug(
             "beanshell-beanshell-f345606a29bd"
         )
         assert bug is not None
 
         sample = generate_sample(
             bug=bug,
-            prompt_strategy=TestEvaluatePatchesGitBugJava.PROMPT_STRATEGY,
-            model_name=TestEvaluatePatchesGitBugJava.MODEL_NAME,
+            prompt_strategy=TestEvaluatePatchesReplaceGitBugJava.PROMPT_STRATEGY,
+            model_name=TestEvaluatePatchesReplaceGitBugJava.MODEL_NAME,
         )
         sample["generation"] = [sample["fixed_code"] + "\n// comment"]
         return bug, sample
 
     @classmethod
     def get_ast_match_sample(cls):
-        bug = TestEvaluatePatchesGitBugJava.GITBUGJAVA.get_bug(
+        bug = TestEvaluatePatchesReplaceGitBugJava.GITBUGJAVA.get_bug(
             "beanshell-beanshell-f345606a29bd"
         )
         assert bug is not None
 
         sample = generate_sample(
             bug=bug,
-            prompt_strategy=TestEvaluatePatchesGitBugJava.PROMPT_STRATEGY,
-            model_name=TestEvaluatePatchesGitBugJava.MODEL_NAME,
+            prompt_strategy=TestEvaluatePatchesReplaceGitBugJava.PROMPT_STRATEGY,
+            model_name=TestEvaluatePatchesReplaceGitBugJava.MODEL_NAME,
         )
         sample["generation"] = [
             """    public static Object arbitraryObjectsBinaryOperation(
@@ -344,15 +344,15 @@ class TestEvaluatePatchesGitBugJava:
 
     @classmethod
     def get_plausible_sample(cls):
-        bug = TestEvaluatePatchesGitBugJava.GITBUGJAVA.get_bug(
+        bug = TestEvaluatePatchesReplaceGitBugJava.GITBUGJAVA.get_bug(
             "beanshell-beanshell-f345606a29bd"
         )
         assert bug is not None
 
         sample = generate_sample(
             bug=bug,
-            prompt_strategy=TestEvaluatePatchesGitBugJava.PROMPT_STRATEGY,
-            model_name=TestEvaluatePatchesGitBugJava.MODEL_NAME,
+            prompt_strategy=TestEvaluatePatchesReplaceGitBugJava.PROMPT_STRATEGY,
+            model_name=TestEvaluatePatchesReplaceGitBugJava.MODEL_NAME,
         )
         sample["generation"] = [
             """    public static Object arbitraryObjectsBinaryOperation(
@@ -440,26 +440,26 @@ class TestEvaluatePatchesGitBugJava:
 
     @classmethod
     def get_incorrect_sample(cls):
-        bug = TestEvaluatePatchesGitBugJava.GITBUGJAVA.get_bug(
+        bug = TestEvaluatePatchesReplaceGitBugJava.GITBUGJAVA.get_bug(
             "beanshell-beanshell-f345606a29bd"
         )
         assert bug is not None
 
         sample = generate_sample(
             bug=bug,
-            prompt_strategy=TestEvaluatePatchesGitBugJava.PROMPT_STRATEGY,
-            model_name=TestEvaluatePatchesGitBugJava.MODEL_NAME,
+            prompt_strategy=TestEvaluatePatchesReplaceGitBugJava.PROMPT_STRATEGY,
+            model_name=TestEvaluatePatchesReplaceGitBugJava.MODEL_NAME,
         )
         sample["generation"] = [sample["buggy_code"]]
         return bug, sample
 
     def test_exact_match_patch(self):
-        bug, sample = TestEvaluatePatchesGitBugJava.get_exact_match_sample()
+        bug, sample = TestEvaluatePatchesReplaceGitBugJava.get_exact_match_sample()
 
         sample = evaluate_candidate(
             bug=bug,
             sample=sample,
-            strategy=TestEvaluatePatchesGitBugJava.EVALUATE_STRATEGY,
+            strategy=TestEvaluatePatchesReplaceGitBugJava.EVALUATE_STRATEGY,
         )
 
         assert sample["evaluation"] is not None
@@ -471,12 +471,12 @@ class TestEvaluatePatchesGitBugJava:
         assert sample["evaluation"][0]["ast_match"] == True
 
     def test_ast_match_patch(self):
-        bug, sample = TestEvaluatePatchesGitBugJava.get_ast_match_sample()
+        bug, sample = TestEvaluatePatchesReplaceGitBugJava.get_ast_match_sample()
 
         sample = evaluate_candidate(
             bug=bug,
             sample=sample,
-            strategy=TestEvaluatePatchesGitBugJava.EVALUATE_STRATEGY,
+            strategy=TestEvaluatePatchesReplaceGitBugJava.EVALUATE_STRATEGY,
         )
 
         assert sample["evaluation"] is not None
@@ -488,12 +488,12 @@ class TestEvaluatePatchesGitBugJava:
         assert sample["evaluation"][0]["exact_match"] == False
 
     def test_incorrect_patch(self):
-        bug, sample = TestEvaluatePatchesGitBugJava.get_incorrect_sample()
+        bug, sample = TestEvaluatePatchesReplaceGitBugJava.get_incorrect_sample()
 
         sample = evaluate_candidate(
             bug=bug,
             sample=sample,
-            strategy=TestEvaluatePatchesGitBugJava.EVALUATE_STRATEGY,
+            strategy=TestEvaluatePatchesReplaceGitBugJava.EVALUATE_STRATEGY,
         )
 
         assert sample["evaluation"] is not None
@@ -505,12 +505,12 @@ class TestEvaluatePatchesGitBugJava:
         assert sample["evaluation"][0]["ast_match"] == False
 
     def test_plausible_patch(self):
-        bug, sample = TestEvaluatePatchesGitBugJava.get_plausible_sample()
+        bug, sample = TestEvaluatePatchesReplaceGitBugJava.get_plausible_sample()
 
         sample = evaluate_candidate(
             bug=bug,
             sample=sample,
-            strategy=TestEvaluatePatchesGitBugJava.EVALUATE_STRATEGY,
+            strategy=TestEvaluatePatchesReplaceGitBugJava.EVALUATE_STRATEGY,
         )
 
         assert sample["evaluation"] is not None
@@ -523,15 +523,15 @@ class TestEvaluatePatchesGitBugJava:
 
     def test_mthmulders_mcs_eff905bef8d8(self):
         """This test is for a specific bug in GitBug-Java that we faced an issue in locating the buggy code of during evaluation."""
-        bug = TestEvaluatePatchesGitBugJava.GITBUGJAVA.get_bug(
+        bug = TestEvaluatePatchesReplaceGitBugJava.GITBUGJAVA.get_bug(
             "mthmulders-mcs-eff905bef8d8"
         )
         assert bug is not None
 
         sample = generate_sample(
             bug=bug,
-            prompt_strategy=TestEvaluatePatchesGitBugJava.PROMPT_STRATEGY,
-            model_name=TestEvaluatePatchesGitBugJava.MODEL_NAME,
+            prompt_strategy=TestEvaluatePatchesReplaceGitBugJava.PROMPT_STRATEGY,
+            model_name=TestEvaluatePatchesReplaceGitBugJava.MODEL_NAME,
         )
 
         sample["generation"] = [
@@ -550,7 +550,7 @@ class TestEvaluatePatchesGitBugJava:
         sample = evaluate_candidate(
             bug=bug,
             sample=sample,
-            strategy=TestEvaluatePatchesGitBugJava.EVALUATE_STRATEGY,
+            strategy=TestEvaluatePatchesReplaceGitBugJava.EVALUATE_STRATEGY,
         )
 
         assert sample["evaluation"] is not None

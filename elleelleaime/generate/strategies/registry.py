@@ -25,6 +25,7 @@ class PatchGenerationStrategyRegistry:
     __MODELS: dict[str, Tuple[type, Tuple]] = {
         # OpenAI models
         "gpt-3.5-turbo": (OpenAIChatCompletionModels, ("gpt-3.5-turbo",)),
+        "gpt-4o-mini": (OpenAIChatCompletionModels, ("gpt-4o-mini",)),
         # HuggingFace models
         "incoder-1b": (IncoderHFModels, ("facebook/incoder-1B",)),
         "incoder-6b": (IncoderHFModels, ("facebook/incoder-6B",)),

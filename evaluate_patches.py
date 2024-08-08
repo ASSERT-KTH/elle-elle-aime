@@ -1,10 +1,12 @@
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from unidiff import PatchSet
 from elleelleaime.core.utils.benchmarks import get_benchmark
 from elleelleaime.core.benchmarks.bug import Bug
 from elleelleaime.core.utils.jsonl import stream_jsonl, write_jsonl
 from elleelleaime.evaluate.strategies.registry import PatchEvaluationStrategyRegistry
 
+from pathlib import Path
+
+import uuid
 import fire
 import shutil
 import sys
@@ -12,7 +14,8 @@ import tqdm
 import logging
 import json
 import os
-import difflib
+import tempfile
+import subprocess
 
 
 def evaluate_candidate(bug: Bug, sample: dict, strategy: str, **kwargs) -> dict:
@@ -57,42 +60,23 @@ def compilable(evaluation: dict) -> bool:
     return bool(evaluation["compile"])
 
 
-def is_single_chunk(sample: dict) -> bool:
+def compute_diff(buggy_code: str, fixed_code: str, context_len: int = 3) -> str:
     """
-    Return True if the sample's ground truth is a single chunk.
-    Single chunk means that there is only one hunk in the ground truth and that the changes are all contiguous.
+    Computes the diff between the buggy and fixed code.
     """
-    diff = PatchSet(sample["ground_truth"])
-    # Check if there is only one hunk
-    if len(diff) == 1 and len(diff[0]) == 1:
-        # Check if the changes are contiguous
-        hunk = diff[0][0]
-        i = 0
-        found_change = False
-        while i < len(hunk):
-            # Find a change
-            if hunk[i].is_added or hunk[i].is_removed:
-                if found_change:
-                    return False
-                found_change = True
-                # Skip over the remainder of the added/removed chunk
-                while i < len(hunk) and (hunk[i].is_added or hunk[i].is_removed):
-                    i += 1
-            # Skip over the unchanged chunk
-            else:
-                i += 1
-        return True
-    else:
-        return False
+    buggy_path = Path(tempfile.gettempdir(), f"{uuid.uuid4()}_buggy.java")
+    with open(buggy_path, "w") as f:
+        f.write(buggy_code)
 
+    fixed_path = Path(tempfile.gettempdir(), f"{uuid.uuid4()}_fixed.java")
+    with open(fixed_path, "w") as f:
+        f.write(fixed_code)
 
-def is_single_hunk(sample: dict) -> bool:
-    """
-    Return True if the sample's ground truth is a single hunk.
-    Single hunk means that there is only one hunk in the ground truth.
-    """
-    diff = PatchSet(sample["ground_truth"])
-    return len(diff) == 1 and len(diff[0]) == 1
+    # we want to ignore whitespace changes with -w which does not exist in difflib.unified_diff
+    # with git diff, we even get the name of the changed function in the diff, which helps a lot
+    cmd = f"git diff --patience -U{context_len} -w {buggy_path} {fixed_path}"
+    run = subprocess.run(cmd, shell=True, capture_output=True)
+    return run.stdout.decode("utf-8")
 
 
 def compute_statistics(samples: list) -> dict:
@@ -186,10 +170,13 @@ def export_patches(samples: list, dir_path: str) -> None:
             continue
 
         # Write prompt, target diff to file
-        target_diff = difflib.unified_diff(
-            sample["buggy_code"].splitlines(keepends=True),
-            sample["fixed_code"].splitlines(keepends=True),
-            n=max(len(sample["buggy_code"]), len(sample["fixed_code"])),
+        target_diff = compute_diff(
+            sample["buggy_code"],
+            sample["fixed_code"],
+            context_len=max(
+                len(sample["buggy_code"].splitlines()),
+                len(sample["fixed_code"].splitlines()),
+            ),
         )
 
         sample_dir = os.path.join(patches_dir, sample["identifier"])
@@ -206,10 +193,13 @@ def export_patches(samples: list, dir_path: str) -> None:
                 continue
 
             # Compute diff between generated code and buggy code
-            diff = difflib.unified_diff(
-                sample["buggy_code"].splitlines(keepends=True),
-                candidate["generation"].splitlines(keepends=True),
-                n=max(len(sample["buggy_code"]), len(candidate["generation"])),
+            diff = compute_diff(
+                sample["buggy_code"],
+                candidate["generation"],
+                context_len=max(
+                    len(sample["buggy_code"].splitlines()),
+                    len(candidate["generation"].splitlines()),
+                ),
             )
 
             # Store in the most restrictive sub-directory
@@ -231,17 +221,10 @@ def export_patches(samples: list, dir_path: str) -> None:
                 f.writelines(diff)
 
 
-def export_bugs_by_category(samples, dir_path):
+def export_bugs(samples, dir_path):
     """
     Exports list of bugs considered in each category to text files.
-    Categories are single chunk, single hunk, with prompt, and with candidates.
     """
-    bugs_single_chunk = sorted(
-        [sample["identifier"] for sample in samples if is_single_chunk(sample)]
-    )
-    bugs_single_hunk = sorted(
-        [sample["identifier"] for sample in samples if is_single_hunk(sample)]
-    )
     bugs_with_prompt = sorted(
         [sample["identifier"] for sample in samples if sample["prompt"] is not None]
     )
@@ -256,12 +239,6 @@ def export_bugs_by_category(samples, dir_path):
             )
         ]
     )
-
-    with open(os.path.join(dir_path, "bugs_single_chunk.txt"), "w") as f:
-        f.write("\n".join(bugs_single_chunk))
-
-    with open(os.path.join(dir_path, "bugs_single_hunk.txt"), "w") as f:
-        f.write("\n".join(bugs_single_hunk))
 
     with open(os.path.join(dir_path, "bugs_with_prompt.txt"), "w") as f:
         f.write("\n".join(bugs_with_prompt))
@@ -321,32 +298,6 @@ def entry_point(
 
     # Compute statistics over the evaluation
     if "statistics" in kwargs and kwargs["statistics"]:
-        # Compute statistics for single chunk samples
-        statistics = compute_statistics(
-            [sample for sample in samples if is_single_chunk(sample)]
-        )
-        with open(
-            os.path.join(
-                dir_path,
-                f"statistics_single_chunk_{benchmark}_{prompt_strategy}_{model_name}.json",
-            ),
-            "w",
-        ) as f:
-            json.dump(statistics, f, indent=4)
-
-        # Compute statistics for single hunk samples
-        statistics = compute_statistics(
-            [sample for sample in samples if is_single_hunk(sample)]
-        )
-        with open(
-            os.path.join(
-                dir_path,
-                f"statistics_single_hunk_{benchmark}_{prompt_strategy}_{model_name}.json",
-            ),
-            "w",
-        ) as f:
-            json.dump(statistics, f, indent=4)
-
         # Compute statistics for all samples
         statistics = compute_statistics(samples)
         with open(
@@ -360,7 +311,7 @@ def entry_point(
     # Export patches to text files in structured directories
     if "export" in kwargs and kwargs["export"]:
         export_patches(samples, dir_path)
-        export_bugs_by_category(samples, dir_path)
+        export_bugs(samples, dir_path)
 
     # Write results to jsonl file
     write_jsonl(
