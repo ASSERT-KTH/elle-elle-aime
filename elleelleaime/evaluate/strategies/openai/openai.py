@@ -6,9 +6,6 @@ import re
 
 
 class OpenAIEvaluationStrategy(ReplaceEvaluationStrategy):
-    """
-    Implements the zero-shot cloze style prompt strategy for single diff file.
-    """
 
     def __init__(self, **kwargs):
         super().__init__(kwargs=kwargs)

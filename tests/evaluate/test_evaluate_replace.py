@@ -9,8 +9,8 @@ import os
 
 class TestEvaluatePatchesReplaceDefects4J:
     DEFECTS4J: Benchmark
-    PROMPT_STRATEGY: str = "zero-shot-cloze"
-    MODEL_NAME: str = "incoder"
+    PROMPT_STRATEGY: str = "infilling"
+    MODEL_NAME: str = "codellama-7b"
     EVALUATE_STRATEGY: str = "replace"
 
     @classmethod
@@ -220,8 +220,8 @@ class TestEvaluatePatchesReplaceDefects4J:
 )
 class TestEvaluatePatchesReplaceGitBugJava:
     GITBUGJAVA: Benchmark
-    PROMPT_STRATEGY: str = "zero-shot-cloze"
-    MODEL_NAME: str = "incoder"
+    PROMPT_STRATEGY: str = "infilling"
+    MODEL_NAME: str = "codellama-7b"
     EVALUATE_STRATEGY: str = "replace"
 
     @classmethod

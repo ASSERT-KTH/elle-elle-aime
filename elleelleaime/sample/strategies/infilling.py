@@ -13,9 +13,6 @@ from elleelleaime.core.utils.java.java import (
 
 
 class InfillingPrompting(PromptingStrategy):
-    """
-    Implements the zero-shot cloze style prompt strategy for single diff file.
-    """
 
     # MODEL_DICT is a dictionary of model names and their corresponding kwargs
     MODEL_DICT = {
@@ -28,7 +25,7 @@ class InfillingPrompting(PromptingStrategy):
     }
 
     def __init__(self, **kwargs):
-        super().__init__("zero-shot-cloze")
+        super().__init__("infilling")
 
         self.model_name: str = kwargs.get("model_name", "").strip().lower()
         assert (
