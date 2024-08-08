@@ -41,7 +41,6 @@ def assert_same_diff(
     original_added_lines = []
     original_removed_lines = []
     # Get the original changed lines
-    # TODO: this diff is inverted, i.e. the target file is the buggy file
     for file in original_diff:
         for hunk in file:
             for line in hunk:

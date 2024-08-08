@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import Optional
 from io import StringIO
 from elleelleaime.core.benchmarks.benchmark import Benchmark
 from elleelleaime.core.benchmarks.defects4j.defects4jbug import Defects4JBug
@@ -6,6 +7,7 @@ from elleelleaime.core.benchmarks.defects4j.defects4jbug import Defects4JBug
 import subprocess
 import logging
 import tqdm
+import os
 import pandas as pd
 
 
@@ -16,10 +18,9 @@ class Defects4J(Benchmark):
 
     def __init__(self, path: Path = Path("benchmarks/defects4j").absolute()) -> None:
         super().__init__("defects4j", path)
-        self.bin = path.joinpath("framework/bin/defects4j")
 
-    def get_bin(self) -> Path:
-        return self.bin
+    def get_bin(self, options: str = "") -> Optional[str]:
+        return f"docker run {options} --rm andre15silva/defects4j:latest"
 
     def initialize(self) -> None:
         """
@@ -29,7 +30,10 @@ class Defects4J(Benchmark):
 
         # Get all project ids
         run = subprocess.run(
-            "%s pids" % self.bin, shell=True, capture_output=True, check=True
+            f"{self.get_bin()} defects4j pids",
+            shell=True,
+            capture_output=True,
+            check=True,
         )
         pids = {pid.decode("utf-8") for pid in run.stdout.split()}
         logging.info("Found %3d projects" % len(pids))
@@ -38,7 +42,7 @@ class Defects4J(Benchmark):
         bugs = {}
         for pid in tqdm.tqdm(pids):
             run = subprocess.run(
-                "%s bids -p %s" % (self.bin, pid),
+                f"{self.get_bin()} defects4j bids -p {pid}",
                 shell=True,
                 capture_output=True,
                 check=True,
@@ -50,7 +54,7 @@ class Defects4J(Benchmark):
         for pid in pids:
             # Extract failing test and trigger cause
             run = subprocess.run(
-                f"{self.bin} query -p {pid} -q 'tests.trigger,tests.trigger.cause'",
+                f"{self.get_bin()} defects4j query -p {pid} -q 'tests.trigger,tests.trigger.cause'",
                 shell=True,
                 capture_output=True,
                 check=True,

@@ -18,9 +18,6 @@ class BearsBug(Bug):
     The class for representing Bears bugs
     """
 
-    @backoff.on_exception(
-        backoff.constant, subprocess.CalledProcessError, interval=1, max_tries=3
-    )
     def checkout(self, path: str, fixed: bool = False) -> bool:
         try:
             # Remove the directory if it exists

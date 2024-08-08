@@ -18,9 +18,6 @@ class GitBugJavaBug(Bug):
     def __init__(self, benchmark: Benchmark, bid: str, ground_truth: str) -> None:
         super().__init__(benchmark, bid, ground_truth, False)
 
-    @backoff.on_exception(
-        backoff.constant, subprocess.CalledProcessError, interval=1, max_tries=3
-    )
     def checkout(self, path: str, fixed: bool = False) -> bool:
         # Remove the directory if it exists
         shutil.rmtree(path, ignore_errors=True)

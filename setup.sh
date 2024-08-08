@@ -3,11 +3,6 @@
 git submodule init;
 git submodule update;
 
-cd benchmarks/defects4j;
-cpanm --installdeps .;
-./init.sh;
-cd ../..;
-
 cd benchmarks/gitbug-java;
 chmod +x gitbug-java;
 poetry install --no-root;
@@ -18,3 +13,4 @@ fi
 
 docker pull openjdk:11;
 docker pull maven:3.9.8-eclipse-temurin-8;
+docker pull andre15silva/defects4j:latest;
