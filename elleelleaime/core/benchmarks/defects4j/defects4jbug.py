@@ -35,6 +35,7 @@ class Defects4JBug(RichBug):
     def __run_defects4j_with_path(
         self, command: str, path: str, check: bool = True
     ) -> subprocess.CompletedProcess[bytes]:
+        os.makedirs(path, exist_ok=True)
         options = f"--volume '{path}:{path}' --workdir '{path}'"
         chown = f"chown -R {os.getuid()}:{os.getgid()} {path} && chown -R {os.getuid()}:{os.getgid()} /defects4j"
         gosu = f"gosu {os.getuid()}:{os.getgid()}"
