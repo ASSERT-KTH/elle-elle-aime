@@ -102,7 +102,6 @@ class TestDefects4J:
             shutil.rmtree(buggy_path, ignore_errors=True)
             shutil.rmtree(fixed_path, ignore_errors=True)
 
-    @pytest.mark.skip(reason="This test is flaky at times. FIXME")
     def test_run_bugs(self):
         defects4j = get_benchmark("defects4j")
         assert defects4j is not None

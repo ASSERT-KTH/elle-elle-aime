@@ -59,7 +59,15 @@ class Defects4JBug(RichBug):
             path,
         )
 
-        return checkout_run.returncode == 0
+        # Convert line endings to unix
+        dos2unix_run = subprocess.run(
+            f"find {path} -type f -print0 | xargs -0 -n 1 -P 4 dos2unix",
+            shell=True,
+            capture_output=True,
+            check=True,
+        )
+
+        return checkout_run.returncode == 0 and dos2unix_run.returncode == 0
 
     def compile(self, path: str) -> CompileResult:
         run = self.__run_defects4j_with_path(
