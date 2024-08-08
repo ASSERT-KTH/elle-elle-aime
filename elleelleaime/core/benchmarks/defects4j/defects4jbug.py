@@ -75,6 +75,8 @@ class Defects4JBug(RichBug):
             path=path,
             check=False,
         )
+        print(run.stdout.decode("utf-8"))
+        print(run.stderr.decode("utf-8"))
         return CompileResult(run.returncode == 0)
 
     def test(self, path: str) -> TestResult:
@@ -84,6 +86,8 @@ class Defects4JBug(RichBug):
             path=path,
             check=False,
         )
+        print(run.stdout.decode("utf-8"))
+        print(run.stderr.decode("utf-8"))
         m = re.search(r"Failing tests: ([0-9]+)", run.stdout.decode("utf-8"))
         if not (run.returncode == 0 and m != None and int(m.group(1)) == 0):
             return TestResult(False)
@@ -94,6 +98,8 @@ class Defects4JBug(RichBug):
             path=path,
             check=False,
         )
+        print(run.stdout.decode("utf-8"))
+        print(run.stderr.decode("utf-8"))
         m = re.search(r"Failing tests: ([0-9]+)", run.stdout.decode("utf-8"))
         return TestResult(run.returncode == 0 and m != None and int(m.group(1)) == 0)
 
