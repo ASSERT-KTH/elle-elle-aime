@@ -11,20 +11,19 @@ import logging
 @dataclass
 class GenerateSettings:
     name: str
-    num_beams: int = 1
     do_sample: bool = False
-    temperature: float = 0.0
-    max_new_tokens: int = 128
+    temperature: float = 1.0
+    num_beams: int = 1
     num_return_sequences: int = 10
-    max_new_tokens: int = 1024
+    max_new_tokens: int = 4096
 
 
-class CodeLlamaHFModels(PatchGenerationStrategy):
+class CodeLLaMAInfilling(PatchGenerationStrategy):
     __SUPPORTED_MODELS = {
-        "codellama/CodeLlama-7b-hf",
-        "codellama/CodeLlama-13b-hf",
-        "codellama/CodeLlama-7b-Instruct-hf",
-        "codellama/CodeLlama-13b-Instruct-hf",
+        "meta-llama/CodeLlama-7b-hf",
+        "meta-llama/CodeLlama-13b-hf",
+        "meta-llama/CodeLlama-34b-hf",
+        "meta-llama/CodeLlama-70b-hf",
     }
 
     __GENERATION_STRATEGIES = {
@@ -45,28 +44,34 @@ class CodeLlamaHFModels(PatchGenerationStrategy):
     def __init__(self, model_name: str, **kwargs) -> None:
         assert (
             model_name in self.__SUPPORTED_MODELS
-        ), f"Model {model_name} not supported by CodeLlamaHFModels"
+        ), f"Model {model_name} not supported by {self.__class__.__name__}"
         self.model_name = model_name
         self.__load_model()
         # Generation settings
         assert (
             kwargs.get("generation_strategy", "beam_search")
             in self.__GENERATION_STRATEGIES
-        ), f"Generation strategy {kwargs.get('generation_strategy', 'beam_search')} not supported by CodeLlamaHFModels"
+        ), f"Generation strategy {kwargs.get('generation_strategy', 'beam_search')} not supported by {self.__class__.__name__}"
         self.generate_settings = self.__GENERATION_STRATEGIES[
             kwargs.get("generation_strategy", "beam_search")
         ]
-        self.generate_settings.max_new_tokens = kwargs.get("max_new_tokens", 128)
-        self.generate_settings.num_return_sequences = kwargs.get(
-            "num_return_sequences", 10
+        self.generate_settings.max_new_tokens = kwargs.get(
+            "max_new_tokens", GenerateSettings.max_new_tokens
         )
-        self.generate_settings.num_beams = kwargs.get("num_beams", 1)
-        self.generate_settings.temperature = kwargs.get("temperature", 0.2)
+        self.generate_settings.num_return_sequences = kwargs.get(
+            "num_return_sequences", GenerateSettings.num_return_sequences
+        )
+        self.generate_settings.num_beams = kwargs.get(
+            "num_beams", GenerateSettings.num_beams
+        )
+        self.generate_settings.temperature = kwargs.get(
+            "temperature", GenerateSettings.temperature
+        )
 
     def __load_model(self):
         # Setup environment
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
-        self.context_size = 2048
+        self.context_size = 16384
 
         # Setup kwargs
         kwargs = dict(
@@ -81,6 +86,7 @@ class CodeLlamaHFModels(PatchGenerationStrategy):
             self.__MODEL = LlamaForCausalLM.from_pretrained(
                 self.model_name, device_map="auto", **kwargs
             )
+            self.__MODEL.eval()
             self.__MODELS_LOADED = True
 
     def _generate_impl(self, prompt: str) -> Any:
