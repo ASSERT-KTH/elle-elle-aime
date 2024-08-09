@@ -6,7 +6,7 @@ import pytest
 import os
 
 
-class TestClozeSamplesCodeLLaMA:
+class TestInfillingCodellama:
     """
     We test the generation of cloze prompts for several types of bug fixes.
     We only generate samples for bugs that are single-function and single-file.
@@ -43,34 +43,34 @@ class TestClozeSamplesCodeLLaMA:
     DEFECTS4J: Benchmark
     HUMANEVALJAVA: Benchmark
     GITBUGJAVA: Benchmark
-    PROMPT_STRATEGY: str = "zero-shot-cloze"
+    PROMPT_STRATEGY: str = "infilling"
     MODEL_NAME: str = "codellama"
 
     @classmethod
     def setup_class(cls):
-        TestClozeSamplesCodeLLaMA.DEFECTS4J = get_benchmark("defects4j")
-        assert TestClozeSamplesCodeLLaMA.DEFECTS4J is not None
-        TestClozeSamplesCodeLLaMA.DEFECTS4J.initialize()
-        TestClozeSamplesCodeLLaMA.HUMANEVALJAVA = get_benchmark("humanevaljava")
-        assert TestClozeSamplesCodeLLaMA.HUMANEVALJAVA is not None
-        TestClozeSamplesCodeLLaMA.HUMANEVALJAVA.initialize()
-        TestClozeSamplesCodeLLaMA.GITBUGJAVA = get_benchmark("gitbugjava")
-        assert TestClozeSamplesCodeLLaMA.GITBUGJAVA is not None
-        TestClozeSamplesCodeLLaMA.GITBUGJAVA.initialize()
+        TestInfillingCodellama.DEFECTS4J = get_benchmark("defects4j")
+        assert TestInfillingCodellama.DEFECTS4J is not None
+        TestInfillingCodellama.DEFECTS4J.initialize()
+        TestInfillingCodellama.HUMANEVALJAVA = get_benchmark("humanevaljava")
+        assert TestInfillingCodellama.HUMANEVALJAVA is not None
+        TestInfillingCodellama.HUMANEVALJAVA.initialize()
+        TestInfillingCodellama.GITBUGJAVA = get_benchmark("gitbugjava")
+        assert TestInfillingCodellama.GITBUGJAVA is not None
+        TestInfillingCodellama.GITBUGJAVA.initialize()
 
     def test_closure_46(self):
-        bug = TestClozeSamplesCodeLLaMA.DEFECTS4J.get_bug("Closure-46")
+        bug = TestInfillingCodellama.DEFECTS4J.get_bug("Closure-46")
         assert bug is not None
 
         sample = generate_sample(
             bug=bug,
-            prompt_strategy=TestClozeSamplesCodeLLaMA.PROMPT_STRATEGY,
-            model_name=TestClozeSamplesCodeLLaMA.MODEL_NAME,
+            prompt_strategy=TestInfillingCodellama.PROMPT_STRATEGY,
+            model_name=TestInfillingCodellama.MODEL_NAME,
         )
 
         # Assert we are dealing with the correct bug and strategy
         assert sample["identifier"] == "Closure-46"
-        assert sample["prompt_strategy"] == "zero-shot-cloze"
+        assert sample["prompt_strategy"] == "infilling"
 
         # Assert that the buggy code and fixed code are properly separated
         assert "public JSType getLeastSupertype(JSType that) {" in sample["buggy_code"]
@@ -80,18 +80,18 @@ class TestClozeSamplesCodeLLaMA:
         assert sample["prompt"].count("<FILL_ME>") == 1
 
     def test_closure_115(self):
-        bug = TestClozeSamplesCodeLLaMA.DEFECTS4J.get_bug("Closure-115")
+        bug = TestInfillingCodellama.DEFECTS4J.get_bug("Closure-115")
         assert bug is not None
 
         sample = generate_sample(
             bug=bug,
-            prompt_strategy=TestClozeSamplesCodeLLaMA.PROMPT_STRATEGY,
-            model_name=TestClozeSamplesCodeLLaMA.MODEL_NAME,
+            prompt_strategy=TestInfillingCodellama.PROMPT_STRATEGY,
+            model_name=TestInfillingCodellama.MODEL_NAME,
         )
 
         # Assert we are dealing with the correct bug and strategy
         assert sample["identifier"] == "Closure-115"
-        assert sample["prompt_strategy"] == "zero-shot-cloze"
+        assert sample["prompt_strategy"] == "infilling"
 
         # Assert that the buggy code and fixed code are properly separated
         assert "boolean hasSideEffects = false;" in sample["buggy_code"]
@@ -116,18 +116,18 @@ class TestClozeSamplesCodeLLaMA:
         assert sample["prompt"].count("<FILL_ME>") == 1
 
     def test_closure_4(self):
-        bug = TestClozeSamplesCodeLLaMA.DEFECTS4J.get_bug("Closure-4")
+        bug = TestInfillingCodellama.DEFECTS4J.get_bug("Closure-4")
         assert bug is not None
 
         sample = generate_sample(
             bug=bug,
-            prompt_strategy=TestClozeSamplesCodeLLaMA.PROMPT_STRATEGY,
-            model_name=TestClozeSamplesCodeLLaMA.MODEL_NAME,
+            prompt_strategy=TestInfillingCodellama.PROMPT_STRATEGY,
+            model_name=TestInfillingCodellama.MODEL_NAME,
         )
 
         # Assert we are dealing with the correct bug and strategy
         assert sample["identifier"] == "Closure-4"
-        assert sample["prompt_strategy"] == "zero-shot-cloze"
+        assert sample["prompt_strategy"] == "infilling"
 
         # Assert that the buggy code and fixed code are properly separated
         assert "if (detectImplicitPrototypeCycle()) {" in sample["buggy_code"]
@@ -146,18 +146,18 @@ class TestClozeSamplesCodeLLaMA:
         assert sample["prompt"].count("<FILL_ME>") == 1
 
     def test_chart_4(self):
-        bug = TestClozeSamplesCodeLLaMA.DEFECTS4J.get_bug("Chart-4")
+        bug = TestInfillingCodellama.DEFECTS4J.get_bug("Chart-4")
         assert bug is not None
 
         sample = generate_sample(
             bug=bug,
-            prompt_strategy=TestClozeSamplesCodeLLaMA.PROMPT_STRATEGY,
-            model_name=TestClozeSamplesCodeLLaMA.MODEL_NAME,
+            prompt_strategy=TestInfillingCodellama.PROMPT_STRATEGY,
+            model_name=TestInfillingCodellama.MODEL_NAME,
         )
 
         # Assert we are dealing with the correct bug and strategy
         assert sample["identifier"] == "Chart-4"
-        assert sample["prompt_strategy"] == "zero-shot-cloze"
+        assert sample["prompt_strategy"] == "infilling"
 
         # Assert that the buggy code and fixed code are properly separated
         assert (
@@ -180,69 +180,69 @@ class TestClozeSamplesCodeLLaMA:
         assert sample["prompt"].count("<FILL_ME>") == 1
 
     def test_chart_2(self):
-        bug = TestClozeSamplesCodeLLaMA.DEFECTS4J.get_bug("Chart-2")
+        bug = TestInfillingCodellama.DEFECTS4J.get_bug("Chart-2")
         assert bug is not None
 
         sample = generate_sample(
             bug=bug,
-            prompt_strategy=TestClozeSamplesCodeLLaMA.PROMPT_STRATEGY,
-            model_name=TestClozeSamplesCodeLLaMA.MODEL_NAME,
+            prompt_strategy=TestInfillingCodellama.PROMPT_STRATEGY,
+            model_name=TestInfillingCodellama.MODEL_NAME,
         )
 
         # Assert we are dealing with the correct bug and strategy
         assert sample["identifier"] == "Chart-2"
-        assert sample["prompt_strategy"] == "zero-shot-cloze"
+        assert sample["prompt_strategy"] == "infilling"
 
         # Assert that the prompt was not generated
         assert sample["prompt"] is None
 
     def test_math_99(self):
-        bug = TestClozeSamplesCodeLLaMA.DEFECTS4J.get_bug("Math-99")
+        bug = TestInfillingCodellama.DEFECTS4J.get_bug("Math-99")
         assert bug is not None
 
         sample = generate_sample(
             bug=bug,
-            prompt_strategy=TestClozeSamplesCodeLLaMA.PROMPT_STRATEGY,
-            model_name=TestClozeSamplesCodeLLaMA.MODEL_NAME,
+            prompt_strategy=TestInfillingCodellama.PROMPT_STRATEGY,
+            model_name=TestInfillingCodellama.MODEL_NAME,
         )
 
         # Assert we are dealing with the correct bug and strategy
         assert sample["identifier"] == "Math-99"
-        assert sample["prompt_strategy"] == "zero-shot-cloze"
+        assert sample["prompt_strategy"] == "infilling"
 
         # Assert that the prompt was not generated
         assert sample["prompt"] is None
 
     def test_chart_18(self):
-        bug = TestClozeSamplesCodeLLaMA.DEFECTS4J.get_bug("Chart-18")
+        bug = TestInfillingCodellama.DEFECTS4J.get_bug("Chart-18")
         assert bug is not None
 
         sample = generate_sample(
             bug=bug,
-            prompt_strategy=TestClozeSamplesCodeLLaMA.PROMPT_STRATEGY,
-            model_name=TestClozeSamplesCodeLLaMA.MODEL_NAME,
+            prompt_strategy=TestInfillingCodellama.PROMPT_STRATEGY,
+            model_name=TestInfillingCodellama.MODEL_NAME,
         )
 
         # Assert we are dealing with the correct bug and strategy
         assert sample["identifier"] == "Chart-18"
-        assert sample["prompt_strategy"] == "zero-shot-cloze"
+        assert sample["prompt_strategy"] == "infilling"
 
         # Assert that the prompt was not generated
         assert sample["prompt"] is None
 
     def test_closure_11(self):
-        bug = TestClozeSamplesCodeLLaMA.DEFECTS4J.get_bug("Closure-11")
+        bug = TestInfillingCodellama.DEFECTS4J.get_bug("Closure-11")
         assert bug is not None
 
         sample = generate_sample(
             bug=bug,
-            prompt_strategy=TestClozeSamplesCodeLLaMA.PROMPT_STRATEGY,
-            model_name=TestClozeSamplesCodeLLaMA.MODEL_NAME,
+            prompt_strategy=TestInfillingCodellama.PROMPT_STRATEGY,
+            model_name=TestInfillingCodellama.MODEL_NAME,
         )
 
         # Assert we are dealing with the correct bug and strategy
         assert sample["identifier"] == "Closure-11"
-        assert sample["prompt_strategy"] == "zero-shot-cloze"
+        assert sample["prompt_strategy"] == "infilling"
 
         # Assert that the buggy code and fixed code are properly separated
         assert (
@@ -259,20 +259,20 @@ class TestClozeSamplesCodeLLaMA:
         assert sample["prompt"].count("<FILL_ME>") == 1
 
     def test_chart_1_keep_buggy_code(self):
-        bug = TestClozeSamplesCodeLLaMA.DEFECTS4J.get_bug("Chart-1")
+        bug = TestInfillingCodellama.DEFECTS4J.get_bug("Chart-1")
         assert bug is not None
 
         sample = generate_sample(
             bug=bug,
-            prompt_strategy=TestClozeSamplesCodeLLaMA.PROMPT_STRATEGY,
-            model_name=TestClozeSamplesCodeLLaMA.MODEL_NAME,
+            prompt_strategy=TestInfillingCodellama.PROMPT_STRATEGY,
+            model_name=TestInfillingCodellama.MODEL_NAME,
             keep_buggy_code=True,
             keep_comments=False,
         )
 
         # Assert we are dealing with the correct bug and strategy
         assert sample["identifier"] == "Chart-1"
-        assert sample["prompt_strategy"] == "zero-shot-cloze"
+        assert sample["prompt_strategy"] == "infilling"
 
         assert (
             sample["prompt"]
@@ -315,20 +315,20 @@ class TestClozeSamplesCodeLLaMA:
         )
 
     def test_chart_5_keep_buggy_code(self):
-        bug = TestClozeSamplesCodeLLaMA.DEFECTS4J.get_bug("Chart-5")
+        bug = TestInfillingCodellama.DEFECTS4J.get_bug("Chart-5")
         assert bug is not None
 
         sample = generate_sample(
             bug=bug,
-            prompt_strategy=TestClozeSamplesCodeLLaMA.PROMPT_STRATEGY,
-            model_name=TestClozeSamplesCodeLLaMA.MODEL_NAME,
+            prompt_strategy=TestInfillingCodellama.PROMPT_STRATEGY,
+            model_name=TestInfillingCodellama.MODEL_NAME,
             keep_buggy_code=True,
             keep_comments=False,
         )
 
         # Assert we are dealing with the correct bug and strategy
         assert sample["identifier"] == "Chart-5"
-        assert sample["prompt_strategy"] == "zero-shot-cloze"
+        assert sample["prompt_strategy"] == "infilling"
 
         assert (
             sample["prompt"]
@@ -368,20 +368,20 @@ class TestClozeSamplesCodeLLaMA:
         )
 
     def test_closure_11_keep_buggy_code(self):
-        bug = TestClozeSamplesCodeLLaMA.DEFECTS4J.get_bug("Closure-11")
+        bug = TestInfillingCodellama.DEFECTS4J.get_bug("Closure-11")
         assert bug is not None
 
         sample = generate_sample(
             bug=bug,
-            prompt_strategy=TestClozeSamplesCodeLLaMA.PROMPT_STRATEGY,
-            model_name=TestClozeSamplesCodeLLaMA.MODEL_NAME,
+            prompt_strategy=TestInfillingCodellama.PROMPT_STRATEGY,
+            model_name=TestInfillingCodellama.MODEL_NAME,
             keep_buggy_code=True,
             keep_comments=False,
         )
 
         # Assert we are dealing with the correct bug and strategy
         assert sample["identifier"] == "Closure-11"
-        assert sample["prompt_strategy"] == "zero-shot-cloze"
+        assert sample["prompt_strategy"] == "infilling"
 
         # Assert that the buggy code and fixed code are properly separated
         assert (
@@ -409,20 +409,20 @@ class TestClozeSamplesCodeLLaMA:
         )
 
     def test_closure_2_keep_buggy_code(self):
-        bug = TestClozeSamplesCodeLLaMA.DEFECTS4J.get_bug("Closure-2")
+        bug = TestInfillingCodellama.DEFECTS4J.get_bug("Closure-2")
         assert bug is not None
 
         sample = generate_sample(
             bug=bug,
-            prompt_strategy=TestClozeSamplesCodeLLaMA.PROMPT_STRATEGY,
-            model_name=TestClozeSamplesCodeLLaMA.MODEL_NAME,
+            prompt_strategy=TestInfillingCodellama.PROMPT_STRATEGY,
+            model_name=TestInfillingCodellama.MODEL_NAME,
             keep_buggy_code=True,
             keep_comments=False,
         )
 
         # Assert we are dealing with the correct bug and strategy
         assert sample["identifier"] == "Closure-2"
-        assert sample["prompt_strategy"] == "zero-shot-cloze"
+        assert sample["prompt_strategy"] == "infilling"
 
         assert (
             sample["prompt"]
@@ -457,18 +457,18 @@ class TestClozeSamplesCodeLLaMA:
         )
 
     def test_closure_5(self):
-        bug = TestClozeSamplesCodeLLaMA.DEFECTS4J.get_bug("Closure-5")
+        bug = TestInfillingCodellama.DEFECTS4J.get_bug("Closure-5")
         assert bug is not None
 
         sample = generate_sample(
             bug=bug,
-            prompt_strategy=TestClozeSamplesCodeLLaMA.PROMPT_STRATEGY,
-            model_name=TestClozeSamplesCodeLLaMA.MODEL_NAME,
+            prompt_strategy=TestInfillingCodellama.PROMPT_STRATEGY,
+            model_name=TestInfillingCodellama.MODEL_NAME,
         )
 
         # Assert we are dealing with the correct bug and strategy
         assert sample["identifier"] == "Closure-5"
-        assert sample["prompt_strategy"] == "zero-shot-cloze"
+        assert sample["prompt_strategy"] == "infilling"
 
         # Assert that the buggy code and fixed code are properly separated
         assert "if (gramps.isDelProp()) {" not in sample["buggy_code"]
@@ -485,18 +485,18 @@ class TestClozeSamplesCodeLLaMA:
         assert sample["prompt"].count("<FILL_ME>") == 1
 
     def test_chart_6(self):
-        bug = TestClozeSamplesCodeLLaMA.DEFECTS4J.get_bug("Chart-6")
+        bug = TestInfillingCodellama.DEFECTS4J.get_bug("Chart-6")
         assert bug is not None
 
         sample = generate_sample(
             bug=bug,
-            prompt_strategy=TestClozeSamplesCodeLLaMA.PROMPT_STRATEGY,
-            model_name=TestClozeSamplesCodeLLaMA.MODEL_NAME,
+            prompt_strategy=TestInfillingCodellama.PROMPT_STRATEGY,
+            model_name=TestInfillingCodellama.MODEL_NAME,
         )
 
         # Assert we are dealing with the correct bug and strategy
         assert sample["identifier"] == "Chart-6"
-        assert sample["prompt_strategy"] == "zero-shot-cloze"
+        assert sample["prompt_strategy"] == "infilling"
 
         # Assert that the buggy code and fixed code are properly separated
         assert "return super.equals(obj);" in sample["buggy_code"]
@@ -515,18 +515,18 @@ class TestClozeSamplesCodeLLaMA:
         assert sample["prompt"].count("<FILL_ME>") == 1
 
     def test_lang_3(self):
-        bug = TestClozeSamplesCodeLLaMA.DEFECTS4J.get_bug("Lang-3")
+        bug = TestInfillingCodellama.DEFECTS4J.get_bug("Lang-3")
         assert bug is not None
 
         sample = generate_sample(
             bug=bug,
-            prompt_strategy=TestClozeSamplesCodeLLaMA.PROMPT_STRATEGY,
-            model_name=TestClozeSamplesCodeLLaMA.MODEL_NAME,
+            prompt_strategy=TestInfillingCodellama.PROMPT_STRATEGY,
+            model_name=TestInfillingCodellama.MODEL_NAME,
         )
 
         # Assert we are dealing with the correct bug and strategy
         assert sample["identifier"] == "Lang-3"
-        assert sample["prompt_strategy"] == "zero-shot-cloze"
+        assert sample["prompt_strategy"] == "infilling"
 
         # Assert that the buggy code and fixed code are properly separated
         assert "if(numDecimals <= 7){" not in sample["buggy_code"]
@@ -543,18 +543,18 @@ class TestClozeSamplesCodeLLaMA:
         assert sample["prompt"].count("<FILL_ME>") == 1
 
     def test_closure_101(self):
-        bug = TestClozeSamplesCodeLLaMA.DEFECTS4J.get_bug("Closure-101")
+        bug = TestInfillingCodellama.DEFECTS4J.get_bug("Closure-101")
         assert bug is not None
 
         sample = generate_sample(
             bug=bug,
-            prompt_strategy=TestClozeSamplesCodeLLaMA.PROMPT_STRATEGY,
-            model_name=TestClozeSamplesCodeLLaMA.MODEL_NAME,
+            prompt_strategy=TestInfillingCodellama.PROMPT_STRATEGY,
+            model_name=TestInfillingCodellama.MODEL_NAME,
         )
 
         # Assert we are dealing with the correct bug and strategy
         assert sample["identifier"] == "Closure-101"
-        assert sample["prompt_strategy"] == "zero-shot-cloze"
+        assert sample["prompt_strategy"] == "infilling"
 
         # Assert that the buggy code and fixed code are properly separated
         assert (
@@ -577,18 +577,18 @@ class TestClozeSamplesCodeLLaMA:
         assert sample["prompt"].count("<FILL_ME>") == 1
 
     def test_lang_10(self):
-        bug = TestClozeSamplesCodeLLaMA.DEFECTS4J.get_bug("Lang-10")
+        bug = TestInfillingCodellama.DEFECTS4J.get_bug("Lang-10")
         assert bug is not None
 
         sample = generate_sample(
             bug=bug,
-            prompt_strategy=TestClozeSamplesCodeLLaMA.PROMPT_STRATEGY,
-            model_name=TestClozeSamplesCodeLLaMA.MODEL_NAME,
+            prompt_strategy=TestInfillingCodellama.PROMPT_STRATEGY,
+            model_name=TestInfillingCodellama.MODEL_NAME,
         )
 
         # Assert we are dealing with the correct bug and strategy
         assert sample["identifier"] == "Lang-10"
-        assert sample["prompt_strategy"] == "zero-shot-cloze"
+        assert sample["prompt_strategy"] == "infilling"
 
         # Assert that the buggy code and fixed code are properly separated
         assert "if(Character.isWhitespace(c)) {" in sample["buggy_code"]
@@ -606,18 +606,18 @@ class TestClozeSamplesCodeLLaMA:
 
     def test_chart_7(self):
         # This is a special case that requires latin-1 encoding
-        bug = TestClozeSamplesCodeLLaMA.DEFECTS4J.get_bug("Chart-7")
+        bug = TestInfillingCodellama.DEFECTS4J.get_bug("Chart-7")
         assert bug is not None
 
         sample = generate_sample(
             bug=bug,
-            prompt_strategy=TestClozeSamplesCodeLLaMA.PROMPT_STRATEGY,
-            model_name=TestClozeSamplesCodeLLaMA.MODEL_NAME,
+            prompt_strategy=TestInfillingCodellama.PROMPT_STRATEGY,
+            model_name=TestInfillingCodellama.MODEL_NAME,
         )
 
         # Assert we are dealing with the correct bug and strategy
         assert sample["identifier"] == "Chart-7"
-        assert sample["prompt_strategy"] == "zero-shot-cloze"
+        assert sample["prompt_strategy"] == "infilling"
 
         # Assert that the prompt is properly constructed
         assert (
@@ -630,37 +630,37 @@ class TestClozeSamplesCodeLLaMA:
         assert sample["prompt"].count("<FILL_ME>") == 1
 
     def test_GET_ROW(self):
-        bug = TestClozeSamplesCodeLLaMA.HUMANEVALJAVA.get_bug("GET_ROW")
+        bug = TestInfillingCodellama.HUMANEVALJAVA.get_bug("GET_ROW")
         assert bug is not None
 
         sample = generate_sample(
             bug=bug,
-            prompt_strategy=TestClozeSamplesCodeLLaMA.PROMPT_STRATEGY,
-            model_name=TestClozeSamplesCodeLLaMA.MODEL_NAME,
+            prompt_strategy=TestInfillingCodellama.PROMPT_STRATEGY,
+            model_name=TestInfillingCodellama.MODEL_NAME,
         )
 
         # Assert we are dealing with the correct bug and strategy
         assert sample["identifier"] == "GET_ROW"
-        assert sample["prompt_strategy"] == "zero-shot-cloze"
+        assert sample["prompt_strategy"] == "infilling"
 
         # Assert that the prompt is properly constructed
         assert sample["prompt"] is not None
         assert sample["prompt"].count("<FILL_ME>") == 1
 
     def test_GET_ROW_keep_buggy_code(self):
-        bug = TestClozeSamplesCodeLLaMA.HUMANEVALJAVA.get_bug("GET_ROW")
+        bug = TestInfillingCodellama.HUMANEVALJAVA.get_bug("GET_ROW")
         assert bug is not None
 
         sample = generate_sample(
             bug=bug,
-            prompt_strategy=TestClozeSamplesCodeLLaMA.PROMPT_STRATEGY,
-            model_name=TestClozeSamplesCodeLLaMA.MODEL_NAME,
+            prompt_strategy=TestInfillingCodellama.PROMPT_STRATEGY,
+            model_name=TestInfillingCodellama.MODEL_NAME,
             keep_buggy_code=True,
         )
 
         # Assert we are dealing with the correct bug and strategy
         assert sample["identifier"] == "GET_ROW"
-        assert sample["prompt_strategy"] == "zero-shot-cloze"
+        assert sample["prompt_strategy"] == "infilling"
 
         # Assert that the prompt is properly constructed
         assert sample["prompt"] is not None
@@ -671,37 +671,37 @@ class TestClozeSamplesCodeLLaMA:
         assert sample["prompt"].count("<FILL_ME>") == 1
 
     def test_ADD(self):
-        bug = TestClozeSamplesCodeLLaMA.HUMANEVALJAVA.get_bug("ADD")
+        bug = TestInfillingCodellama.HUMANEVALJAVA.get_bug("ADD")
         assert bug is not None
 
         sample = generate_sample(
             bug=bug,
-            prompt_strategy=TestClozeSamplesCodeLLaMA.PROMPT_STRATEGY,
-            model_name=TestClozeSamplesCodeLLaMA.MODEL_NAME,
+            prompt_strategy=TestInfillingCodellama.PROMPT_STRATEGY,
+            model_name=TestInfillingCodellama.MODEL_NAME,
         )
 
         # Assert we are dealing with the correct bug and strategy
         assert sample["identifier"] == "ADD"
-        assert sample["prompt_strategy"] == "zero-shot-cloze"
+        assert sample["prompt_strategy"] == "infilling"
 
         # Assert that the prompt is properly constructed
         assert sample["prompt"] is not None
         assert sample["prompt"].count("<FILL_ME>") == 1
 
     def test_ADD_keep_buggy_code(self):
-        bug = TestClozeSamplesCodeLLaMA.HUMANEVALJAVA.get_bug("ADD")
+        bug = TestInfillingCodellama.HUMANEVALJAVA.get_bug("ADD")
         assert bug is not None
 
         sample = generate_sample(
             bug=bug,
-            prompt_strategy=TestClozeSamplesCodeLLaMA.PROMPT_STRATEGY,
-            model_name=TestClozeSamplesCodeLLaMA.MODEL_NAME,
+            prompt_strategy=TestInfillingCodellama.PROMPT_STRATEGY,
+            model_name=TestInfillingCodellama.MODEL_NAME,
             keep_buggy_code=True,
         )
 
         # Assert we are dealing with the correct bug and strategy
         assert sample["identifier"] == "ADD"
-        assert sample["prompt_strategy"] == "zero-shot-cloze"
+        assert sample["prompt_strategy"] == "infilling"
 
         # Assert that the prompt is properly constructed
         assert sample["prompt"] is not None
@@ -713,21 +713,19 @@ class TestClozeSamplesCodeLLaMA:
         reason="This test requires completing GitBug-Java's setup, which is too heavy for CI.",
     )
     def test_traccar_traccar_37ed394724c0(self):
-        bug = TestClozeSamplesCodeLLaMA.GITBUGJAVA.get_bug(
-            "traccar-traccar-37ed394724c0"
-        )
+        bug = TestInfillingCodellama.GITBUGJAVA.get_bug("traccar-traccar-37ed394724c0")
         assert bug is not None
 
         sample = generate_sample(
             bug=bug,
-            prompt_strategy=TestClozeSamplesCodeLLaMA.PROMPT_STRATEGY,
-            model_name=TestClozeSamplesCodeLLaMA.MODEL_NAME,
+            prompt_strategy=TestInfillingCodellama.PROMPT_STRATEGY,
+            model_name=TestInfillingCodellama.MODEL_NAME,
             keep_buggy_code=True,
         )
 
         # Assert we are dealing with the correct bug and strategy
         assert sample["identifier"] == "traccar-traccar-37ed394724c0"
-        assert sample["prompt_strategy"] == "zero-shot-cloze"
+        assert sample["prompt_strategy"] == "infilling"
 
         # Assert that the prompt is properly constructed
         assert sample["prompt"] is not None
@@ -742,21 +740,19 @@ class TestClozeSamplesCodeLLaMA:
         reason="This test requires completing GitBug-Java's setup, which is too heavy for CI.",
     )
     def test_BrightSpots_rcv_688920f27706(self):
-        bug = TestClozeSamplesCodeLLaMA.GITBUGJAVA.get_bug(
-            "BrightSpots-rcv-688920f27706"
-        )
+        bug = TestInfillingCodellama.GITBUGJAVA.get_bug("BrightSpots-rcv-688920f27706")
         assert bug is not None
 
         sample = generate_sample(
             bug=bug,
-            prompt_strategy=TestClozeSamplesCodeLLaMA.PROMPT_STRATEGY,
-            model_name=TestClozeSamplesCodeLLaMA.MODEL_NAME,
+            prompt_strategy=TestInfillingCodellama.PROMPT_STRATEGY,
+            model_name=TestInfillingCodellama.MODEL_NAME,
             keep_buggy_code=True,
         )
 
         # Assert we are dealing with the correct bug and strategy
         assert sample["identifier"] == "BrightSpots-rcv-688920f27706"
-        assert sample["prompt_strategy"] == "zero-shot-cloze"
+        assert sample["prompt_strategy"] == "infilling"
 
         # Assert that the prompt is properly constructed
         assert sample["prompt"] is None

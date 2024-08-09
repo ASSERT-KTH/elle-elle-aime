@@ -8,9 +8,6 @@ from elleelleaime.core.benchmarks.bug import Bug
 
 
 class ReplaceEvaluationStrategy(PatchEvaluationStrategy):
-    """
-    Implements the zero-shot cloze style prompt strategy for single diff file.
-    """
 
     def __init__(self, **kwargs):
         super().__init__(kwargs=kwargs)

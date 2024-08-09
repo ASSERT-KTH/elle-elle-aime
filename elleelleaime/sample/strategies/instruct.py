@@ -1,7 +1,7 @@
 from typing import Optional, Tuple
 from unidiff import PatchSet
 
-from elleelleaime.sample.prompting.strategy import PromptingStrategy
+from elleelleaime.sample.strategy import PromptingStrategy
 from elleelleaime.core.benchmarks.bug import RichBug
 from elleelleaime.core.utils.java.java import (
     extract_single_function,
