@@ -6,6 +6,7 @@ from elleelleaime.evaluate.strategies.registry import PatchEvaluationStrategyReg
 
 from pathlib import Path
 
+import numpy as np
 import uuid
 import fire
 import shutil
@@ -79,6 +80,18 @@ def compute_diff(buggy_code: str, fixed_code: str, context_len: int = 3) -> str:
     return run.stdout.decode("utf-8")
 
 
+def pass_at_k(n: int, c: int, k: int):
+    """
+    :param n: total number of samples
+    :param c: number of correct samples
+    :param k: k in pass@$k$
+    """
+    if n - c < k:
+        return 1.0
+    else:
+        return 1.0 - np.prod(1.0 - k / np.arange(n - c + 1, n + 1))
+
+
 def compute_statistics(samples: list) -> dict:
     """
     Computes statistics over the evaluation.
@@ -145,6 +158,30 @@ def compute_statistics(samples: list) -> dict:
                 statistics["bugs_with_plausible_candidates"].append(
                     sample["identifier"]
                 )
+
+    # geometric progression over k
+    for k in [1, 10, 100]:
+        if k < statistics["num_bugs_with_prompt"]:
+            statistics[f"exact_match@{k}"] = pass_at_k(
+                statistics["num_patches"],
+                statistics["num_exact_match_patches"],
+                k,
+            )
+            statistics[f"ast_match@{k}"] = pass_at_k(
+                statistics["num_patches"],
+                statistics["num_ast_match_patches"],
+                k,
+            )
+            statistics[f"plausible@{k}"] = pass_at_k(
+                statistics["num_patches"],
+                statistics["num_plausible_patches"],
+                k,
+            )
+            statistics[f"compilable@{k}"] = pass_at_k(
+                statistics["num_patches"],
+                statistics["num_compilable_patches"],
+                k,
+            )
 
     statistics["bugs_with_exact_match_candidates"].sort()
     statistics["bugs_with_ast_match_candidates"].sort()
