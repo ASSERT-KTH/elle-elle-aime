@@ -16,7 +16,7 @@ class GenerateSettings:
     temperature: float = 1.0
     num_beams: int = 1
     num_return_sequences: int = 10
-    max_new_tokens: int = 4096
+    max_new_tokens: int = 1024
 
 
 class CodeLLaMAIntruct(PatchGenerationStrategy):
@@ -118,15 +118,19 @@ class CodeLLaMAIntruct(PatchGenerationStrategy):
             return None
 
         with torch.no_grad():
-            generated_ids = self.__MODEL.generate(
-                input_ids,
-                max_new_tokens=self.generate_settings.max_new_tokens,
-                num_beams=self.generate_settings.num_beams,
-                num_return_sequences=self.generate_settings.num_return_sequences,
-                early_stopping=True,
-                do_sample=self.generate_settings.do_sample,
-                temperature=self.generate_settings.temperature,
-            )
+            try:
+                generated_ids = self.__MODEL.generate(
+                    input_ids,
+                    max_new_tokens=self.generate_settings.max_new_tokens,
+                    num_beams=self.generate_settings.num_beams,
+                    num_return_sequences=self.generate_settings.num_return_sequences,
+                    early_stopping=True,
+                    do_sample=self.generate_settings.do_sample,
+                    temperature=self.generate_settings.temperature,
+                )
+            except Exception:
+                logging.warning(f"Out of memory error, bug skipped.")
+                return None
 
         input_len = input_ids.shape[1]
         fillings_ids = generated_ids[:, input_len:]
