@@ -15,7 +15,7 @@ class GenerateSettings:
     temperature: float = 1.0
     num_beams: int = 1
     num_return_sequences: int = 10
-    max_new_tokens: int = 4096
+    max_new_tokens: int = 512
 
 
 class CodeLLaMAInfilling(PatchGenerationStrategy):
