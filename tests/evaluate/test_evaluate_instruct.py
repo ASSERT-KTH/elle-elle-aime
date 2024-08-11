@@ -4,65 +4,44 @@ from elleelleaime.core.utils.benchmarks import get_benchmark
 from elleelleaime.core.benchmarks.benchmark import Benchmark
 
 
-class TestEvaluatePatchesOpenAIDefects4J:
+class TestEvaluatePatchesInstructDefects4J:
     DEFECTS4J: Benchmark
     PROMPT_STRATEGY: str = "instruct"
-    MODEL_NAME: str = "gpt-4o-mini"
-    EVALUATE_STRATEGY: str = "openai"
+    MODEL_NAME: str = "codellama-7b-instruct"
+    EVALUATE_STRATEGY: str = "instruct"
 
     @classmethod
     def setup_class(cls):
-        TestEvaluatePatchesOpenAIDefects4J.DEFECTS4J = get_benchmark("defects4j")
-        assert TestEvaluatePatchesOpenAIDefects4J.DEFECTS4J is not None
-        TestEvaluatePatchesOpenAIDefects4J.DEFECTS4J.initialize()
+        TestEvaluatePatchesInstructDefects4J.DEFECTS4J = get_benchmark("defects4j")
+        assert TestEvaluatePatchesInstructDefects4J.DEFECTS4J is not None
+        TestEvaluatePatchesInstructDefects4J.DEFECTS4J.initialize()
 
     @classmethod
     def get_exact_match_sample(cls):
-        bug = TestEvaluatePatchesOpenAIDefects4J.DEFECTS4J.get_bug("Chart-1")
+        bug = TestEvaluatePatchesInstructDefects4J.DEFECTS4J.get_bug("Chart-1")
         assert bug is not None
 
         sample = generate_sample(
             bug=bug,
-            prompt_strategy=TestEvaluatePatchesOpenAIDefects4J.PROMPT_STRATEGY,
-            model_name=TestEvaluatePatchesOpenAIDefects4J.MODEL_NAME,
+            prompt_strategy=TestEvaluatePatchesInstructDefects4J.PROMPT_STRATEGY,
+            model_name=TestEvaluatePatchesInstructDefects4J.MODEL_NAME,
         )
 
-        sample["generation"] = {
-            "id": "chatcmpl-9scPfoeakAgJgoUKFjqhEaUBnJynB",
-            "choices": [
-                {
-                    "finish_reason": "stop",
-                    "index": 0,
-                    "logprobs": None,
-                    "message": {
-                        "content": f"```java\n{sample['fixed_code']}"
-                        + "'\n// comment'\n```",
-                        "role": "assistant",
-                    },
-                }
-            ],
-            "created": 1722804399,
-            "model": "gpt-4o-mini-2024-07-18",
-            "object": "chat.completion",
-            "system_fingerprint": "fp_0f03d4f0ee",
-            "usage": {
-                "completion_tokens": 255,
-                "prompt_tokens": 379,
-                "total_tokens": 634,
-            },
-        }
+        sample["generation"] = [
+            f"```java\n{sample['fixed_code']}" + "'\n// comment'\n```"
+        ]
 
         return bug, sample
 
     @classmethod
     def get_ast_match_sample(cls):
-        bug = TestEvaluatePatchesOpenAIDefects4J.DEFECTS4J.get_bug("Chart-1")
+        bug = TestEvaluatePatchesInstructDefects4J.DEFECTS4J.get_bug("Chart-1")
         assert bug is not None
 
         sample = generate_sample(
             bug=bug,
-            prompt_strategy=TestEvaluatePatchesOpenAIDefects4J.PROMPT_STRATEGY,
-            model_name=TestEvaluatePatchesOpenAIDefects4J.MODEL_NAME,
+            prompt_strategy=TestEvaluatePatchesInstructDefects4J.PROMPT_STRATEGY,
+            model_name=TestEvaluatePatchesInstructDefects4J.MODEL_NAME,
         )
 
         code = """    public LegendItemCollection getLegendItems() {
@@ -101,41 +80,19 @@ class TestEvaluatePatchesOpenAIDefects4J:
     }
 """
 
-        sample["generation"] = {
-            "id": "chatcmpl-9scPfoeakAgJgoUKFjqhEaUBnJynB",
-            "choices": [
-                {
-                    "finish_reason": "stop",
-                    "index": 0,
-                    "logprobs": None,
-                    "message": {
-                        "content": f"```java\n{code}\n```",
-                        "role": "assistant",
-                    },
-                }
-            ],
-            "created": 1722804399,
-            "model": "gpt-4o-mini-2024-07-18",
-            "object": "chat.completion",
-            "system_fingerprint": "fp_0f03d4f0ee",
-            "usage": {
-                "completion_tokens": 255,
-                "prompt_tokens": 379,
-                "total_tokens": 634,
-            },
-        }
+        sample["generation"] = [f"```java\n{code}\n```"]
 
         return bug, sample
 
     @classmethod
     def get_plausible_sample(cls):
-        bug = TestEvaluatePatchesOpenAIDefects4J.DEFECTS4J.get_bug("Chart-1")
+        bug = TestEvaluatePatchesInstructDefects4J.DEFECTS4J.get_bug("Chart-1")
         assert bug is not None
 
         sample = generate_sample(
             bug=bug,
-            prompt_strategy=TestEvaluatePatchesOpenAIDefects4J.PROMPT_STRATEGY,
-            model_name=TestEvaluatePatchesOpenAIDefects4J.MODEL_NAME,
+            prompt_strategy=TestEvaluatePatchesInstructDefects4J.PROMPT_STRATEGY,
+            model_name=TestEvaluatePatchesInstructDefects4J.MODEL_NAME,
         )
         code = """    public LegendItemCollection getLegendItems() {
         LegendItemCollection result = new LegendItemCollection();
@@ -175,75 +132,31 @@ class TestEvaluatePatchesOpenAIDefects4J:
     }
 """
 
-        sample["generation"] = {
-            "id": "chatcmpl-9scPfoeakAgJgoUKFjqhEaUBnJynB",
-            "choices": [
-                {
-                    "finish_reason": "stop",
-                    "index": 0,
-                    "logprobs": None,
-                    "message": {
-                        "content": f"```java\n{code}\n```",
-                        "role": "assistant",
-                    },
-                }
-            ],
-            "created": 1722804399,
-            "model": "gpt-4o-mini-2024-07-18",
-            "object": "chat.completion",
-            "system_fingerprint": "fp_0f03d4f0ee",
-            "usage": {
-                "completion_tokens": 255,
-                "prompt_tokens": 379,
-                "total_tokens": 634,
-            },
-        }
+        sample["generation"] = [f"```java\n{code}\n```"]
 
         return bug, sample
 
     @classmethod
     def get_incorrect_sample(cls):
-        bug = TestEvaluatePatchesOpenAIDefects4J.DEFECTS4J.get_bug("Chart-1")
+        bug = TestEvaluatePatchesInstructDefects4J.DEFECTS4J.get_bug("Chart-1")
         assert bug is not None
 
         sample = generate_sample(
             bug=bug,
-            prompt_strategy=TestEvaluatePatchesOpenAIDefects4J.PROMPT_STRATEGY,
-            model_name=TestEvaluatePatchesOpenAIDefects4J.MODEL_NAME,
+            prompt_strategy=TestEvaluatePatchesInstructDefects4J.PROMPT_STRATEGY,
+            model_name=TestEvaluatePatchesInstructDefects4J.MODEL_NAME,
         )
-        sample["generation"] = {
-            "id": "chatcmpl-9scPfoeakAgJgoUKFjqhEaUBnJynB",
-            "choices": [
-                {
-                    "finish_reason": "stop",
-                    "index": 0,
-                    "logprobs": None,
-                    "message": {
-                        "content": f"```java\n{sample['buggy_code']}\n```",
-                        "role": "assistant",
-                    },
-                }
-            ],
-            "created": 1722804399,
-            "model": "gpt-4o-mini-2024-07-18",
-            "object": "chat.completion",
-            "system_fingerprint": "fp_0f03d4f0ee",
-            "usage": {
-                "completion_tokens": 255,
-                "prompt_tokens": 379,
-                "total_tokens": 634,
-            },
-        }
+        sample["generation"] = [f"```java\n{sample['buggy_code']}\n```"]
 
         return bug, sample
 
     def test_exact_match_patch(self):
-        bug, sample = TestEvaluatePatchesOpenAIDefects4J.get_exact_match_sample()
+        bug, sample = TestEvaluatePatchesInstructDefects4J.get_exact_match_sample()
 
         sample = evaluate_candidate(
             bug=bug,
             sample=sample,
-            strategy=TestEvaluatePatchesOpenAIDefects4J.EVALUATE_STRATEGY,
+            strategy=TestEvaluatePatchesInstructDefects4J.EVALUATE_STRATEGY,
         )
 
         assert sample["evaluation"] is not None
@@ -255,12 +168,12 @@ class TestEvaluatePatchesOpenAIDefects4J:
         assert sample["evaluation"][0]["ast_match"] == True
 
     def test_ast_match_patch(self):
-        bug, sample = TestEvaluatePatchesOpenAIDefects4J.get_ast_match_sample()
+        bug, sample = TestEvaluatePatchesInstructDefects4J.get_ast_match_sample()
 
         sample = evaluate_candidate(
             bug=bug,
             sample=sample,
-            strategy=TestEvaluatePatchesOpenAIDefects4J.EVALUATE_STRATEGY,
+            strategy=TestEvaluatePatchesInstructDefects4J.EVALUATE_STRATEGY,
         )
 
         assert sample["evaluation"] is not None
@@ -272,12 +185,12 @@ class TestEvaluatePatchesOpenAIDefects4J:
         assert sample["evaluation"][0]["exact_match"] == False
 
     def test_incorrect_patch(self):
-        bug, sample = TestEvaluatePatchesOpenAIDefects4J.get_incorrect_sample()
+        bug, sample = TestEvaluatePatchesInstructDefects4J.get_incorrect_sample()
 
         sample = evaluate_candidate(
             bug=bug,
             sample=sample,
-            strategy=TestEvaluatePatchesOpenAIDefects4J.EVALUATE_STRATEGY,
+            strategy=TestEvaluatePatchesInstructDefects4J.EVALUATE_STRATEGY,
         )
 
         assert sample["evaluation"] is not None
@@ -289,12 +202,12 @@ class TestEvaluatePatchesOpenAIDefects4J:
         assert sample["evaluation"][0]["ast_match"] == False
 
     def test_plausible_patch(self):
-        bug, sample = TestEvaluatePatchesOpenAIDefects4J.get_plausible_sample()
+        bug, sample = TestEvaluatePatchesInstructDefects4J.get_plausible_sample()
 
         sample = evaluate_candidate(
             bug=bug,
             sample=sample,
-            strategy=TestEvaluatePatchesOpenAIDefects4J.EVALUATE_STRATEGY,
+            strategy=TestEvaluatePatchesInstructDefects4J.EVALUATE_STRATEGY,
         )
 
         assert sample["evaluation"] is not None
