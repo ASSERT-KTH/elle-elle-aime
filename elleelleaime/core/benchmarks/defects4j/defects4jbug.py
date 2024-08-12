@@ -36,8 +36,8 @@ class Defects4JBug(RichBug):
         self, command: str, path: str, check: bool = True
     ) -> subprocess.CompletedProcess[bytes]:
         os.makedirs(path, exist_ok=True)
-        options = f"--volume '{path}:{path}' --workdir '{path}'"
-        chown = f"chown -R {os.getuid()}:{os.getgid()} {path} && chown -R {os.getuid()}:{os.getgid()} /defects4j"
+        options = f"--volume '{path}:{path}' --volume '{self.benchmark.get_path().absolute()}:/defects4j' --workdir '{path}'"
+        chown = f"chown -R {os.getuid()}:{os.getgid()} {path}"
         gosu = f"gosu {os.getuid()}:{os.getgid()}"
 
         subp_command = f"{self.benchmark.get_bin(options)} /bin/bash -c '{chown} && {gosu} {command}'"
@@ -75,6 +75,8 @@ class Defects4JBug(RichBug):
             path=path,
             check=False,
         )
+        print(run.stdout.decode("utf-8"))
+        print(run.stderr.decode("utf-8"))
         return CompileResult(run.returncode == 0)
 
     def test(self, path: str) -> TestResult:
