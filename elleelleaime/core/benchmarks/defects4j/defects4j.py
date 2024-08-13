@@ -20,7 +20,7 @@ class Defects4J(Benchmark):
         super().__init__("defects4j", path)
 
     def get_bin(self, options: str = "") -> Optional[str]:
-        return f"docker run {options} --rm andre15silva/defects4j:latest"
+        return f'{Path(self.path, "framework/bin/defects4j")}'
 
     def initialize(self) -> None:
         """
@@ -30,7 +30,7 @@ class Defects4J(Benchmark):
 
         # Get all project ids
         run = subprocess.run(
-            f"{self.get_bin()} defects4j pids",
+            f"{self.get_bin()} pids",
             shell=True,
             capture_output=True,
             check=True,
@@ -42,7 +42,7 @@ class Defects4J(Benchmark):
         bugs = {}
         for pid in tqdm.tqdm(pids):
             run = subprocess.run(
-                f"{self.get_bin()} defects4j bids -p {pid}",
+                f"{self.get_bin()} bids -p {pid}",
                 shell=True,
                 capture_output=True,
                 check=True,
@@ -54,7 +54,7 @@ class Defects4J(Benchmark):
         for pid in pids:
             # Extract failing test and trigger cause
             run = subprocess.run(
-                f"{self.get_bin()} defects4j query -p {pid} -q 'tests.trigger,tests.trigger.cause'",
+                f"{self.get_bin()} query -p {pid} -q 'tests.trigger,tests.trigger.cause'",
                 shell=True,
                 capture_output=True,
                 check=True,
