@@ -18,10 +18,10 @@ def generate_candidate(chunk: List[dict], strategy_name: str, **kwargs) -> List[
         strategy_name, **kwargs
     )
 
-    for sample in tqdm.tqdm(
-        chunk, "Generating candidates for a chunk", total=len(chunk)
-    ):
-        generation = generation_strategy.generate(sample["prompt"])
+    prompt_chunk = [sample["prompt"] for sample in chunk]
+    generations = generation_strategy.generate(prompt_chunk)
+
+    for generation, sample in zip(generations, chunk):
         sample["generation"] = generation
 
     return chunk
@@ -30,7 +30,7 @@ def generate_candidate(chunk: List[dict], strategy_name: str, **kwargs) -> List[
 def entry_point(
     samples_path: str,
     strategy_name: str,
-    n_workers: int = 4,
+    n_workers: int = 1,
     **kwargs,
 ):
     """

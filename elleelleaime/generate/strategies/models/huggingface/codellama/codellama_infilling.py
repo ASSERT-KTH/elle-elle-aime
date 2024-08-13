@@ -1,7 +1,7 @@
 from elleelleaime.generate.strategies.strategy import PatchGenerationStrategy
 from dataclasses import dataclass
 from transformers import LlamaForCausalLM, CodeLlamaTokenizer
-from typing import Any
+from typing import Any, List
 
 import torch
 import threading
@@ -15,7 +15,7 @@ class GenerateSettings:
     temperature: float = 1.0
     num_beams: int = 1
     num_return_sequences: int = 10
-    max_new_tokens: int = 512
+    max_length: int = 16384
 
 
 class CodeLLaMAInfilling(PatchGenerationStrategy):
@@ -55,9 +55,6 @@ class CodeLLaMAInfilling(PatchGenerationStrategy):
         self.generate_settings = self.__GENERATION_STRATEGIES[
             kwargs.get("generation_strategy", "beam_search")
         ]
-        self.generate_settings.max_new_tokens = kwargs.get(
-            "max_new_tokens", GenerateSettings.max_new_tokens
-        )
         self.generate_settings.num_return_sequences = kwargs.get(
             "num_return_sequences", GenerateSettings.num_return_sequences
         )
@@ -89,7 +86,7 @@ class CodeLLaMAInfilling(PatchGenerationStrategy):
             self.__MODEL.eval()
             self.__MODELS_LOADED = True
 
-    def _generate_impl(self, prompt: str) -> Any:
+    def __generate_patch(self, prompt: str) -> List[str]:
         if prompt.count("<FILL_ME>") > 1:
             logging.warning(
                 "Prompt should contain exactly at most one <FILL_ME> tag, but it contains %d. Skipping bug.",
@@ -99,20 +96,17 @@ class CodeLLaMAInfilling(PatchGenerationStrategy):
 
         inputs = self.__TOKENIZER(prompt, return_tensors="pt")
 
-        max_length = (
-            self.generate_settings.max_new_tokens + inputs["input_ids"].shape[1]
-        )
-        if max_length > self.context_size:
+        input_len = inputs["input_ids"].shape[1]
+        if input_len >= self.context_size:
             logging.warning(
-                "warning: max_length %s is greater than the context window %s"
-                % (max_length, self.context_size)
+                f"warning: input_len ({input_len}) is greater than the context window {self.context_size}"
             )
             return None
 
         with torch.no_grad():
             generated_ids = self.__MODEL.generate(
                 **inputs,
-                max_new_tokens=self.generate_settings.max_new_tokens,
+                max_length=self.generate_settings.max_length,
                 num_beams=self.generate_settings.num_beams,
                 num_return_sequences=self.generate_settings.num_return_sequences,
                 early_stopping=True,
@@ -120,7 +114,6 @@ class CodeLLaMAInfilling(PatchGenerationStrategy):
                 temperature=self.generate_settings.temperature,
             )
 
-        input_len = inputs["input_ids"].shape[1]
         fillings_ids = generated_ids[:, input_len:]
         fillings = self.__TOKENIZER.batch_decode(fillings_ids, skip_special_tokens=True)
 
@@ -128,3 +121,6 @@ class CodeLLaMAInfilling(PatchGenerationStrategy):
             return [prompt.replace("<FILL_ME>", filling) for filling in fillings]
         else:
             return list(fillings)
+
+    def _generate_impl(self, prompt: List[str]) -> Any:
+        return [self.__generate_patch(p) for p in prompt]

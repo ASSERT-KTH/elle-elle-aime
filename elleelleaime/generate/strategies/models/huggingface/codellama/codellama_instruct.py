@@ -2,7 +2,7 @@ from elleelleaime.generate.strategies.strategy import PatchGenerationStrategy
 from dataclasses import dataclass
 from peft import PeftModel
 from transformers import AutoModelForCausalLM, AutoTokenizer
-from typing import Any
+from typing import Any, List, Generator
 
 import torch
 import threading
@@ -16,7 +16,7 @@ class GenerateSettings:
     temperature: float = 1.0
     num_beams: int = 1
     num_return_sequences: int = 10
-    max_new_tokens: int = 1024
+    max_length: int = 16384
 
 
 class CodeLLaMAIntruct(PatchGenerationStrategy):
@@ -56,9 +56,7 @@ class CodeLLaMAIntruct(PatchGenerationStrategy):
         self.generate_settings = self.__GENERATION_STRATEGIES[
             kwargs.get("generation_strategy", "samlping")
         ]
-        self.generate_settings.max_new_tokens = kwargs.get(
-            "max_new_tokens", GenerateSettings.max_new_tokens
-        )
+        self.batch_size = kwargs.get("batch_size", 4)
         self.generate_settings.num_return_sequences = kwargs.get(
             "num_return_sequences", GenerateSettings.num_return_sequences
         )
@@ -103,38 +101,38 @@ class CodeLLaMAIntruct(PatchGenerationStrategy):
     def __format_prompt(self, prompt: str) -> str:
         return f"<s>[INST] {prompt} [\\INST]"
 
-    def _generate_impl(self, prompt: str) -> Any:
-        formatted_prompt = self.__format_prompt(prompt)
+    def __chunk_list(self, lst: List[str], n: int) -> Generator[List[str]]:
+        for i in range(0, len(lst), n):
+            yield lst[i : i + n]
 
-        inputs = self.__TOKENIZER(formatted_prompt, return_tensors="pt")
+    def _generate_impl(self, chunk: List[str]) -> Any:
+        result = []
+        for batch in self.__chunk_list(chunk, self.batch_size):
+            batch_result = self._generate_batch(batch)
+            result.extend(batch_result)
+        return result
 
-        max_length = (
-            self.generate_settings.max_new_tokens + inputs["input_ids"].shape[1]
-        )
-        if max_length > self.context_size:
-            logging.warning(
-                "warning: max_length %s is greater than the context window %s"
-                % (max_length, self.context_size)
-            )
-            return None
+    def _generate_batch(self, batch: List[str]) -> Any:
+        formatted_prompts = [self.__format_prompt(p) for p in batch]
+
+        inputs = self.__TOKENIZER(formatted_prompts, return_tensors="pt")
 
         with torch.no_grad():
-            try:
-                generated_ids = self.__MODEL.generate(
-                    **inputs,
-                    max_new_tokens=self.generate_settings.max_new_tokens,
-                    num_beams=self.generate_settings.num_beams,
-                    num_return_sequences=self.generate_settings.num_return_sequences,
-                    early_stopping=True,
-                    do_sample=self.generate_settings.do_sample,
-                    temperature=self.generate_settings.temperature,
-                )
-            except Exception:
-                logging.warning(f"Out of memory error, bug skipped.")
-                return None
+            generated_ids = self.__MODEL.generate(
+                **inputs,
+                max_length=self.generate_settings.max_length,
+                num_beams=self.generate_settings.num_beams,
+                num_return_sequences=self.generate_settings.num_return_sequences,
+                early_stopping=True,
+                do_sample=self.generate_settings.do_sample,
+                temperature=self.generate_settings.temperature,
+            )
 
-        input_len = inputs["input_ids"].shape[1]
-        fillings_ids = generated_ids[:, input_len:]
-        fillings = self.__TOKENIZER.batch_decode(fillings_ids, skip_special_tokens=True)
+        responses = self.__TOKENIZER.batch_decode(
+            generated_ids, skip_special_tokens=True
+        )
+        responses = [
+            r.split("[\\INST]")[1] if "[\\INST]" in r else None for r in responses
+        ]
 
-        return list(fillings)
+        return responses
