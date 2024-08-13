@@ -9,8 +9,9 @@ docker pull openjdk:11;
 docker pull maven:3.9.8-eclipse-temurin-8;
 
 ### Defects4J image
-docker pull andre15silva/defects4j:latest;
-cd benchmarks/defects4j && ./setup.sh && cd ../..;
+cd benchmarks/defects4j;
+./init.sh;
+cd ../..;
 
 ### GitBug-Java
 cd benchmarks/gitbug-java;
