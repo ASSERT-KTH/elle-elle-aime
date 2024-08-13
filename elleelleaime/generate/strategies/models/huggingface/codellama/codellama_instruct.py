@@ -106,10 +106,11 @@ class CodeLLaMAIntruct(PatchGenerationStrategy):
     def _generate_impl(self, prompt: str) -> Any:
         formatted_prompt = self.__format_prompt(prompt)
 
-        input_ids = self.__TOKENIZER(formatted_prompt, return_tensors="pt")["input_ids"]
-        input_ids = input_ids.to(self.device)
+        inputs = self.__TOKENIZER(formatted_prompt, return_tensors="pt")
 
-        max_length = self.generate_settings.max_new_tokens + input_ids.shape[1]
+        max_length = (
+            self.generate_settings.max_new_tokens + inputs["input_ids"].shape[1]
+        )
         if max_length > self.context_size:
             logging.warning(
                 "warning: max_length %s is greater than the context window %s"
@@ -120,7 +121,7 @@ class CodeLLaMAIntruct(PatchGenerationStrategy):
         with torch.no_grad():
             try:
                 generated_ids = self.__MODEL.generate(
-                    input_ids,
+                    **inputs,
                     max_new_tokens=self.generate_settings.max_new_tokens,
                     num_beams=self.generate_settings.num_beams,
                     num_return_sequences=self.generate_settings.num_return_sequences,
@@ -132,7 +133,7 @@ class CodeLLaMAIntruct(PatchGenerationStrategy):
                 logging.warning(f"Out of memory error, bug skipped.")
                 return None
 
-        input_len = input_ids.shape[1]
+        input_len = inputs["input_ids"].shape[1]
         fillings_ids = generated_ids[:, input_len:]
         fillings = self.__TOKENIZER.batch_decode(fillings_ids, skip_special_tokens=True)
 
