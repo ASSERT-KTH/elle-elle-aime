@@ -85,6 +85,7 @@ class CodeLLaMAIntruct(PatchGenerationStrategy):
             # Load tokenizer
             self.__TOKENIZER = AutoTokenizer.from_pretrained(self.model_name)
             self.__TOKENIZER.pad_token = self.__TOKENIZER.eos_token
+            self.__TOKENIZER.padding_side = "left"
             # Load model
             self.__MODEL = AutoModelForCausalLM.from_pretrained(
                 self.model_name, device_map="auto", **kwargs
@@ -101,7 +102,7 @@ class CodeLLaMAIntruct(PatchGenerationStrategy):
     def __format_prompt(self, prompt: str) -> str:
         return f"<s>[INST] {prompt} [\\INST]"
 
-    def __chunk_list(self, lst: List[str], n: int) -> Generator[List[str]]:
+    def __chunk_list(self, lst: List[str], n: int):
         for i in range(0, len(lst), n):
             yield lst[i : i + n]
 
@@ -115,7 +116,8 @@ class CodeLLaMAIntruct(PatchGenerationStrategy):
     def _generate_batch(self, batch: List[str]) -> Any:
         formatted_prompts = [self.__format_prompt(p) for p in batch]
 
-        inputs = self.__TOKENIZER(formatted_prompts, return_tensors="pt")
+        inputs = self.__TOKENIZER(formatted_prompts, return_tensors="pt", padding=True)
+        inputs["input_ids"] = inputs["input_ids"].to(self.device)
 
         with torch.no_grad():
             generated_ids = self.__MODEL.generate(
