@@ -62,6 +62,7 @@ def entry_point(
     benchmark = samples_path.split("_")[1]
     prompt_strategy = samples_path.split("_")[2].split(".")[0]
     kwargs_str = "_".join([f"{k}={v}" for k, v in kwargs.items()])
+    kwargs_str = kwargs_str.replace("/", "\/")
     write_jsonl(
         f"candidates_{benchmark}_{prompt_strategy}_{strategy_name}_{kwargs_str}.jsonl",
         results,
