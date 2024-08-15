@@ -9,8 +9,8 @@ import backoff
 
 
 class OpenAIChatCompletionModels(PatchGenerationStrategy):
-    def __init__(self, model: str, **kwargs) -> None:
-        self.model = model
+    def __init__(self, model_name: str, **kwargs) -> None:
+        self.model_name = model_name
         self.temperature = kwargs.get("temperature", 0.0)
         self.n_samples = kwargs.get("n_samples", 1)
 
@@ -24,7 +24,7 @@ class OpenAIChatCompletionModels(PatchGenerationStrategy):
 
     def _generate_impl(self, prompt: str) -> Any:
         completion = self._completions_with_backoff(
-            model=self.model,
+            model=self.model_name,
             messages=[{"role": "user", "content": prompt}],
             temperature=self.temperature,
             n=self.n_samples,

@@ -9,13 +9,13 @@ import tqdm
 import logging
 
 
-def generate_candidate(chunk: List[dict], model_name: str, **kwargs) -> List[dict]:
+def generate_candidate(chunk: List[dict], strategy_name: str, **kwargs) -> List[dict]:
     """
     Generates the candidate patch for the given sample and model.
     """
 
     generation_strategy = PatchGenerationStrategyRegistry.get_generation(
-        model_name, **kwargs
+        strategy_name, **kwargs
     )
 
     for sample in tqdm.tqdm(
@@ -29,7 +29,7 @@ def generate_candidate(chunk: List[dict], model_name: str, **kwargs) -> List[dic
 
 def entry_point(
     samples_path: str,
-    model_name: str,
+    strategy_name: str,
     n_workers: int = 4,
     **kwargs,
 ):
@@ -47,7 +47,7 @@ def entry_point(
 
         for chunk in tqdm.tqdm(chunks, desc="Launching workers", total=len(chunks)):
             futures.append(
-                executor.submit(generate_candidate, chunk, model_name, **kwargs)
+                executor.submit(generate_candidate, chunk, strategy_name, **kwargs)
             )
 
         logging.info("Generating candidates...")
@@ -63,7 +63,7 @@ def entry_point(
     prompt_strategy = samples_path.split("_")[2].split(".")[0]
     kwargs_str = "_".join([f"{k}={v}" for k, v in kwargs.items()])
     write_jsonl(
-        f"candidates_{benchmark}_{prompt_strategy}_{model_name}_{kwargs_str}.jsonl",
+        f"candidates_{benchmark}_{prompt_strategy}_{strategy_name}_{kwargs_str}.jsonl",
         results,
     )
 
