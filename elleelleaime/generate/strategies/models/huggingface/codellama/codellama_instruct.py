@@ -50,7 +50,6 @@ class CodeLLaMAIntruct(PatchGenerationStrategy):
             model_name in self.__SUPPORTED_MODELS
         ), f"Model {model_name} not supported by {self.__class__.__name__}"
         self.model_name = model_name
-        self.__load_model(**kwargs)
         # Generation settings
         assert (
             kwargs.get("generation_strategy", "sampling")
@@ -69,6 +68,7 @@ class CodeLLaMAIntruct(PatchGenerationStrategy):
         self.generate_settings.temperature = kwargs.get(
             "temperature", GenerateSettings.temperature
         )
+        self.__load_model(**kwargs)
 
     def __load_model(self, **kwargs):
         # Setup environment
