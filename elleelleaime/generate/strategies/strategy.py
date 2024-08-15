@@ -4,8 +4,6 @@ from typing import List, Any, final
 
 
 class PatchGenerationStrategy(ABC):
-    def __init__(self, **kwargs):
-        pass
 
     @abstractmethod
     def _generate_impl(self, chunk: List[str]) -> Any:
