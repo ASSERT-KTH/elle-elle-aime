@@ -1,6 +1,6 @@
 from elleelleaime.generate.strategies.strategy import PatchGenerationStrategy
 from dataclasses import dataclass
-from peft import PeftModel
+from peft import AutoPeftModelForCausalLM
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from transformers.tokenization_utils_base import PreTrainedTokenizerBase
 from typing import Any, List
@@ -98,11 +98,9 @@ class CodeLLaMAIntruct(PatchGenerationStrategy):
             )
             # Load LoRA adapter
             if kwargs.get("adapter_name", None):
-                self.__MODEL = AutoModelForCausalLM.from_pretrained(
-                    self.model_name, **model_kwargs
+                self.__MODEL = AutoPeftModelForCausalLM.from_pretrained(
+                    kwargs["adapter_name"], **model_kwargs
                 )
-                self.__MODEL = PeftModel(self.__MODEL, kwargs["adapter_name"])
-                self.__MODEL = self.__MODEL.merge_and_unload()
             self.__MODEL.eval()
             self.__MODELS_LOADED = True
 
