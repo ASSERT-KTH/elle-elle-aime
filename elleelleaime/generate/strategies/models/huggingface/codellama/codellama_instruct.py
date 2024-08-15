@@ -4,6 +4,7 @@ from peft import PeftModel
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from typing import Any, List, Generator
 
+import tqdm
 import torch
 import threading
 import logging
@@ -16,7 +17,7 @@ class GenerateSettings:
     temperature: float = 1.0
     num_beams: int = 1
     num_return_sequences: int = 10
-    max_length: int = 16384
+    max_length: int = 4096
 
 
 class CodeLLaMAIntruct(PatchGenerationStrategy):
@@ -69,12 +70,13 @@ class CodeLLaMAIntruct(PatchGenerationStrategy):
 
     def __load_model(self, **kwargs):
         # Setup environment
-        self.device = "cuda" if torch.cuda.is_available() else "cpu"
-        self.context_size = 16384
+        self.device = "cuda"
+        self.context_size = 4096
 
         # Setup kwargs
-        kwargs = dict(
+        model_kwargs = dict(
             torch_dtype=torch.bfloat16,
+            device_map="auto",
         )
 
         # Load the model and tokenizer
@@ -88,7 +90,7 @@ class CodeLLaMAIntruct(PatchGenerationStrategy):
             self.__TOKENIZER.padding_side = "left"
             # Load model
             self.__MODEL = AutoModelForCausalLM.from_pretrained(
-                self.model_name, device_map="auto", **kwargs
+                    self.model_name, **model_kwargs
             )
             # Load LoRA adapter (if requested)
             if kwargs.get("adapter_name", None) is not None:
@@ -108,7 +110,7 @@ class CodeLLaMAIntruct(PatchGenerationStrategy):
 
     def _generate_impl(self, chunk: List[str]) -> Any:
         result = []
-        for batch in self.__chunk_list(chunk, self.batch_size):
+        for batch in tqdm.tqdm(self.__chunk_list(chunk, self.batch_size)):
             batch_result = self._generate_batch(batch)
             result.extend(batch_result)
         return result
@@ -116,8 +118,8 @@ class CodeLLaMAIntruct(PatchGenerationStrategy):
     def _generate_batch(self, batch: List[str]) -> Any:
         formatted_prompts = [self.__format_prompt(p) for p in batch]
 
-        inputs = self.__TOKENIZER(formatted_prompts, return_tensors="pt", padding=True)
-        inputs["input_ids"] = inputs["input_ids"].to(self.device)
+        inputs = self.__TOKENIZER(formatted_prompts, return_tensors="pt", padding=True, truncation=True, max_length=self.context_size)
+        inputs = inputs.to(self.device)
 
         with torch.no_grad():
             generated_ids = self.__MODEL.generate(
