@@ -1,8 +1,10 @@
 from elleelleaime.generate.strategies.strategy import PatchGenerationStrategy
 from dataclasses import dataclass
-from transformers import LlamaForCausalLM, CodeLlamaTokenizer
-from typing import Any, List
+from transformers import AutoModelForCausalLM, AutoTokenizer
+from transformers.tokenization_utils_base import PreTrainedTokenizerBase
+from typing import Any, List, Optional
 
+import tqdm
 import torch
 import threading
 import logging
@@ -14,8 +16,9 @@ class GenerateSettings:
     do_sample: bool = False
     temperature: float = 1.0
     num_beams: int = 1
+    early_stopping: bool = False
     num_return_sequences: int = 10
-    max_length: int = 16384
+    max_length: int = 4096
 
 
 class CodeLLaMAInfilling(PatchGenerationStrategy):
@@ -29,6 +32,7 @@ class CodeLLaMAInfilling(PatchGenerationStrategy):
     __GENERATION_STRATEGIES = {
         "beam_search": GenerateSettings(
             name="beam_search",
+            early_stopping=False,
         ),
         "sampling": GenerateSettings(
             name="sampling",
@@ -68,25 +72,28 @@ class CodeLLaMAInfilling(PatchGenerationStrategy):
     def __load_model(self):
         # Setup environment
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
-        self.context_size = 16384
+        self.context_size = self.generate_settings.max_length
 
         # Setup kwargs
         kwargs = dict(
             torch_dtype=torch.bfloat16,
+            device_map="auto",
         )
 
         # Load the model and tokenizer
         with self.__MODELS_LOCK:
             if self.__MODELS_LOADED:
                 return
-            self.__TOKENIZER = CodeLlamaTokenizer.from_pretrained(self.model_name)
-            self.__MODEL = LlamaForCausalLM.from_pretrained(
-                self.model_name, device_map="auto", **kwargs
+            self.__TOKENIZER: PreTrainedTokenizerBase = AutoTokenizer.from_pretrained(
+                self.model_name
+            )
+            self.__MODEL = AutoModelForCausalLM.from_pretrained(
+                self.model_name, **kwargs
             )
             self.__MODEL.eval()
             self.__MODELS_LOADED = True
 
-    def __generate_patch(self, prompt: str) -> List[str]:
+    def __generate_patch(self, prompt: str) -> Optional[List[str]]:
         if prompt.count("<FILL_ME>") > 1:
             logging.warning(
                 "Prompt should contain exactly at most one <FILL_ME> tag, but it contains %d. Skipping bug.",
@@ -109,7 +116,7 @@ class CodeLLaMAInfilling(PatchGenerationStrategy):
                 max_length=self.generate_settings.max_length,
                 num_beams=self.generate_settings.num_beams,
                 num_return_sequences=self.generate_settings.num_return_sequences,
-                early_stopping=True,
+                early_stopping=self.generate_settings.early_stopping,
                 do_sample=self.generate_settings.do_sample,
                 temperature=self.generate_settings.temperature,
             )
@@ -122,5 +129,8 @@ class CodeLLaMAInfilling(PatchGenerationStrategy):
         else:
             return list(fillings)
 
-    def _generate_impl(self, prompt: List[str]) -> Any:
-        return [self.__generate_patch(p) for p in prompt]
+    def _generate_impl(self, prompts: List[str]) -> Any:
+        return [
+            self.__generate_patch(p)
+            for p in tqdm.tqdm(prompts, "Generating patches...", total=len(prompts))
+        ]

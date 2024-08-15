@@ -2,12 +2,12 @@ from elleelleaime.generate.strategies.strategy import PatchGenerationStrategy
 from dataclasses import dataclass
 from peft import PeftModel
 from transformers import AutoModelForCausalLM, AutoTokenizer
-from typing import Any, List, Generator
+from transformers.tokenization_utils_base import PreTrainedTokenizerBase
+from typing import Any, List
 
 import tqdm
 import torch
 import threading
-import logging
 
 
 @dataclass
@@ -18,6 +18,7 @@ class GenerateSettings:
     num_beams: int = 1
     num_return_sequences: int = 10
     max_length: int = 4096
+    early_stopping: bool = False
 
 
 class CodeLLaMAIntruct(PatchGenerationStrategy):
@@ -31,6 +32,7 @@ class CodeLLaMAIntruct(PatchGenerationStrategy):
     __GENERATION_STRATEGIES = {
         "beam_search": GenerateSettings(
             name="beam_search",
+            early_stopping=True,
         ),
         "sampling": GenerateSettings(
             name="sampling",
@@ -71,7 +73,7 @@ class CodeLLaMAIntruct(PatchGenerationStrategy):
     def __load_model(self, **kwargs):
         # Setup environment
         self.device = "cuda"
-        self.context_size = 4096
+        self.context_size = self.generate_settings.max_length
 
         # Setup kwargs
         model_kwargs = dict(
@@ -85,12 +87,14 @@ class CodeLLaMAIntruct(PatchGenerationStrategy):
                 return
 
             # Load tokenizer
-            self.__TOKENIZER = AutoTokenizer.from_pretrained(self.model_name)
+            self.__TOKENIZER: PreTrainedTokenizerBase = AutoTokenizer.from_pretrained(
+                self.model_name
+            )
             self.__TOKENIZER.pad_token = self.__TOKENIZER.eos_token
             self.__TOKENIZER.padding_side = "left"
             # Load model
             self.__MODEL = AutoModelForCausalLM.from_pretrained(
-                    self.model_name, **model_kwargs
+                self.model_name, **model_kwargs
             )
             # Load LoRA adapter (if requested)
             if kwargs.get("adapter_name", None) is not None:
@@ -110,7 +114,10 @@ class CodeLLaMAIntruct(PatchGenerationStrategy):
 
     def _generate_impl(self, chunk: List[str]) -> Any:
         result = []
-        for batch in tqdm.tqdm(self.__chunk_list(chunk, self.batch_size)):
+        batches = [chunk for chunk in self.__chunk_list(chunk, self.batch_size)]
+        for batch in tqdm.tqdm(
+            batches, desc="Generating patches...", total=len(batches)
+        ):
             batch_result = self._generate_batch(batch)
             result.extend(batch_result)
         return result
@@ -118,7 +125,13 @@ class CodeLLaMAIntruct(PatchGenerationStrategy):
     def _generate_batch(self, batch: List[str]) -> Any:
         formatted_prompts = [self.__format_prompt(p) for p in batch]
 
-        inputs = self.__TOKENIZER(formatted_prompts, return_tensors="pt", padding=True, truncation=True, max_length=self.context_size)
+        inputs = self.__TOKENIZER(
+            formatted_prompts,
+            return_tensors="pt",
+            padding=True,
+            truncation=True,
+            max_length=self.context_size,
+        )
         inputs = inputs.to(self.device)
 
         with torch.no_grad():
@@ -127,7 +140,7 @@ class CodeLLaMAIntruct(PatchGenerationStrategy):
                 max_length=self.generate_settings.max_length,
                 num_beams=self.generate_settings.num_beams,
                 num_return_sequences=self.generate_settings.num_return_sequences,
-                early_stopping=True,
+                early_stopping=self.generate_settings.early_stopping,
                 do_sample=self.generate_settings.do_sample,
                 temperature=self.generate_settings.temperature,
             )
