@@ -93,15 +93,15 @@ class CodeLLaMAIntruct(PatchGenerationStrategy):
             self.__TOKENIZER.pad_token = self.__TOKENIZER.eos_token
             self.__TOKENIZER.padding_side = "left"
             # Load model
-            self.__MODEL = AutoModelForCausalLM.from_pretrained(
-                self.model_name, **model_kwargs
-            )
-            # Load LoRA adapter (if requested)
-            if kwargs.get("adapter_name", None) is not None:
-                self.__MODEL = PeftModel.from_pretrained(
-                    self.__MODEL, kwargs.get("adapter_name")
+            if kwargs.get("adapter_name", None) is None:
+                self.__MODEL = AutoModelForCausalLM.from_pretrained(
+                    self.model_name, **model_kwargs
                 )
-                self.__MODEL.merge_and_unload()
+            # Load model + LoRA adapter
+            else:
+                self.__MODEL = AutoModelForCausalLM.from_pretrained(
+                    kwargs.get("adapter_name"), **model_kwargs
+                )
             self.__MODEL.eval()
             self.__MODELS_LOADED = True
 
