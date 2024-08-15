@@ -102,7 +102,6 @@ class CodeLLaMAIntruct(PatchGenerationStrategy):
                 self.__MODEL = AutoModelForCausalLM.from_pretrained(
                     kwargs.get("adapter_name"), **model_kwargs
                 )
-                self.__MODEL.merge_and_unload()
             self.__MODEL.eval()
             self.__MODELS_LOADED = True
 
