@@ -18,11 +18,16 @@ def generate_candidate(chunk: List[dict], strategy_name: str, **kwargs) -> List[
         strategy_name, **kwargs
     )
 
-    prompt_chunk = [sample["prompt"] for sample in chunk]
-    generations = generation_strategy.generate(prompt_chunk)
+    non_empty_chunk = [sample for sample in chunk if sample["prompt"]]
+    non_empty_prompt_chunk = [sample["prompt"] for sample in non_empty_chunk]
+    generations = generation_strategy.generate(non_empty_prompt_chunk)
 
-    for generation, sample in zip(generations, chunk):
+    for generation, sample in zip(generations, non_empty_chunk):
         sample["generation"] = generation
+
+    for sample in chunk:
+        if not sample["prompt"]:
+            sample["generation"] = None
 
     return chunk
 
