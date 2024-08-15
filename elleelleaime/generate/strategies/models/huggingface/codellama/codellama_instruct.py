@@ -58,7 +58,7 @@ class CodeLLaMAIntruct(PatchGenerationStrategy):
         self.generate_settings = self.__GENERATION_STRATEGIES[
             kwargs.get("generation_strategy", "samlping")
         ]
-        self.batch_size = kwargs.get("batch_size", 4)
+        self.batch_size = kwargs.get("batch_size", 1)
         self.generate_settings.num_return_sequences = kwargs.get(
             "num_return_sequences", GenerateSettings.num_return_sequences
         )
