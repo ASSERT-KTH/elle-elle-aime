@@ -61,14 +61,7 @@ class TestExtractSingleFunction:
         finally:
             shutil.rmtree(path, ignore_errors=True)
 
-    @pytest.mark.skipif(
-        os.environ.get("CI") is not None,
-        reason="This test requires completing GitBug-Java's setup, which is too heavy for CI.",
-    )
-    def test_mthmulders_mcs_eff905bef8d8(self):
-        bug = TestExtractSingleFunction.GITBUGJAVA.get_bug(
-            "mthmulders-mcs-eff905bef8d8"
-        )
+    def assert_extract(self, bug):
         assert bug is not None
 
         # Extract the buggy and fixed functions
@@ -82,6 +75,16 @@ class TestExtractSingleFunction:
         # Assert that we can find them in the source code
         self.assert_function_in_source_code(buggy_function, bug, fixed=False)
         self.assert_function_in_source_code(fixed_function, bug, fixed=True)
+
+    @pytest.mark.skipif(
+        os.environ.get("CI") is not None,
+        reason="This test requires completing GitBug-Java's setup, which is too heavy for CI.",
+    )
+    def test_mthmulders_mcs_eff905bef8d8(self):
+        bug = TestExtractSingleFunction.GITBUGJAVA.get_bug(
+            "mthmulders-mcs-eff905bef8d8"
+        )
+        self.assert_extract(bug)
 
     @pytest.mark.skipif(
         os.environ.get("CI") is not None,
@@ -91,19 +94,7 @@ class TestExtractSingleFunction:
         bug = TestExtractSingleFunction.GITBUGJAVA.get_bug(
             "semver4j-semver4j-beb7e5d466c7"
         )
-        assert bug is not None
-
-        # Extract the buggy and fixed functions
-        result = extract_single_function(bug)
-        assert result is not None
-
-        buggy_function, fixed_function = result
-        assert buggy_function is not None
-        assert fixed_function is not None
-
-        # Assert that we can find them in the source code
-        self.assert_function_in_source_code(buggy_function, bug, fixed=False)
-        self.assert_function_in_source_code(fixed_function, bug, fixed=True)
+        self.assert_extract(bug)
 
     @pytest.mark.skipif(
         os.environ.get("CI") is not None,
@@ -113,19 +104,7 @@ class TestExtractSingleFunction:
         bug = TestExtractSingleFunction.GITBUGJAVA.get_bug(
             "stellar-java-stellar-sdk-1461c2fc5b89"
         )
-        assert bug is not None
-
-        # Extract the buggy and fixed functions
-        result = extract_single_function(bug)
-        assert result is not None
-
-        buggy_function, fixed_function = result
-        assert buggy_function is not None
-        assert fixed_function is not None
-
-        # Assert that we can find them in the source code
-        self.assert_function_in_source_code(buggy_function, bug, fixed=False)
-        self.assert_function_in_source_code(fixed_function, bug, fixed=True)
+        self.assert_extract(bug)
 
     @pytest.mark.skipif(
         os.environ.get("CI") is not None,
@@ -135,48 +114,16 @@ class TestExtractSingleFunction:
         bug = TestExtractSingleFunction.GITBUGJAVA.get_bug(
             "traccar-traccar-d244b4bc4999"
         )
-        assert bug is not None
-
-        # Extract the buggy and fixed functions
-        result = extract_single_function(bug)
-        assert result is not None
-
-        buggy_function, fixed_function = result
-        assert buggy_function is not None
-        assert fixed_function is not None
-
-        # Assert that we can find them in the source code
-        self.assert_function_in_source_code(buggy_function, bug, fixed=False)
-        self.assert_function_in_source_code(fixed_function, bug, fixed=True)
+        self.assert_extract(bug)
 
     def test_lang_1(self):
         bug = TestExtractSingleFunction.DEFECTS4J.get_bug("Lang-1")
-        assert bug is not None
+        self.assert_extract(bug)
 
-        # Extract the buggy and fixed functions
-        result = extract_single_function(bug)
-        assert result is not None
-
-        buggy_function, fixed_function = result
-        assert buggy_function is not None
-        assert fixed_function is not None
-
-        # Assert that we can find them in the source code
-        self.assert_function_in_source_code(buggy_function, bug, fixed=False)
-        self.assert_function_in_source_code(fixed_function, bug, fixed=True)
+    def test_lang_17(self):
+        bug = TestExtractSingleFunction.DEFECTS4J.get_bug("Lang-17")
+        self.assert_extract(bug)
 
     def test_chart_1(self):
         bug = TestExtractSingleFunction.DEFECTS4J.get_bug("Chart-1")
-        assert bug is not None
-
-        # Extract the buggy and fixed functions
-        result = extract_single_function(bug)
-        assert result is not None
-
-        buggy_function, fixed_function = result
-        assert buggy_function is not None
-        assert fixed_function is not None
-
-        # Assert that we can find them in the source code
-        self.assert_function_in_source_code(buggy_function, bug, fixed=False)
-        self.assert_function_in_source_code(fixed_function, bug, fixed=True)
+        self.assert_extract(bug)
