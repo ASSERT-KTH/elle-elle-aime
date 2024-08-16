@@ -161,26 +161,38 @@ def compute_statistics(samples: list) -> dict:
 
     # geometric progression over k
     for k in [1, 10, 100]:
-        if k < statistics["num_bugs_with_prompt"]:
-            statistics[f"exact_match@{k}"] = pass_at_k(
-                statistics["num_patches"],
-                statistics["num_exact_match_patches"],
-                k,
+        if k < (statistics["num_patches"] // statistics["num_bugs_with_candidates"]):
+            statistics[f"exact_match@{k}"] = round(
+                pass_at_k(
+                    statistics["num_patches"],
+                    statistics["num_exact_match_patches"],
+                    k,
+                ),
+                3,
             )
-            statistics[f"ast_match@{k}"] = pass_at_k(
-                statistics["num_patches"],
-                statistics["num_ast_match_patches"],
-                k,
+            statistics[f"ast_match@{k}"] = round(
+                pass_at_k(
+                    statistics["num_patches"],
+                    statistics["num_ast_match_patches"],
+                    k,
+                ),
+                3,
             )
-            statistics[f"plausible@{k}"] = pass_at_k(
-                statistics["num_patches"],
-                statistics["num_plausible_patches"],
-                k,
+            statistics[f"plausible@{k}"] = round(
+                pass_at_k(
+                    statistics["num_patches"],
+                    statistics["num_plausible_patches"],
+                    k,
+                ),
+                3,
             )
-            statistics[f"compilable@{k}"] = pass_at_k(
-                statistics["num_patches"],
-                statistics["num_compilable_patches"],
-                k,
+            statistics[f"compilable@{k}"] = round(
+                pass_at_k(
+                    statistics["num_patches"],
+                    statistics["num_compilable_patches"],
+                    k,
+                ),
+                3,
             )
 
     statistics["bugs_with_exact_match_candidates"].sort()
