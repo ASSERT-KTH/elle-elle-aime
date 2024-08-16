@@ -1,13 +1,12 @@
 from elleelleaime.generate.strategies.strategy import PatchGenerationStrategy
 from dataclasses import dataclass
-from peft import AutoPeftModelForCausalLM
+from peft import PeftModel
 from transformers import AutoModelForCausalLM, AutoTokenizer
-from transformers.tokenization_utils_base import PreTrainedTokenizerBase
 from typing import Any, List
 
 import tqdm
 import torch
-import threading
+import logging
 
 
 @dataclass
@@ -17,7 +16,7 @@ class GenerateSettings:
     temperature: float = 1.0
     num_beams: int = 1
     num_return_sequences: int = 10
-    max_length: int = 4096
+    max_length: int = 16384
     early_stopping: bool = False
 
 
@@ -40,24 +39,21 @@ class CodeLLaMAIntruct(PatchGenerationStrategy):
         ),
     }
 
-    __MODEL = None
-    __TOKENIZER = None
-    __MODELS_LOADED: bool = False
-    __MODELS_LOCK: threading.Lock = threading.Lock()
-
     def __init__(self, model_name: str, **kwargs) -> None:
         assert (
             model_name in self.__SUPPORTED_MODELS
         ), f"Model {model_name} not supported by {self.__class__.__name__}"
         self.model_name = model_name
-        self.max_prompt_length = 2048
-        # Generation settings
+        self.adapter_name = kwargs.get("adapter_name", None)
+
+        # Setup generation settings
         assert (
             kwargs.get("generation_strategy", "sampling")
             in self.__GENERATION_STRATEGIES
-        ), f"Generation strategy {kwargs.get('generation_strategy', 'samlping')} not supported by {self.__class__.__name__}"
+        ), f"Generation strategy {kwargs.get('generation_strategy', 'sampling')} not supported by {self.__class__.__name__}"
+
         self.generate_settings = self.__GENERATION_STRATEGIES[
-            kwargs.get("generation_strategy", "samlping")
+            kwargs.get("generation_strategy", "sampling")
         ]
         self.batch_size = kwargs.get("batch_size", 1)
         self.generate_settings.num_return_sequences = kwargs.get(
@@ -69,86 +65,58 @@ class CodeLLaMAIntruct(PatchGenerationStrategy):
         self.generate_settings.temperature = kwargs.get(
             "temperature", GenerateSettings.temperature
         )
-        self.__load_model(**kwargs)
-
-    def __load_model(self, **kwargs):
-        # Setup environment
-        self.device = "cuda"
-
-        # Setup kwargs
-        model_kwargs = dict(
-            torch_dtype=torch.bfloat16,
-            device_map="auto",
-        )
-
-        # Load the model and tokenizer
-        with self.__MODELS_LOCK:
-            if self.__MODELS_LOADED:
-                return
-
-            # Load tokenizer
-            self.__TOKENIZER: PreTrainedTokenizerBase = AutoTokenizer.from_pretrained(
-                self.model_name
-            )
-            self.__TOKENIZER.pad_token = self.__TOKENIZER.eos_token
-            self.__TOKENIZER.padding_side = "left"
-            # Load model
-            self.__MODEL = AutoModelForCausalLM.from_pretrained(
-                self.model_name, **model_kwargs
-            )
-            # Load LoRA adapter
-            if kwargs.get("adapter_name", None):
-                self.__MODEL = AutoPeftModelForCausalLM.from_pretrained(
-                    kwargs["adapter_name"], **model_kwargs
-                )
-            self.__MODEL.eval()
-            self.__MODELS_LOADED = True
 
     def __format_prompt(self, prompt: str) -> str:
         return f"<s>[INST] {prompt} [\\INST]"
 
-    def __chunk_list(self, lst: List[str], n: int):
-        for i in range(0, len(lst), n):
-            yield lst[i : i + n]
-
     def _generate_impl(self, chunk: List[str]) -> Any:
+        # Load model and tokenizer
+        m = AutoModelForCausalLM.from_pretrained(
+            self.model_name,
+            torch_dtype=torch.bfloat16,
+            device_map="auto",
+        )
+        # Load LoRA adapter if specified
+        if self.adapter_name:
+            m = PeftModel.from_pretrained(m, self.adapter_name)
+            m = m.merge_and_unload()
+        m.eval()
+
+        tok = AutoTokenizer.from_pretrained(self.model_name)
+        tok.pad_token = tok.eos_token
+
+        # Generate patches
         result = []
-        batches = [chunk for chunk in self.__chunk_list(chunk, self.batch_size)]
-        for batch in tqdm.tqdm(
-            batches, desc="Generating patches...", total=len(batches)
-        ):
-            batch_result = self._generate_batch(batch)
-            result.extend(batch_result)
+        for prompt in tqdm.tqdm(chunk, "Generating patches...", total=len(chunk)):
+            with torch.no_grad():
+                # Tokenize prompt
+                inputs = tok(self.__format_prompt(prompt), return_tensors="pt")
+
+                # Skip prompt if it is too long
+                input_length = inputs["input_ids"].shape[1]
+                if input_length > self.generate_settings.max_length:
+                    result.append(None)
+                    logging.warning(
+                        f"Skipping prompt due to length: {input_length} is larger than {self.generate_settings.max_length}"
+                    )
+
+                # Generate patch
+                inputs = inputs.to("cuda")
+                outputs = m.generate(
+                    **inputs,
+                    max_length=self.generate_settings.max_length,
+                    num_beams=self.generate_settings.num_beams,
+                    num_return_sequences=self.generate_settings.num_return_sequences,
+                    early_stopping=self.generate_settings.early_stopping,
+                    do_sample=self.generate_settings.do_sample,
+                    temperature=self.generate_settings.temperature,
+                    use_cache=True,
+                )
+
+                # Decode outputs and save
+                responses = tok.batch_decode(outputs, skip_special_tokens=True)
+                responses = [r.split("[\\INST]")[1] for r in responses]
+                result.append(responses)
+
+        # Return results
         return result
-
-    def _generate_batch(self, batch: List[str]) -> Any:
-        formatted_prompts = [self.__format_prompt(p) for p in batch]
-
-        inputs = self.__TOKENIZER(
-            formatted_prompts,
-            return_tensors="pt",
-            padding=True,
-            truncation=True,
-            max_length=self.max_prompt_length,
-        )
-        inputs = inputs.to(self.device)
-
-        with torch.no_grad():
-            generated_ids = self.__MODEL.generate(
-                **inputs,
-                max_length=self.generate_settings.max_length,
-                num_beams=self.generate_settings.num_beams,
-                num_return_sequences=self.generate_settings.num_return_sequences,
-                early_stopping=self.generate_settings.early_stopping,
-                do_sample=self.generate_settings.do_sample,
-                temperature=self.generate_settings.temperature,
-            )
-
-        responses = self.__TOKENIZER.batch_decode(
-            generated_ids, skip_special_tokens=True
-        )
-        responses = [
-            r.split("[\\INST]")[1] if "[\\INST]" in r else None for r in responses
-        ]
-
-        return responses
