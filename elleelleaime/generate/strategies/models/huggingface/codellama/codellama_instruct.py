@@ -50,6 +50,7 @@ class CodeLLaMAIntruct(PatchGenerationStrategy):
             model_name in self.__SUPPORTED_MODELS
         ), f"Model {model_name} not supported by {self.__class__.__name__}"
         self.model_name = model_name
+        self.max_prompt_length = 2048
         # Generation settings
         assert (
             kwargs.get("generation_strategy", "sampling")
@@ -73,7 +74,6 @@ class CodeLLaMAIntruct(PatchGenerationStrategy):
     def __load_model(self, **kwargs):
         # Setup environment
         self.device = "cuda"
-        self.context_size = self.generate_settings.max_length
 
         # Setup kwargs
         model_kwargs = dict(
@@ -129,7 +129,7 @@ class CodeLLaMAIntruct(PatchGenerationStrategy):
             return_tensors="pt",
             padding=True,
             truncation=True,
-            max_length=self.context_size,
+            max_length=self.max_prompt_length,
         )
         inputs = inputs.to(self.device)
 
