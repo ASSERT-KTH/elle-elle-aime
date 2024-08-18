@@ -66,7 +66,7 @@ class CodeLLaMAIntruct(PatchGenerationStrategy):
             "temperature", GenerateSettings.temperature
         )
         self.generate_settings.max_length = kwargs.get(
-                "max_length", GenerateSettings.max_length
+            "max_length", GenerateSettings.max_length
         )
 
     def __format_prompt(self, prompt: str) -> str:
