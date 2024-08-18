@@ -3,6 +3,7 @@ from elleelleaime.core.utils.jsonl import stream_jsonl, write_jsonl
 from elleelleaime.generate.strategies.registry import PatchGenerationStrategyRegistry
 
 from typing import List
+from pathlib import Path
 import fire
 import sys
 import tqdm
@@ -66,8 +67,14 @@ def entry_point(
     # Write results to jsonl file
     benchmark = samples_path.split("_")[1]
     prompt_strategy = samples_path.split("_")[2].split(".")[0]
+
+    # FIXME: This is a hack to shorten the kwargs string
+    for key in kwargs:
+        if Path(kwargs[key]).exists():
+            kwargs[key] = Path(kwargs[key]).name
+
     kwargs_str = "_".join([f"{k}={v}" for k, v in kwargs.items()])
-    kwargs_str = kwargs_str.replace("/", "\\/")
+    kwargs_str = kwargs_str.replace("/", ":")
     write_jsonl(
         f"candidates_{benchmark}_{prompt_strategy}_{strategy_name}_{kwargs_str}.jsonl",
         results,
