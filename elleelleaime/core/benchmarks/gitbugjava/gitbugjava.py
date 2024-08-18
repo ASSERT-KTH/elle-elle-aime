@@ -7,7 +7,7 @@ from typing import Optional
 import subprocess
 import logging
 import tqdm
-import json
+import re
 import os
 
 
@@ -53,12 +53,36 @@ class GitBugJava(Benchmark):
         logging.info("Found %3d bugs" % len(bids))
 
         for bid in tqdm.tqdm(bids, "Loading GitBug-Java"):
-            pid = bid.rsplit("-", 1)[0]
-            diff = ""
-            with open(f"{self.path}/data/bugs/{pid}.json", "r") as f:
-                for line in f:
-                    bug_info = json.loads(line)
-                    if bug_info["commit_hash"][:12] in bid:
-                        diff = bug_info["bug_patch"]
-                        break
-            self.add_bug(GitBugJavaBug(self, bid, diff))
+            # Run info command
+            run = self.run_command(
+                f"info {bid}",
+                check=True,
+            )
+            stdout = run.stdout.decode("utf-8")
+
+            # Get diff (after "### Bug Patch", between triple ticks)
+            diff = stdout.split("### Bug Patch")[1].split("```diff")[1].split("```")[0]
+
+            # Get failing tests
+            # The info command prints out the failing tests in the following format
+            # - failing test
+            #   - type of failure
+            #   - failure message
+            failing_tests = {}
+            stdout = stdout.split("### Failing Tests")[1]
+            for test in re.split(r"(^-)", stdout):
+                # Split the three lines
+                info = test.strip().split("\n")
+
+                # Extract failing test class and method
+                failing_test_case = info[0].replace("-", "", 1).strip()
+                failing_test_case = failing_test_case.replace("#", "::")
+                failing_test_case = failing_test_case.replace("()", "")
+
+                # Extract cause
+                cause = info[2].replace("-", "", 1).strip()
+                if cause == "None":
+                    cause = info[1].replace("-", "", 1).strip()
+                failing_tests[failing_test_case] = cause
+
+            self.add_bug(GitBugJavaBug(self, bid, diff, failing_tests))

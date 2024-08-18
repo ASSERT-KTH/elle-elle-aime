@@ -5,18 +5,24 @@ import re
 import os
 from elleelleaime.core.benchmarks.benchmark import Benchmark
 
-from elleelleaime.core.benchmarks.bug import Bug
+from elleelleaime.core.benchmarks.bug import RichBug
 from elleelleaime.core.benchmarks.test_result import TestResult
 from elleelleaime.core.benchmarks.compile_result import CompileResult
 
 
-class GitBugJavaBug(Bug):
+class GitBugJavaBug(RichBug):
     """
     The class for representing GitBug-Java bugs
     """
 
-    def __init__(self, benchmark: Benchmark, bid: str, ground_truth: str) -> None:
-        super().__init__(benchmark, bid, ground_truth, False)
+    def __init__(
+        self,
+        benchmark: Benchmark,
+        bid: str,
+        ground_truth: str,
+        failing_tests: dict[str, str],
+    ) -> None:
+        super().__init__(benchmark, bid, ground_truth, failing_tests, False)
 
     def checkout(self, path: str, fixed: bool = False) -> bool:
         # Remove the directory if it exists
@@ -44,3 +50,6 @@ class GitBugJavaBug(Bug):
             )
         except subprocess.TimeoutExpired:
             return TestResult(False)
+
+    def get_src_test_dir(self, path: str) -> str:
+        return path
