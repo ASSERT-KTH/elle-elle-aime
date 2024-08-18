@@ -73,29 +73,29 @@ class TestInstructPromptingDefects4J:
         )
 
 
-class TestInstrucPromptingGitBugJava:
+class TestInstructPromptingGitBugJava:
     GITBUGJAVA: Benchmark
     PROMPT_STRATEGY: str = "instruct"
 
     @classmethod
     def setup_class(cls):
-        TestInstrucPromptingGitBugJava.GITBUGJAVA = get_benchmark("gitbugjava")
-        assert TestInstrucPromptingGitBugJava.GITBUGJAVA is not None
-        TestInstrucPromptingGitBugJava.GITBUGJAVA.initialize()
+        TestInstructPromptingGitBugJava.GITBUGJAVA = get_benchmark("gitbugjava")
+        assert TestInstructPromptingGitBugJava.GITBUGJAVA is not None
+        TestInstructPromptingGitBugJava.GITBUGJAVA.initialize()
 
     @pytest.mark.skipif(
         os.environ.get("CI") is not None,
         reason="This test requires completing GitBug-Java's setup, which is too heavy for CI.",
     )
     def test_traccar_traccar_37ed394724c0(self):
-        bug = TestInstrucPromptingGitBugJava.GITBUGJAVA.get_bug(
+        bug = TestInstructPromptingGitBugJava.GITBUGJAVA.get_bug(
             "traccar-traccar-37ed394724c0"
         )
         assert bug is not None
 
         sample = generate_sample(
             bug=bug,
-            prompt_strategy=TestInstrucPromptingGitBugJava.PROMPT_STRATEGY,
+            prompt_strategy=TestInstructPromptingGitBugJava.PROMPT_STRATEGY,
         )
 
         # Assert we are dealing with the correct bug and strategy
@@ -111,14 +111,14 @@ class TestInstrucPromptingGitBugJava:
         reason="This test requires completing GitBug-Java's setup, which is too heavy for CI.",
     )
     def test_BrightSpots_rcv_688920f27706(self):
-        bug = TestInstrucPromptingGitBugJava.GITBUGJAVA.get_bug(
+        bug = TestInstructPromptingGitBugJava.GITBUGJAVA.get_bug(
             "BrightSpots-rcv-688920f27706"
         )
         assert bug is not None
 
         sample = generate_sample(
             bug=bug,
-            prompt_strategy=TestInstrucPromptingGitBugJava.PROMPT_STRATEGY,
+            prompt_strategy=TestInstructPromptingGitBugJava.PROMPT_STRATEGY,
         )
 
         # Assert we are dealing with the correct bug and strategy
