@@ -65,6 +65,9 @@ class CodeLLaMAIntruct(PatchGenerationStrategy):
         self.generate_settings.temperature = kwargs.get(
             "temperature", GenerateSettings.temperature
         )
+        self.generate_settings.max_length = kwargs.get(
+                "max_length", GenerateSettings.max_length
+        )
 
     def __format_prompt(self, prompt: str) -> str:
         return f"<s>[INST] {prompt} [\\INST]"
@@ -85,7 +88,10 @@ class CodeLLaMAIntruct(PatchGenerationStrategy):
         tok = AutoTokenizer.from_pretrained(self.model_name)
         tok.pad_token = tok.eos_token
 
+        logging.info(f"Model successfully loaded: {m}")
+
         # Generate patches
+        logging.info(f"Starting generation: {self.generate_settings}")
         result = []
         for prompt in tqdm.tqdm(chunk, "Generating patches...", total=len(chunk)):
             with torch.no_grad():
@@ -99,6 +105,7 @@ class CodeLLaMAIntruct(PatchGenerationStrategy):
                     logging.warning(
                         f"Skipping prompt due to length: {input_length} is larger than {self.generate_settings.max_length}"
                     )
+                    continue
 
                 # Generate patch
                 inputs = inputs.to("cuda")
