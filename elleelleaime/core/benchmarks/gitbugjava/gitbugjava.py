@@ -76,8 +76,13 @@ class GitBugJava(Benchmark):
 
                 # Extract failing test class and method
                 failing_test_case = info[0].replace("-", "", 1).strip()
-                failing_test_case = failing_test_case.replace("#", "::")
-                failing_test_case = failing_test_case.replace("()", "")
+                failing_test_case = (
+                    failing_test_case.replace(":", "::")
+                    .replace("#", "::")
+                    .replace("()", "")
+                )
+                # Remove value between '$' and '::' if it exists (happens for jitterted tests)
+                failing_test_case = re.sub(r"\$.*?::", "::", failing_test_case)
 
                 # Extract cause
                 cause = info[2].replace("-", "", 1).strip()
