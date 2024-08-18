@@ -104,7 +104,28 @@ class TestInstructPromptingGitBugJava:
 
         # Assert that the prompt is properly constructed
         assert sample["prompt"] is not None
-        print(sample["prompt"])
+
+    @pytest.mark.skipif(
+        os.environ.get("CI") is not None,
+        reason="This test requires completing GitBug-Java's setup, which is too heavy for CI.",
+    )
+    def test_TheAlgorithms_Java_e5c7a08874a6(self):
+        bug = TestInstructPromptingGitBugJava.GITBUGJAVA.get_bug(
+            "TheAlgorithms-Java-e5c7a08874a6"
+        )
+        assert bug is not None
+
+        sample = generate_sample(
+            bug=bug,
+            prompt_strategy=TestInstructPromptingGitBugJava.PROMPT_STRATEGY,
+        )
+
+        # Assert we are dealing with the correct bug and strategy
+        assert sample["identifier"] == "TheAlgorithms-Java-e5c7a08874a6"
+        assert sample["prompt_strategy"] == "instruct"
+
+        # Assert that the prompt is properly constructed
+        assert sample["prompt"] is not None
 
     @pytest.mark.skipif(
         os.environ.get("CI") is not None,
@@ -127,4 +148,3 @@ class TestInstructPromptingGitBugJava:
 
         # Assert that the prompt is properly constructed
         assert sample["prompt"] is None
-        print(sample["prompt"])
