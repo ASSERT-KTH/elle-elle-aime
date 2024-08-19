@@ -70,7 +70,7 @@ def entry_point(
 
     # FIXME: This is a hack to shorten the kwargs string
     for key in kwargs:
-        if Path(kwargs[key]).exists():
+        if Path(str(kwargs[key])).exists():
             kwargs[key] = Path(kwargs[key]).name
 
     kwargs_str = "_".join([f"{k}={v}" for k, v in kwargs.items()])
