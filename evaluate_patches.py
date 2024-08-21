@@ -120,11 +120,13 @@ def compute_statistics(samples: list) -> dict:
         if sample["prompt"]:
             statistics["num_bugs_with_prompt"] += 1
         if sample["generation"] and any(
-            candidate["generation"] for candidate in sample["evaluation"]
+            candidate["generation"] if candidate is not None else None
+            for candidate in sample["evaluation"]
         ):
             statistics["num_bugs_with_candidates"] += 1
             statistics["num_patches"] += sum(
-                bool(candidate["generation"]) for candidate in sample["evaluation"]
+                bool(candidate["generation"]) if candidate is not None else False
+                for candidate in sample["evaluation"]
             )
             statistics["num_compilable_patches"] += sum(
                 compilable(candidate) for candidate in sample["evaluation"]
@@ -214,7 +216,8 @@ def export_patches(samples: list, dir_path: str) -> None:
 
     for sample in tqdm.tqdm(samples):
         if not sample["generation"] or all(
-            candidate["generation"] is None for candidate in sample["evaluation"]
+            candidate["generation"] is None if candidate is not None else None
+            for candidate in sample["evaluation"]
         ):
             continue
 
@@ -238,7 +241,7 @@ def export_patches(samples: list, dir_path: str) -> None:
             f.write(sample["prompt"])
 
         for i, candidate in enumerate(sample["evaluation"]):
-            if not candidate["generation"]:
+            if candidate is None or not candidate["generation"]:
                 continue
 
             # Compute diff between generated code and buggy code
@@ -284,7 +287,8 @@ def export_bugs(samples, dir_path):
             if sample["generation"] is not None
             and len(sample["generation"]) > 0
             and not all(
-                candidate["generation"] is None for candidate in sample["evaluation"]
+                candidate["generation"] is None if candidate is not None else None
+                for candidate in sample["evaluation"]
             )
         ]
     )
