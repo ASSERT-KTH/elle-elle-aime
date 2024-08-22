@@ -2,6 +2,7 @@ from typing import Optional, Tuple, List
 from unidiff import PatchSet
 from uuid import uuid4
 from pathlib import Path
+import logging
 import getpass, tempfile, difflib, shutil
 import subprocess
 import re
@@ -239,6 +240,32 @@ def extract_single_function(bug: Bug) -> Optional[Tuple[str, str]]:
         shutil.rmtree(fixed_path, ignore_errors=True)
 
 
+def find_test_class(path: Path, bug, class_name: str) -> Optional[Path]:
+    # Get the base test directory
+    base_test_dir = Path(path, bug.get_src_test_dir(str(path)))
+
+    # Convert class name to the relative path format
+    class_relative_path = f"{class_name.replace('.', '/')}.java"
+
+    # Iterate through all the subdirectories under the base test directory
+    candidates = []
+    for java_file in base_test_dir.rglob("*.java"):
+        # Check if the file ends with the class relative path
+        if java_file.as_posix().endswith(class_relative_path):
+            candidates.append(
+                java_file
+            )  # Return the full path to the matched Java file
+
+    if len(candidates) == 0:
+        logging.error(f"No test class found for {class_name}")
+        return None
+    elif len(candidates) == 1:
+        return candidates[0]
+    else:
+        logging.error(f"Multiple test classes found for {class_name}")
+        return None
+
+
 def extract_failing_test_cases(bug: RichBug) -> dict[str, str]:
     """
     Extracts the code of the failing test cases of a bug.
@@ -263,11 +290,9 @@ def extract_failing_test_cases(bug: RichBug) -> dict[str, str]:
         )
         try:
             bug.checkout(str(path), fixed=False)
-            test_class_path = Path(
-                path,
-                bug.get_src_test_dir(str(path)),
-                f"{class_name.replace('.', '/')}.java",
-            )
+            test_class_path = find_test_class(path, bug, class_name)
+            if test_class_path is None:
+                return {}
 
             # Run code extractor for the failing test case
             run = subprocess.run(
