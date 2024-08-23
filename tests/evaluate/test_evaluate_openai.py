@@ -36,7 +36,7 @@ class TestEvaluatePatchesOpenAIDefects4J:
                     "logprobs": None,
                     "message": {
                         "content": f"```java\n{sample['fixed_code']}"
-                        + "'\n// comment'\n```",
+                        + "\n// comment\n```",
                         "role": "assistant",
                     },
                 }

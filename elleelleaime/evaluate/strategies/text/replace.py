@@ -5,6 +5,7 @@ import os, tempfile, shutil, logging, getpass
 
 from ..strategy import PatchEvaluationStrategy
 from elleelleaime.core.benchmarks.bug import Bug
+from elleelleaime.core.utils.java.java import remove_empty_lines, remove_java_comments
 
 
 class ReplaceEvaluationStrategy(PatchEvaluationStrategy):
@@ -33,24 +34,22 @@ class ReplaceEvaluationStrategy(PatchEvaluationStrategy):
         )
 
         # Remove comments and empty lines from the generated code and the fixed code
-        generation_no_comments = [
-            line
-            for line in generation.splitlines(keepends=True)
-            if not line.strip().startswith("//") and not line.strip() == ""
-        ]
-
-        fixed_code = [
-            line
-            for line in sample["fixed_code"].splitlines(keepends=True)
-            if not line.strip().startswith("//") and not line.strip() == ""
-        ]
+        generation_no_comments = remove_empty_lines(remove_java_comments(generation))
+        generation_no_comments = generation_no_comments.splitlines()
+        fixed_code_no_comments = remove_empty_lines(
+            remove_java_comments(sample["fixed_code"])
+        )
+        fixed_code_no_comments = fixed_code_no_comments.splitlines()
 
         result = {
             "generation": generation,
-            "exact_match": all(
+            "exact_match": len(generation_no_comments) == len(fixed_code_no_comments)
+            and all(
                 [
                     x.strip() == y.strip()
-                    for x, y in zip(generation_no_comments, fixed_code)
+                    for x, y in zip(
+                        generation_no_comments, fixed_code_no_comments, strict=True
+                    )
                 ]
             ),
             "ast_match": False,

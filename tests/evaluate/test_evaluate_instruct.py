@@ -7,7 +7,6 @@ from elleelleaime.core.benchmarks.benchmark import Benchmark
 class TestEvaluatePatchesInstructDefects4J:
     DEFECTS4J: Benchmark
     PROMPT_STRATEGY: str = "instruct"
-    MODEL_NAME: str = "codellama-7b-instruct"
     EVALUATE_STRATEGY: str = "instruct"
 
     @classmethod
@@ -24,11 +23,10 @@ class TestEvaluatePatchesInstructDefects4J:
         sample = generate_sample(
             bug=bug,
             prompt_strategy=TestEvaluatePatchesInstructDefects4J.PROMPT_STRATEGY,
-            model_name=TestEvaluatePatchesInstructDefects4J.MODEL_NAME,
         )
 
         sample["generation"] = [
-            f"```java\n{sample['fixed_code']}" + "'\n// comment'\n```"
+            f"```java\n{sample['fixed_code']}" + "\n// comment\n```"
         ]
 
         return bug, sample
@@ -41,7 +39,6 @@ class TestEvaluatePatchesInstructDefects4J:
         sample = generate_sample(
             bug=bug,
             prompt_strategy=TestEvaluatePatchesInstructDefects4J.PROMPT_STRATEGY,
-            model_name=TestEvaluatePatchesInstructDefects4J.MODEL_NAME,
         )
 
         code = """    public LegendItemCollection getLegendItems() {
@@ -92,7 +89,6 @@ class TestEvaluatePatchesInstructDefects4J:
         sample = generate_sample(
             bug=bug,
             prompt_strategy=TestEvaluatePatchesInstructDefects4J.PROMPT_STRATEGY,
-            model_name=TestEvaluatePatchesInstructDefects4J.MODEL_NAME,
         )
         code = """    public LegendItemCollection getLegendItems() {
         LegendItemCollection result = new LegendItemCollection();
@@ -144,7 +140,6 @@ class TestEvaluatePatchesInstructDefects4J:
         sample = generate_sample(
             bug=bug,
             prompt_strategy=TestEvaluatePatchesInstructDefects4J.PROMPT_STRATEGY,
-            model_name=TestEvaluatePatchesInstructDefects4J.MODEL_NAME,
         )
         sample["generation"] = [f"```java\n{sample['buggy_code']}\n```"]
 
