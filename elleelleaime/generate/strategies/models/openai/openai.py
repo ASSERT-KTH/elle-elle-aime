@@ -1,7 +1,7 @@
 from elleelleaime.generate.strategies.strategy import PatchGenerationStrategy
 
 from dotenv import load_dotenv
-from typing import Any
+from typing import Any, List
 
 import os
 import openai
@@ -22,11 +22,16 @@ class OpenAIChatCompletionModels(PatchGenerationStrategy):
     def _completions_with_backoff(self, **kwargs):
         return self.client.chat.completions.create(**kwargs)
 
-    def _generate_impl(self, prompt: str) -> Any:
-        completion = self._completions_with_backoff(
-            model=self.model_name,
-            messages=[{"role": "user", "content": prompt}],
-            temperature=self.temperature,
-            n=self.n_samples,
-        )
-        return completion.to_dict()
+    def _generate_impl(self, chunk: List[str]) -> Any:
+        result = []
+
+        for prompt in chunk:
+            completion = self._completions_with_backoff(
+                model=self.model_name,
+                messages=[{"role": "user", "content": prompt}],
+                temperature=self.temperature,
+                n=self.n_samples,
+            )
+            result.append(completion.to_dict())
+
+        return result

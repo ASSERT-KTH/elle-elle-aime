@@ -3,6 +3,7 @@ from elleelleaime.core.utils.jsonl import stream_jsonl, write_jsonl
 from elleelleaime.generate.strategies.registry import PatchGenerationStrategyRegistry
 
 from typing import List
+from pathlib import Path
 import fire
 import sys
 import tqdm
@@ -18,11 +19,16 @@ def generate_candidate(chunk: List[dict], strategy_name: str, **kwargs) -> List[
         strategy_name, **kwargs
     )
 
-    for sample in tqdm.tqdm(
-        chunk, "Generating candidates for a chunk", total=len(chunk)
-    ):
-        generation = generation_strategy.generate(sample["prompt"])
+    non_empty_chunk = [sample for sample in chunk if sample["prompt"]]
+    non_empty_prompt_chunk = [sample["prompt"] for sample in non_empty_chunk]
+    generations = generation_strategy.generate(non_empty_prompt_chunk)
+
+    for generation, sample in zip(generations, non_empty_chunk):
         sample["generation"] = generation
+
+    for sample in chunk:
+        if not sample["prompt"]:
+            sample["generation"] = None
 
     return chunk
 
@@ -30,7 +36,7 @@ def generate_candidate(chunk: List[dict], strategy_name: str, **kwargs) -> List[
 def entry_point(
     samples_path: str,
     strategy_name: str,
-    n_workers: int = 4,
+    n_workers: int = 1,
     **kwargs,
 ):
     """
@@ -61,7 +67,14 @@ def entry_point(
     # Write results to jsonl file
     benchmark = samples_path.split("_")[1]
     prompt_strategy = samples_path.split("_")[2].split(".")[0]
+
+    # FIXME: This is a hack to shorten the kwargs string
+    for key in kwargs:
+        if Path(str(kwargs[key])).exists():
+            kwargs[key] = Path(kwargs[key]).name
+
     kwargs_str = "_".join([f"{k}={v}" for k, v in kwargs.items()])
+    kwargs_str = kwargs_str.replace("/", ":")
     write_jsonl(
         f"candidates_{benchmark}_{prompt_strategy}_{strategy_name}_{kwargs_str}.jsonl",
         results,

@@ -10,7 +10,7 @@ import os
 class TestEvaluatePatchesReplaceDefects4J:
     DEFECTS4J: Benchmark
     PROMPT_STRATEGY: str = "infilling"
-    MODEL_NAME: str = "codellama-7b"
+    MODEL_NAME: str = "codellama"
     EVALUATE_STRATEGY: str = "replace"
 
     @classmethod
@@ -145,6 +145,37 @@ class TestEvaluatePatchesReplaceDefects4J:
         sample["generation"] = [sample["buggy_code"]]
         return bug, sample
 
+    @classmethod
+    def get_empty_patch_sample(cls):
+        bug = TestEvaluatePatchesReplaceDefects4J.DEFECTS4J.get_bug("Chart-1")
+        assert bug is not None
+
+        sample = generate_sample(
+            bug=bug,
+            prompt_strategy=TestEvaluatePatchesReplaceDefects4J.PROMPT_STRATEGY,
+            model_name=TestEvaluatePatchesReplaceDefects4J.MODEL_NAME,
+        )
+        sample["generation"] = [""]
+        return bug, sample
+
+    def test_empty_patch(self):
+        bug, sample = TestEvaluatePatchesReplaceDefects4J.get_empty_patch_sample()
+
+        sample = evaluate_candidate(
+            bug=bug,
+            sample=sample,
+            strategy=TestEvaluatePatchesReplaceDefects4J.EVALUATE_STRATEGY,
+        )
+
+        assert sample["evaluation"] is not None
+        assert len(sample["evaluation"]) == 1
+
+        assert sample["evaluation"][0]["generation"] == ""
+        assert sample["evaluation"][0]["compile"] == False
+        assert sample["evaluation"][0]["test"] == False
+        assert sample["evaluation"][0]["exact_match"] == False
+        assert sample["evaluation"][0]["ast_match"] == False
+
     def test_exact_match_patch(self):
         bug, sample = TestEvaluatePatchesReplaceDefects4J.get_exact_match_sample()
 
@@ -221,7 +252,7 @@ class TestEvaluatePatchesReplaceDefects4J:
 class TestEvaluatePatchesReplaceGitBugJava:
     GITBUGJAVA: Benchmark
     PROMPT_STRATEGY: str = "infilling"
-    MODEL_NAME: str = "codellama-7b"
+    MODEL_NAME: str = "codellama"
     EVALUATE_STRATEGY: str = "replace"
 
     @classmethod

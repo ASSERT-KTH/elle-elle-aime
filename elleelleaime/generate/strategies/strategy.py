@@ -1,14 +1,12 @@
 from abc import ABC, abstractmethod
 
-from typing import Any, final
+from typing import List, Any, final
 
 
 class PatchGenerationStrategy(ABC):
-    def __init__(self, **kwargs):
-        pass
 
     @abstractmethod
-    def _generate_impl(self, prompt: str) -> Any:
+    def _generate_impl(self, chunk: List[str]) -> Any:
         """
         Implemenation method for the generation strategy.
         """
@@ -22,15 +20,11 @@ class PatchGenerationStrategy(ABC):
         return None
 
     @final
-    def generate(self, prompt: str) -> Any:
+    def generate(self, chunk: List[str]) -> Any:
         """
         Returns the generation results for the given prompt.
 
         :param prompt: The prompt to use for generation.
         :return: A tuple containing the generation results.
         """
-        # Implements the logic common to all generation strategies
-        if prompt is None:
-            return self._handle_none_prompt()
-
-        return self._generate_impl(prompt)
+        return self._generate_impl(chunk)
