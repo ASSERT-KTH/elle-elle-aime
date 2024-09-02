@@ -39,8 +39,18 @@ class InstructPrompting(PromptingStrategy):
         if len(failing_test_causes) == 0 or len(failing_test_cases) == 0:
             return None, None, None
 
-        # TODO: use all
-        test_case = list(failing_test_cases.keys())[0]
+        failing_tests_string = ""
+        for test_case in failing_test_cases.keys():
+            failing_tests_string += f"""Test `{test_case}`:
+```java
+{failing_test_cases[test_case]}
+```
+Test `{test_case}` error:
+```
+{failing_test_causes[test_case]}
+```
+
+"""
 
         prompt = f"""You are an automatic program repair tool. Your task is to fix the provided buggy code.
 
@@ -49,17 +59,10 @@ The following code contains a buggy function:
 {buggy_code}
 ```
 
-The code fails the following test:
-```java
-{failing_test_cases[test_case]}
-```
+The code fails the following tests.
 
-With the following test error:
-```
-{failing_test_causes[test_case]}
-```
-
-Please provide a fixed version of the buggy function, and only that function:
+{failing_tests_string}
+Please provide a fixed version of the buggy function, and only that function, inside a code block.
 """
 
         return buggy_code, fixed_code, prompt
