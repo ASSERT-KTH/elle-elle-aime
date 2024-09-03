@@ -2,6 +2,9 @@ from elleelleaime.generate.strategies.strategy import PatchGenerationStrategy
 from elleelleaime.generate.strategies.models.openai.openai import (
     OpenAIChatCompletionModels,
 )
+from elleelleaime.generate.strategies.models.google.google import (
+    GoogleModels,
+)
 from elleelleaime.generate.strategies.models.huggingface.codellama.codellama_infilling import (
     CodeLLaMAInfilling,
 )
@@ -17,10 +20,11 @@ class PatchGenerationStrategyRegistry:
     Class for storing and retrieving models based on their name.
     """
 
-    # The registry is a dictionary of strategy names to a tuple of the class and the mandatory arguments to pass to the class
+    # The registry is a dict of strategy names to a tuple of class and mandatory arguments to init the class
     # NOTE: Do not instantiate the model here, as we should only instanciate the class to be used
     __MODELS: dict[str, Tuple[type, Tuple]] = {
         "openai-chatcompletion": (OpenAIChatCompletionModels, ("model_name",)),
+        "google": (GoogleModels, ("model_name",)),
         "codellama-infilling": (CodeLLaMAInfilling, ("model_name",)),
         "codellama-instruct": (CodeLLaMAIntruct, ("model_name",)),
     }

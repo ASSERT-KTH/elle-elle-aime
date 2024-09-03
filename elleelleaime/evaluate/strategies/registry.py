@@ -2,6 +2,7 @@ from elleelleaime.evaluate.strategies.strategy import PatchEvaluationStrategy
 from elleelleaime.evaluate.strategies.text.replace import ReplaceEvaluationStrategy
 from elleelleaime.evaluate.strategies.text.instruct import InstructEvaluationStrategy
 from elleelleaime.evaluate.strategies.openai.openai import OpenAIEvaluationStrategy
+from elleelleaime.evaluate.strategies.google.google import GoogleEvaluationStrategy
 
 
 class PatchEvaluationStrategyRegistry:
@@ -14,6 +15,7 @@ class PatchEvaluationStrategyRegistry:
             "replace": ReplaceEvaluationStrategy(**kwargs),
             "instruct": InstructEvaluationStrategy(**kwargs),
             "openai": OpenAIEvaluationStrategy(**kwargs),
+            "google": GoogleEvaluationStrategy(**kwargs),
         }
 
     def get_evaluation(self, name: str) -> PatchEvaluationStrategy:
