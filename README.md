@@ -7,6 +7,19 @@ Supported benchmarks:
   * HumanEval-Java
   * GitBug-Java
   * QuixBugs
+
+If you use this code, please cite
+
+```bibtex
+@techreport{elle-elle-aime,
+ title = {RepairLLaMA: Efficient Representations and Fine-Tuned Adapters for Program Repair},
+ year = {2023},
+ author = {André Silva and Sen Fang and Martin Monperrus},
+ url = {http://arxiv.org/pdf/2312.15698},
+ number = {2312.15698},
+ institution = {arXiv},
+}
+```
   
 ## Installation
 
