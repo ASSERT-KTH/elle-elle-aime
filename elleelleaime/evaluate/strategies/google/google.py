@@ -23,6 +23,9 @@ class GoogleEvaluationStrategy(InstructEvaluationStrategy):
 
         for generation in sample["generation"]:
             for candidate in generation["candidates"]:
+                if "content" not in candidate:
+                    evaluation.append(None)
+                    continue
                 candidate_patch = candidate["content"]["parts"][0]["text"]
                 candidate_patch = self.extract_patch_from_message(candidate_patch)
                 evaluation.append(
