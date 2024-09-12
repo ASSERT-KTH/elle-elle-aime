@@ -10,6 +10,7 @@ docker pull maven:3.9.8-eclipse-temurin-8;
 
 ### Defects4J image
 cd benchmarks/defects4j;
+cpanm --installdeps .;
 ./init.sh;
 cd ../..;
 
