@@ -17,6 +17,46 @@ class TestEvaluatePatchesOpenAIDefects4J:
         TestEvaluatePatchesOpenAIDefects4J.DEFECTS4J.initialize()
 
     @classmethod
+    def get_exact_match_sample_list(cls):
+        bug = TestEvaluatePatchesOpenAIDefects4J.DEFECTS4J.get_bug("Chart-1")
+        assert bug is not None
+
+        sample = generate_sample(
+            bug=bug,
+            prompt_strategy=TestEvaluatePatchesOpenAIDefects4J.PROMPT_STRATEGY,
+            model_name=TestEvaluatePatchesOpenAIDefects4J.MODEL_NAME,
+        )
+
+        sample["generation"] = [
+            {
+                "id": "chatcmpl-9scPfoeakAgJgoUKFjqhEaUBnJynB",
+                "choices": [
+                    {
+                        "finish_reason": "stop",
+                        "index": 0,
+                        "logprobs": None,
+                        "message": {
+                            "content": f"```java\n{sample['fixed_code']}"
+                            + "\n// comment\n```",
+                            "role": "assistant",
+                        },
+                    }
+                ],
+                "created": 1722804399,
+                "model": "gpt-4o-mini-2024-07-18",
+                "object": "chat.completion",
+                "system_fingerprint": "fp_0f03d4f0ee",
+                "usage": {
+                    "completion_tokens": 255,
+                    "prompt_tokens": 379,
+                    "total_tokens": 634,
+                },
+            }
+        ]
+
+        return bug, sample
+
+    @classmethod
     def get_exact_match_sample(cls):
         bug = TestEvaluatePatchesOpenAIDefects4J.DEFECTS4J.get_bug("Chart-1")
         assert bug is not None
@@ -239,6 +279,23 @@ class TestEvaluatePatchesOpenAIDefects4J:
 
     def test_exact_match_patch(self):
         bug, sample = TestEvaluatePatchesOpenAIDefects4J.get_exact_match_sample()
+
+        sample = evaluate_candidate(
+            bug=bug,
+            sample=sample,
+            strategy=TestEvaluatePatchesOpenAIDefects4J.EVALUATE_STRATEGY,
+        )
+
+        assert sample["evaluation"] is not None
+        assert len(sample["evaluation"]) == 1
+
+        assert sample["evaluation"][0]["compile"] == True
+        assert sample["evaluation"][0]["test"] == True
+        assert sample["evaluation"][0]["exact_match"] == True
+        assert sample["evaluation"][0]["ast_match"] == True
+
+    def test_exact_match_patch_list(self):
+        bug, sample = TestEvaluatePatchesOpenAIDefects4J.get_exact_match_sample_list()
 
         sample = evaluate_candidate(
             bug=bug,
