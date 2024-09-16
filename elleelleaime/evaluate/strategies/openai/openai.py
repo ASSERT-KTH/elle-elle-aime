@@ -9,6 +9,22 @@ class OpenAIEvaluationStrategy(InstructEvaluationStrategy):
     def __init__(self, **kwargs):
         super().__init__(kwargs=kwargs)
 
+    def __evaluate_generation(self, bug: Bug, sample: dict, generation) -> List[dict]:
+        """
+        Evaluate the generation for the given bug.
+
+        :param bug: The bug to generate the prompt for.
+        :param generation: The generation to evaluate
+        """
+        evaluation = []
+
+        for choice in generation["choices"]:
+            message = choice["message"]["content"]
+            candidate_patch = self.extract_patch_from_message(message)
+            evaluation.append(self.evaluate_generation(bug, sample, candidate_patch))
+
+        return evaluation
+
     def _evaluate_impl(self, bug: Bug, sample: dict) -> Optional[List[dict]]:
         """
         Returns the evaluation for the given bug and sample.
@@ -21,9 +37,12 @@ class OpenAIEvaluationStrategy(InstructEvaluationStrategy):
         if sample["generation"] is None:
             return evaluation
 
-        for choice in sample["generation"]["choices"]:
-            message = choice["message"]["content"]
-            candidate_patch = self.extract_patch_from_message(message)
-            evaluation.append(self.evaluate_generation(bug, sample, candidate_patch))
+        if isinstance(sample["generation"], list):
+            for generation in sample["generation"]:
+                evaluation.extend(self.__evaluate_generation(bug, sample, generation))
+        else:
+            evaluation.extend(
+                self.__evaluate_generation(bug, sample, sample["generation"])
+            )
 
         return evaluation

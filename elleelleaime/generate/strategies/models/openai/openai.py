@@ -26,12 +26,24 @@ class OpenAIChatCompletionModels(PatchGenerationStrategy):
         result = []
 
         for prompt in chunk:
-            completion = self._completions_with_backoff(
-                model=self.model_name,
-                messages=[{"role": "user", "content": prompt}],
-                temperature=self.temperature,
-                n=self.n_samples,
-            )
-            result.append(completion.to_dict())
+            # TODO: Temporary fix to handle beta version of o1 models
+            if self.model_name.startswith("o1"):
+                result_sample = []
+                for _ in range(self.n_samples):
+                    completion = self._completions_with_backoff(
+                        model=self.model_name,
+                        messages=[{"role": "user", "content": prompt}],
+                        temperature=self.temperature,
+                    )
+                    result_sample.append(completion.to_dict())
+                result.append(result_sample)
+            else:
+                completion = self._completions_with_backoff(
+                    model=self.model_name,
+                    messages=[{"role": "user", "content": prompt}],
+                    temperature=self.temperature,
+                    n=self.n_samples,
+                )
+                result.append(completion.to_dict())
 
         return result
