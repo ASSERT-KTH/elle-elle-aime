@@ -6,25 +6,29 @@ from elleelleaime.core.benchmarks.benchmark import Benchmark
 
 class TestEvaluatePatchesOpenAIDefects4J:
     DEFECTS4J: Benchmark
-    PROMPT_STRATEGY: str = "instruct"
-    MODEL_NAME: str = "gpt-4o-mini"
-    EVALUATE_STRATEGY: str = "openai"
+    SAMPLE_KWARGS: dict = {
+        "prompt_strategy": "instruct",
+        "model_name": "gpt-4o-mini",
+    }
+    EVALUATION_KWARGS: dict = {
+        "strategy": "openai",
+        "use_cache": True,
+    }
 
     @classmethod
     def setup_class(cls):
-        TestEvaluatePatchesOpenAIDefects4J.DEFECTS4J = get_benchmark("defects4j")
-        assert TestEvaluatePatchesOpenAIDefects4J.DEFECTS4J is not None
-        TestEvaluatePatchesOpenAIDefects4J.DEFECTS4J.initialize()
+        cls.DEFECTS4J = get_benchmark("defects4j")
+        assert cls.DEFECTS4J is not None
+        cls.DEFECTS4J.initialize()
 
     @classmethod
     def get_exact_match_sample_list(cls):
-        bug = TestEvaluatePatchesOpenAIDefects4J.DEFECTS4J.get_bug("Chart-1")
+        bug = cls.DEFECTS4J.get_bug("Chart-1")
         assert bug is not None
 
         sample = generate_sample(
             bug=bug,
-            prompt_strategy=TestEvaluatePatchesOpenAIDefects4J.PROMPT_STRATEGY,
-            model_name=TestEvaluatePatchesOpenAIDefects4J.MODEL_NAME,
+            **cls.SAMPLE_KWARGS,
         )
 
         sample["generation"] = [
@@ -58,13 +62,12 @@ class TestEvaluatePatchesOpenAIDefects4J:
 
     @classmethod
     def get_exact_match_sample(cls):
-        bug = TestEvaluatePatchesOpenAIDefects4J.DEFECTS4J.get_bug("Chart-1")
+        bug = cls.DEFECTS4J.get_bug("Chart-1")
         assert bug is not None
 
         sample = generate_sample(
             bug=bug,
-            prompt_strategy=TestEvaluatePatchesOpenAIDefects4J.PROMPT_STRATEGY,
-            model_name=TestEvaluatePatchesOpenAIDefects4J.MODEL_NAME,
+            **cls.SAMPLE_KWARGS,
         )
 
         sample["generation"] = {
@@ -96,13 +99,12 @@ class TestEvaluatePatchesOpenAIDefects4J:
 
     @classmethod
     def get_ast_match_sample(cls):
-        bug = TestEvaluatePatchesOpenAIDefects4J.DEFECTS4J.get_bug("Chart-1")
+        bug = cls.DEFECTS4J.get_bug("Chart-1")
         assert bug is not None
 
         sample = generate_sample(
             bug=bug,
-            prompt_strategy=TestEvaluatePatchesOpenAIDefects4J.PROMPT_STRATEGY,
-            model_name=TestEvaluatePatchesOpenAIDefects4J.MODEL_NAME,
+            **cls.SAMPLE_KWARGS,
         )
 
         code = """    public LegendItemCollection getLegendItems() {
@@ -169,13 +171,12 @@ class TestEvaluatePatchesOpenAIDefects4J:
 
     @classmethod
     def get_plausible_sample(cls):
-        bug = TestEvaluatePatchesOpenAIDefects4J.DEFECTS4J.get_bug("Chart-1")
+        bug = cls.DEFECTS4J.get_bug("Chart-1")
         assert bug is not None
 
         sample = generate_sample(
             bug=bug,
-            prompt_strategy=TestEvaluatePatchesOpenAIDefects4J.PROMPT_STRATEGY,
-            model_name=TestEvaluatePatchesOpenAIDefects4J.MODEL_NAME,
+            **cls.SAMPLE_KWARGS,
         )
         code = """    public LegendItemCollection getLegendItems() {
         LegendItemCollection result = new LegendItemCollection();
@@ -243,13 +244,12 @@ class TestEvaluatePatchesOpenAIDefects4J:
 
     @classmethod
     def get_incorrect_sample(cls):
-        bug = TestEvaluatePatchesOpenAIDefects4J.DEFECTS4J.get_bug("Chart-1")
+        bug = cls.DEFECTS4J.get_bug("Chart-1")
         assert bug is not None
 
         sample = generate_sample(
             bug=bug,
-            prompt_strategy=TestEvaluatePatchesOpenAIDefects4J.PROMPT_STRATEGY,
-            model_name=TestEvaluatePatchesOpenAIDefects4J.MODEL_NAME,
+            **cls.SAMPLE_KWARGS,
         )
         sample["generation"] = {
             "id": "chatcmpl-9scPfoeakAgJgoUKFjqhEaUBnJynB",
@@ -278,12 +278,12 @@ class TestEvaluatePatchesOpenAIDefects4J:
         return bug, sample
 
     def test_exact_match_patch(self):
-        bug, sample = TestEvaluatePatchesOpenAIDefects4J.get_exact_match_sample()
+        bug, sample = self.get_exact_match_sample()
 
         sample = evaluate_candidate(
             bug=bug,
             sample=sample,
-            strategy=TestEvaluatePatchesOpenAIDefects4J.EVALUATE_STRATEGY,
+            **self.EVALUATION_KWARGS,
         )
 
         assert sample["evaluation"] is not None
@@ -295,12 +295,12 @@ class TestEvaluatePatchesOpenAIDefects4J:
         assert sample["evaluation"][0]["ast_match"] == True
 
     def test_exact_match_patch_list(self):
-        bug, sample = TestEvaluatePatchesOpenAIDefects4J.get_exact_match_sample_list()
+        bug, sample = self.get_exact_match_sample_list()
 
         sample = evaluate_candidate(
             bug=bug,
             sample=sample,
-            strategy=TestEvaluatePatchesOpenAIDefects4J.EVALUATE_STRATEGY,
+            **self.EVALUATION_KWARGS,
         )
 
         assert sample["evaluation"] is not None
@@ -312,12 +312,12 @@ class TestEvaluatePatchesOpenAIDefects4J:
         assert sample["evaluation"][0]["ast_match"] == True
 
     def test_ast_match_patch(self):
-        bug, sample = TestEvaluatePatchesOpenAIDefects4J.get_ast_match_sample()
+        bug, sample = self.get_ast_match_sample()
 
         sample = evaluate_candidate(
             bug=bug,
             sample=sample,
-            strategy=TestEvaluatePatchesOpenAIDefects4J.EVALUATE_STRATEGY,
+            **self.EVALUATION_KWARGS,
         )
 
         assert sample["evaluation"] is not None
@@ -329,12 +329,12 @@ class TestEvaluatePatchesOpenAIDefects4J:
         assert sample["evaluation"][0]["exact_match"] == False
 
     def test_incorrect_patch(self):
-        bug, sample = TestEvaluatePatchesOpenAIDefects4J.get_incorrect_sample()
+        bug, sample = self.get_incorrect_sample()
 
         sample = evaluate_candidate(
             bug=bug,
             sample=sample,
-            strategy=TestEvaluatePatchesOpenAIDefects4J.EVALUATE_STRATEGY,
+            **self.EVALUATION_KWARGS,
         )
 
         assert sample["evaluation"] is not None
@@ -346,12 +346,12 @@ class TestEvaluatePatchesOpenAIDefects4J:
         assert sample["evaluation"][0]["ast_match"] == False
 
     def test_plausible_patch(self):
-        bug, sample = TestEvaluatePatchesOpenAIDefects4J.get_plausible_sample()
+        bug, sample = self.get_plausible_sample()
 
         sample = evaluate_candidate(
             bug=bug,
             sample=sample,
-            strategy=TestEvaluatePatchesOpenAIDefects4J.EVALUATE_STRATEGY,
+            **self.EVALUATION_KWARGS,
         )
 
         assert sample["evaluation"] is not None

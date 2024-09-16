@@ -8,7 +8,7 @@ import re
 class InstructEvaluationStrategy(ReplaceEvaluationStrategy):
 
     def __init__(self, **kwargs):
-        super().__init__(kwargs=kwargs)
+        super().__init__(**kwargs)
 
     def extract_patch_from_message(self, message: str) -> Optional[str]:
         """

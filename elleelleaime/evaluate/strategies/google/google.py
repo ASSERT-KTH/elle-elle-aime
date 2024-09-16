@@ -7,7 +7,7 @@ from typing import Optional, List
 class GoogleEvaluationStrategy(InstructEvaluationStrategy):
 
     def __init__(self, **kwargs):
-        super().__init__(kwargs=kwargs)
+        super().__init__(**kwargs)
 
     def _evaluate_impl(self, bug: Bug, sample: dict) -> Optional[List[dict]]:
         """

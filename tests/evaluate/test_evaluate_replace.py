@@ -9,15 +9,20 @@ import os
 
 class TestEvaluatePatchesReplaceDefects4J:
     DEFECTS4J: Benchmark
-    PROMPT_STRATEGY: str = "infilling"
-    MODEL_NAME: str = "codellama"
-    EVALUATE_STRATEGY: str = "replace"
+    SAMPLE_KWARGS: dict = {
+        "prompt_strategy": "infilling",
+        "model_name": "codellama",
+    }
+    EVALUATION_KWARGS: dict = {
+        "strategy": "replace",
+        "use_cache": False,
+    }
 
     @classmethod
     def setup_class(cls):
-        TestEvaluatePatchesReplaceDefects4J.DEFECTS4J = get_benchmark("defects4j")
-        assert TestEvaluatePatchesReplaceDefects4J.DEFECTS4J is not None
-        TestEvaluatePatchesReplaceDefects4J.DEFECTS4J.initialize()
+        cls.DEFECTS4J = get_benchmark("defects4j")
+        assert cls.DEFECTS4J is not None
+        cls.DEFECTS4J.initialize()
 
     @classmethod
     def get_exact_match_sample(cls):
@@ -26,8 +31,7 @@ class TestEvaluatePatchesReplaceDefects4J:
 
         sample = generate_sample(
             bug=bug,
-            prompt_strategy=TestEvaluatePatchesReplaceDefects4J.PROMPT_STRATEGY,
-            model_name=TestEvaluatePatchesReplaceDefects4J.MODEL_NAME,
+            **cls.SAMPLE_KWARGS,
         )
         sample["generation"] = [sample["fixed_code"] + "\n// comment"]
         return bug, sample
@@ -39,8 +43,7 @@ class TestEvaluatePatchesReplaceDefects4J:
 
         sample = generate_sample(
             bug=bug,
-            prompt_strategy=TestEvaluatePatchesReplaceDefects4J.PROMPT_STRATEGY,
-            model_name=TestEvaluatePatchesReplaceDefects4J.MODEL_NAME,
+            **cls.SAMPLE_KWARGS,
         )
         sample["generation"] = [
             """    public LegendItemCollection getLegendItems() {
@@ -88,8 +91,7 @@ class TestEvaluatePatchesReplaceDefects4J:
 
         sample = generate_sample(
             bug=bug,
-            prompt_strategy=TestEvaluatePatchesReplaceDefects4J.PROMPT_STRATEGY,
-            model_name=TestEvaluatePatchesReplaceDefects4J.MODEL_NAME,
+            **cls.SAMPLE_KWARGS,
         )
         sample["generation"] = [
             """    public LegendItemCollection getLegendItems() {
@@ -139,8 +141,7 @@ class TestEvaluatePatchesReplaceDefects4J:
 
         sample = generate_sample(
             bug=bug,
-            prompt_strategy=TestEvaluatePatchesReplaceDefects4J.PROMPT_STRATEGY,
-            model_name=TestEvaluatePatchesReplaceDefects4J.MODEL_NAME,
+            **cls.SAMPLE_KWARGS,
         )
         sample["generation"] = [sample["buggy_code"]]
         return bug, sample
@@ -152,8 +153,7 @@ class TestEvaluatePatchesReplaceDefects4J:
 
         sample = generate_sample(
             bug=bug,
-            prompt_strategy=TestEvaluatePatchesReplaceDefects4J.PROMPT_STRATEGY,
-            model_name=TestEvaluatePatchesReplaceDefects4J.MODEL_NAME,
+            **cls.SAMPLE_KWARGS,
         )
         sample["generation"] = [""]
         return bug, sample
@@ -164,7 +164,7 @@ class TestEvaluatePatchesReplaceDefects4J:
         sample = evaluate_candidate(
             bug=bug,
             sample=sample,
-            strategy=TestEvaluatePatchesReplaceDefects4J.EVALUATE_STRATEGY,
+            **self.EVALUATION_KWARGS,
         )
 
         assert sample["evaluation"] is not None
@@ -182,7 +182,7 @@ class TestEvaluatePatchesReplaceDefects4J:
         sample = evaluate_candidate(
             bug=bug,
             sample=sample,
-            strategy=TestEvaluatePatchesReplaceDefects4J.EVALUATE_STRATEGY,
+            **self.EVALUATION_KWARGS,
         )
 
         assert sample["evaluation"] is not None
@@ -199,7 +199,7 @@ class TestEvaluatePatchesReplaceDefects4J:
         sample = evaluate_candidate(
             bug=bug,
             sample=sample,
-            strategy=TestEvaluatePatchesReplaceDefects4J.EVALUATE_STRATEGY,
+            **self.EVALUATION_KWARGS,
         )
 
         assert sample["evaluation"] is not None
@@ -216,7 +216,7 @@ class TestEvaluatePatchesReplaceDefects4J:
         sample = evaluate_candidate(
             bug=bug,
             sample=sample,
-            strategy=TestEvaluatePatchesReplaceDefects4J.EVALUATE_STRATEGY,
+            **self.EVALUATION_KWARGS,
         )
 
         assert sample["evaluation"] is not None
@@ -233,7 +233,7 @@ class TestEvaluatePatchesReplaceDefects4J:
         sample = evaluate_candidate(
             bug=bug,
             sample=sample,
-            strategy=TestEvaluatePatchesReplaceDefects4J.EVALUATE_STRATEGY,
+            **self.EVALUATION_KWARGS,
         )
 
         assert sample["evaluation"] is not None
