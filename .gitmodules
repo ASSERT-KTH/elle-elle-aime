@@ -10,3 +10,6 @@
 [submodule "benchmarks/gitbug-java"]
 	path = benchmarks/gitbug-java
 	url = https://github.com/gitbugactions/gitbug-java.git
+[submodule "cache"]
+	path = cache
+	url = https://github.com/ASSERT-KTH/elle-elle-aime-cache.git

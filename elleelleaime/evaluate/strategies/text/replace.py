@@ -1,17 +1,26 @@
 from typing import Optional, List
 from unidiff import PatchSet
+from pathlib import Path
 from uuid import uuid4
+
 import os, tempfile, shutil, logging, getpass
 
-from ..strategy import PatchEvaluationStrategy
+from elleelleaime.evaluate.strategies.strategy import PatchEvaluationStrategy
 from elleelleaime.core.benchmarks.bug import Bug
 from elleelleaime.core.utils.java.java import remove_empty_lines, remove_java_comments
+from elleelleaime.core.caching.cache import Cache
 
 
 class ReplaceEvaluationStrategy(PatchEvaluationStrategy):
 
     def __init__(self, **kwargs):
-        super().__init__(kwargs=kwargs)
+        super().__init__(**kwargs)
+        self.use_cache = kwargs.get("use_cache", True)
+        self.cache_path = kwargs.get(
+            "cache_path", Path(__file__).parent.parent.parent.parent.parent / "cache"
+        )
+        if self.use_cache:
+            self.cache = Cache(self.cache_path)
 
     def evaluate_generation(
         self, bug: Bug, sample: dict, generation: Optional[str]
@@ -26,6 +35,17 @@ class ReplaceEvaluationStrategy(PatchEvaluationStrategy):
                 "test": False,
             }
 
+        # Check if the evaluation is cached
+        if self.use_cache:
+            evaluation = self.cache.load_from_cache_from_bug(bug, generation)
+            if evaluation is not None:
+                return evaluation
+            else:
+                logging.info(
+                    f"Evaluation for {bug.get_identifier()} not found in cache."
+                )
+
+        # Otherwise, we evaluate the generation
         buggy_path = os.path.join(
             tempfile.gettempdir(),
             f"elleelleaime-{getpass.getuser()}",
@@ -62,6 +82,10 @@ class ReplaceEvaluationStrategy(PatchEvaluationStrategy):
             result["ast_match"] = True
             result["compile"] = True
             result["test"] = True
+
+            # Save the evaluation to the cache
+            if self.use_cache:
+                self.cache.save_to_cache_from_bug(bug, generation, result)
             return result
 
         try:
@@ -127,6 +151,9 @@ class ReplaceEvaluationStrategy(PatchEvaluationStrategy):
                 if result["test"]:
                     result["ast_match"] = self.ast_match(fixed_code, candidate_code)
 
+            # Save the evaluation to the cache
+            if self.use_cache:
+                self.cache.save_to_cache_from_bug(bug, generation, result)
             return result
         finally:
             shutil.rmtree(buggy_path)

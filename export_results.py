@@ -1,5 +1,6 @@
 from elleelleaime.core.utils.jsonl import stream_jsonl
 from elleelleaime.export.cost.cost_calculator import CostCalculator
+from elleelleaime.core.caching.cache import Cache
 
 from pathlib import Path
 from typing import Optional
@@ -289,6 +290,24 @@ def export_bugs(samples, dir_path):
         f.write("\n".join(bugs_with_candidates))
 
 
+def export_cache(samples: list, cache_path: str, benchmark: str):
+    """
+    Exports the results of an evaluation file to the cache directory.
+    """
+    cache = Cache(cache_path)
+
+    for sample in samples:
+        if sample["generation"] is not None:
+            for evaluation in sample["evaluation"]:
+                if evaluation is not None and evaluation["generation"] is not None:
+                    cache.save_to_cache(
+                        benchmark,
+                        sample["identifier"],
+                        evaluation["generation"],
+                        evaluation,
+                    )
+
+
 def entry_point(
     benchmark: str,
     samples_path: str,
@@ -335,6 +354,10 @@ def entry_point(
     # Export patches to text files in structured directories
     export_patches(samples, dir_path)
     export_bugs(samples, dir_path)
+
+    # Export results to cache (and check for inconsistencies)
+    cache_path = kwargs.get("cache_path", Path("cache"))
+    export_cache(samples, cache_path, benchmark)
 
 
 def main():
