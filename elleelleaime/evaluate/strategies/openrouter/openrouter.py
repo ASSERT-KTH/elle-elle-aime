@@ -7,7 +7,7 @@ from typing import Optional, List
 class OpenRouterEvaluationStrategy(InstructEvaluationStrategy):
 
     def __init__(self, **kwargs):
-        super().__init__(kwargs=kwargs)
+        super().__init__(**kwargs)
 
     def __evaluate_generation(self, bug: Bug, sample: dict, generation) -> List[dict]:
         """
