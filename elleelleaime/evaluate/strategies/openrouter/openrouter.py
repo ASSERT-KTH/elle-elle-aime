@@ -17,6 +17,9 @@ class OpenRouterEvaluationStrategy(InstructEvaluationStrategy):
         :param generation: The generation to evaluate
         """
         evaluation = []
+    
+        if "choices" not in generation:
+            return evaluation
 
         for choice in generation["choices"]:
             message = choice["message"]["content"]
@@ -34,7 +37,7 @@ class OpenRouterEvaluationStrategy(InstructEvaluationStrategy):
         """
         evaluation = []
 
-        if sample["generation"] is None or "choices" not in sample["generation"]:
+        if sample["generation"] is None:
             return evaluation
 
         if isinstance(sample["generation"], list):
