@@ -16,7 +16,7 @@ class GitBugJava(Benchmark):
     The class for representing the GitBug-Java benchmark.
     """
 
-    def __init__(self, path: Path = Path("benchmarks/gitbugjava").absolute()) -> None:
+    def __init__(self, path: Path = Path("benchmarks/gitbug-java").absolute()) -> None:
         super().__init__("gitbugjava", path)
         self.bin = f"cd {self.path} && poetry run {path.joinpath('gitbug-java')}"
 
