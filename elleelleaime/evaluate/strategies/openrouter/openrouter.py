@@ -34,7 +34,7 @@ class OpenRouterEvaluationStrategy(InstructEvaluationStrategy):
         """
         evaluation = []
 
-        if sample["generation"] is None:
+        if sample["generation"] is None or "choices" not in sample["generation"]:
             return evaluation
 
         if isinstance(sample["generation"], list):
