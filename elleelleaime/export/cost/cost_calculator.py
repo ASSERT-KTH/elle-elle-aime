@@ -1,5 +1,6 @@
 from .strategies.openai import OpenAICostStrategy
 from .strategies.google import GoogleCostStrategy
+from .strategies.openrouter import OpenRouterCostStrategy
 
 from typing import Optional
 
@@ -9,6 +10,7 @@ class CostCalculator:
     __COST_STRATEGIES = {
         "openai-chatcompletion": OpenAICostStrategy,
         "google": GoogleCostStrategy,
+        "openrouter": OpenRouterCostStrategy,
     }
 
     @staticmethod

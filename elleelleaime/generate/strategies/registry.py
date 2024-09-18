@@ -11,6 +11,9 @@ from elleelleaime.generate.strategies.models.huggingface.codellama.codellama_inf
 from elleelleaime.generate.strategies.models.huggingface.codellama.codellama_instruct import (
     CodeLLaMAIntruct,
 )
+from elleelleaime.generate.strategies.models.openrouter.openrouter import (
+    OpenRouterModels,
+)
 
 from typing import Tuple
 
@@ -25,6 +28,7 @@ class PatchGenerationStrategyRegistry:
     __MODELS: dict[str, Tuple[type, Tuple]] = {
         "openai-chatcompletion": (OpenAIChatCompletionModels, ("model_name",)),
         "google": (GoogleModels, ("model_name",)),
+        "openrouter": (OpenRouterModels, ("model_name",)),
         "codellama-infilling": (CodeLLaMAInfilling, ("model_name",)),
         "codellama-instruct": (CodeLLaMAIntruct, ("model_name",)),
     }
