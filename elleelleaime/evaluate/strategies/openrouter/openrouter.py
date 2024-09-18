@@ -17,7 +17,7 @@ class OpenRouterEvaluationStrategy(InstructEvaluationStrategy):
         :param generation: The generation to evaluate
         """
         evaluation = []
-    
+
         if "choices" not in generation:
             return evaluation
 
