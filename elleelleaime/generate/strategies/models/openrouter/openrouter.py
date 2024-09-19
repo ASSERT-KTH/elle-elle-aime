@@ -32,6 +32,10 @@ class OpenRouterModels(PatchGenerationStrategy):
             url="https://openrouter.ai/api/v1/chat/completions",
             headers={
                 "Authorization": f"Bearer {self.openrouter_api_key}",
+                # For including your app on openrouter.ai rankings.
+                "HTTP-Referer": f"https://repairbench.github.io/",
+                # Shows in rankings on openrouter.ai.
+                "X-Title": f"RepairBench",
             },
             data=json.dumps(kwargs),
         )
