@@ -311,75 +311,81 @@ def extract_failing_test_cases(bug: RichBug) -> dict[str, str]:
     return failing_test_cases
 
 
-def remove_java_comments(source: str) -> str:
-    # Define states
-    NORMAL, SINGLE_COMMENT, MULTI_COMMENT, STRING_LITERAL, CHAR_LITERAL = range(5)
+def remove_java_comments(source: str) -> Optional[str]:
+    try:
+        # Define states
+        NORMAL, SINGLE_COMMENT, MULTI_COMMENT, STRING_LITERAL, CHAR_LITERAL = range(5)
 
-    state = NORMAL
-    result = []
-    i = 0
+        state = NORMAL
+        result = []
+        i = 0
 
-    while i < len(source):
-        # Check the current state and process accordingly
-        if state == NORMAL:
-            if source[i : i + 2] == "//":
-                state = SINGLE_COMMENT
-                i += 2
-            elif source[i : i + 2] == "/*":
-                state = MULTI_COMMENT
-                i += 2
-            elif source[i] == '"':
-                state = STRING_LITERAL
-                result.append(source[i])
-                i += 1
-            elif source[i] == "'":
-                state = CHAR_LITERAL
-                result.append(source[i])
-                i += 1
-            else:
-                result.append(source[i])
-                i += 1
-        elif state == SINGLE_COMMENT:
-            if source[i] == "\n":
-                state = NORMAL
-                result.append(source[i])
-                i += 1
-            else:
-                i += 1
-        elif state == MULTI_COMMENT:
-            if source[i : i + 2] == "*/":
-                state = NORMAL
-                i += 2
-            else:
-                i += 1
-        elif state == STRING_LITERAL:
-            if source[i] == "\\":
-                result.append(source[i])
-                i += 1
-                result.append(source[i])
-                i += 1
-            elif source[i] == '"':
-                state = NORMAL
-                result.append(source[i])
-                i += 1
-            else:
-                result.append(source[i])
-                i += 1
-        elif state == CHAR_LITERAL:
-            if source[i] == "\\":
-                result.append(source[i])
-                i += 1
-                result.append(source[i])
-                i += 1
-            elif source[i] == "'":
-                state = NORMAL
-                result.append(source[i])
-                i += 1
-            else:
-                result.append(source[i])
-                i += 1
+        while i < len(source):
+            # Check the current state and process accordingly
+            if state == NORMAL:
+                if source[i : i + 2] == "//":
+                    state = SINGLE_COMMENT
+                    i += 2
+                elif source[i : i + 2] == "/*":
+                    state = MULTI_COMMENT
+                    i += 2
+                elif source[i] == '"':
+                    state = STRING_LITERAL
+                    result.append(source[i])
+                    i += 1
+                elif source[i] == "'":
+                    state = CHAR_LITERAL
+                    result.append(source[i])
+                    i += 1
+                else:
+                    result.append(source[i])
+                    i += 1
+            elif state == SINGLE_COMMENT:
+                if source[i] == "\n":
+                    state = NORMAL
+                    result.append(source[i])
+                    i += 1
+                else:
+                    i += 1
+            elif state == MULTI_COMMENT:
+                if source[i : i + 2] == "*/":
+                    state = NORMAL
+                    i += 2
+                else:
+                    i += 1
+            elif state == STRING_LITERAL:
+                if source[i] == "\\":
+                    result.append(source[i])
+                    i += 1
+                    result.append(source[i])
+                    i += 1
+                elif source[i] == '"':
+                    state = NORMAL
+                    result.append(source[i])
+                    i += 1
+                else:
+                    result.append(source[i])
+                    i += 1
+            elif state == CHAR_LITERAL:
+                if source[i] == "\\":
+                    result.append(source[i])
+                    i += 1
+                    result.append(source[i])
+                    i += 1
+                elif source[i] == "'":
+                    state = NORMAL
+                    result.append(source[i])
+                    i += 1
+                else:
+                    result.append(source[i])
+                    i += 1
 
-    return "".join(result)
+        return "".join(result)
+    except Exception as e:
+        logging.warning(
+            f"Failed to remove_java_comments from\n```n{source}\n```\nwith error: {e}"
+        )
+        return None
 
 
 def remove_empty_lines(source):

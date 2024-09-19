@@ -26,14 +26,15 @@ class ReplaceEvaluationStrategy(PatchEvaluationStrategy):
         self, bug: Bug, sample: dict, generation: Optional[str]
     ) -> Optional[dict]:
         # If the generation is None, we skip the evaluation
+        result = {
+            "generation": generation,
+            "exact_match": False,
+            "ast_match": False,
+            "compile": False,
+            "test": False,
+        }
         if generation is None:
-            return {
-                "generation": None,
-                "exact_match": False,
-                "ast_match": False,
-                "compile": False,
-                "test": False,
-            }
+            return result
 
         # Check if the evaluation is cached
         if self.use_cache:
@@ -54,28 +55,29 @@ class ReplaceEvaluationStrategy(PatchEvaluationStrategy):
         )
 
         # Remove comments and empty lines from the generated code and the fixed code
-        generation_no_comments = remove_empty_lines(remove_java_comments(generation))
+        generation_no_comments = remove_java_comments(generation)
+        if generation_no_comments is None:
+            # Save the evaluation to the cache
+            if self.use_cache:
+                self.cache.save_to_cache_from_bug(bug, generation, result)
+            return result
+        generation_no_comments = remove_empty_lines(generation_no_comments)
         generation_no_comments = generation_no_comments.splitlines()
         fixed_code_no_comments = remove_empty_lines(
             remove_java_comments(sample["fixed_code"])
         )
         fixed_code_no_comments = fixed_code_no_comments.splitlines()
 
-        result = {
-            "generation": generation,
-            "exact_match": len(generation_no_comments) == len(fixed_code_no_comments)
-            and all(
-                [
-                    x.strip() == y.strip()
-                    for x, y in zip(
-                        generation_no_comments, fixed_code_no_comments, strict=True
-                    )
-                ]
-            ),
-            "ast_match": False,
-            "compile": False,
-            "test": False,
-        }
+        result["exact_match"] = len(generation_no_comments) == len(
+            fixed_code_no_comments
+        ) and all(
+            [
+                x.strip() == y.strip()
+                for x, y in zip(
+                    generation_no_comments, fixed_code_no_comments, strict=True
+                )
+            ]
+        )
 
         # If the generation is an exact match, there is no need to evaluate the AST, compile or test
         if result["exact_match"]:
