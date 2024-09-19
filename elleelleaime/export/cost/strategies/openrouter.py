@@ -7,9 +7,9 @@ import tqdm
 class OpenRouterCostStrategy(CostStrategy):
 
     __COST_PER_MILLION_TOKENS = {
-        "nousresearch:hermes-3-llama-3.1-405b:free": {
-            "prompt": 0,
-            "completion": 0,
+        "meta-llama:llama-3.1-405b-instruct": {
+            "prompt": 2.8,
+            "completion": 2.8,
         },
     }
 
