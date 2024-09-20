@@ -11,6 +11,14 @@ class OpenRouterCostStrategy(CostStrategy):
             "prompt": 2.8,
             "completion": 2.8,
         },
+        "deepseek-v2.5": {
+            "prompt": 2,
+            "completion": 2,
+        },
+        "mistral-large-2407": {
+            "prompt": 2,
+            "completion": 6,
+        }
     }
 
     @staticmethod
