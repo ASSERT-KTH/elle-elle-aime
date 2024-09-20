@@ -18,7 +18,7 @@ class OpenRouterCostStrategy(CostStrategy):
         "mistral-large-2407": {
             "prompt": 2,
             "completion": 6,
-        }
+        },
     }
 
     @staticmethod
@@ -39,6 +39,7 @@ class OpenRouterCostStrategy(CostStrategy):
                 else:
                     generation = sample["generation"]
                 for g in generation:
+                    print(g)
                     prompt_token_count = g["usage"]["prompt_tokens"]
                     candidates_token_count = g["usage"]["completion_tokens"]
 

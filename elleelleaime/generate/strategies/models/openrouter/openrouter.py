@@ -26,7 +26,11 @@ class OpenRouterModels(PatchGenerationStrategy):
         load_dotenv()
         self.openrouter_api_key = os.getenv("OPENROUTER_API_KEY")
 
-    @backoff.on_exception(backoff.expo, requests.exceptions.RequestException)
+    @backoff.on_exception(
+        backoff.expo,
+        (requests.exceptions.RequestException, json.JSONDecodeError, Exception),
+        max_tries=5,
+    )
     def _completions_with_backoff(self, **kwargs):
         response = requests.post(
             url="https://openrouter.ai/api/v1/chat/completions",
@@ -39,7 +43,13 @@ class OpenRouterModels(PatchGenerationStrategy):
             },
             data=json.dumps(kwargs),
         )
-        return response.json()
+
+        response = response.json()
+
+        if "error" in response:
+            raise Exception(response["error"])
+
+        return response
 
     def _generate_impl(self, chunk: List[str]) -> Any:
         result = []
