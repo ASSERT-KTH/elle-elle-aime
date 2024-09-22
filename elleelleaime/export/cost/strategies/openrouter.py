@@ -2,6 +2,7 @@ from typing import Optional
 from .cost_strategy import CostStrategy
 
 import tqdm
+import logging
 
 
 class OpenRouterCostStrategy(CostStrategy):
@@ -39,7 +40,9 @@ class OpenRouterCostStrategy(CostStrategy):
                 else:
                     generation = sample["generation"]
                 for g in generation:
-                    print(g)
+                    if "usage" not in g:
+                        logging.warning(f"'usage' key not found in {g}")
+                        continue
                     prompt_token_count = g["usage"]["prompt_tokens"]
                     candidates_token_count = g["usage"]["completion_tokens"]
 
