@@ -20,6 +20,10 @@ class OpenRouterCostStrategy(CostStrategy):
             "prompt": 2,
             "completion": 6,
         },
+        "qwen-2.5-72b-instruct": {
+            "prompt": 0.35,
+            "completion": 0.4,
+        },
     }
 
     @staticmethod
@@ -40,7 +44,10 @@ class OpenRouterCostStrategy(CostStrategy):
                 else:
                     generation = sample["generation"]
                 for g in generation:
-                    if "usage" not in g:
+                    if not g:
+                        logging.warning(f"generation is empty")
+                        continue
+                    elif "usage" not in g:
                         logging.warning(f"'usage' key not found in {g}")
                         continue
                     prompt_token_count = g["usage"]["prompt_tokens"]
