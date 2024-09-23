@@ -39,7 +39,10 @@ class AnthropicModels(PatchGenerationStrategy):
                     messages=[{"role": "user", "content": prompt}],
                     temperature=self.temperature,
                 )
-                result_sample.append(completion.to_dict())
+                if completion:
+                    result_sample.append(completion.to_dict())
+                else:
+                    result_sample.append(completion)
             result.append(result_sample)
 
         return result
