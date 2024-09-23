@@ -20,14 +20,16 @@ class AnthropicModels(PatchGenerationStrategy):
 
     @backoff.on_exception(
         backoff.expo,
-        (
-            anthropic.APIResponseValidationError,
-            anthropic.APIConnectionError,
-            anthropic.RateLimitError,
-        ),
+        Exception,
+        max_tries=5,
+        raise_on_giveup=False,
     )
     def _completions_with_backoff(self, **kwargs):
-        return self.client.messages.create(**kwargs)
+        try:
+            return self.client.messages.create(**kwargs)
+        except Exception as e:
+            print(f"Error: {e}")
+            raise e
 
     def _generate_impl(self, chunk: List[str]) -> Any:
         result = []
