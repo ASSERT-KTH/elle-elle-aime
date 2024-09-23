@@ -18,7 +18,7 @@ class OpenRouterEvaluationStrategy(InstructEvaluationStrategy):
         """
         evaluation = []
 
-        if "choices" not in generation:
+        if not generation or "choices" not in generation:
             return evaluation
 
         for choice in generation["choices"]:

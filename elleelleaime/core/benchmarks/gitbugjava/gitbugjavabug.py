@@ -30,8 +30,14 @@ class GitBugJavaBug(RichBug):
 
         # Checkout the bug
         checkout_run = self.benchmark.run_command(
-            f"checkout {self.identifier} {path} {'--fixed' if fixed else ''}"
+            f"checkout {self.identifier} {path} {'--fixed' if fixed else ''}",
+            check=False,
         )
+        if checkout_run.returncode != 0:
+            print(f"checkout {self.identifier} {path} {'--fixed' if fixed else ''}")
+            print(checkout_run.stdout.decode("utf-8"))
+            print(checkout_run.stderr.decode("utf-8"))
+            raise Exception("Error while checking out bug")
 
         return checkout_run.returncode == 0
 
