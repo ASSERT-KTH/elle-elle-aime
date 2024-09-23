@@ -30,6 +30,7 @@ class OpenRouterModels(PatchGenerationStrategy):
         backoff.expo,
         (requests.exceptions.RequestException, json.JSONDecodeError, Exception),
         max_tries=5,
+        raise_on_giveup=False,
     )
     def _completions_with_backoff(self, **kwargs):
         response = requests.post(
