@@ -25,11 +25,7 @@ class AnthropicModels(PatchGenerationStrategy):
         raise_on_giveup=False,
     )
     def _completions_with_backoff(self, **kwargs):
-        try:
-            return self.client.messages.create(**kwargs)
-        except Exception as e:
-            print(f"Error: {e}")
-            raise e
+        return self.client.messages.create(**kwargs)
 
     def _generate_impl(self, chunk: List[str]) -> Any:
         result = []
