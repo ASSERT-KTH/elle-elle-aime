@@ -47,7 +47,7 @@ class OpenRouterModels(PatchGenerationStrategy):
 
         response = response.json()
 
-        if "error" in response:
+        if "error" in response and response["error"]["code"] in {408, 429, 502}:
             raise Exception(response["error"])
 
         return response
