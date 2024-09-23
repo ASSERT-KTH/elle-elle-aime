@@ -6,6 +6,9 @@ from elleelleaime.evaluate.strategies.google.google import GoogleEvaluationStrat
 from elleelleaime.evaluate.strategies.openrouter.openrouter import (
     OpenRouterEvaluationStrategy,
 )
+from elleelleaime.evaluate.strategies.anthropic.anthropic import (
+    AnthropicEvaluationStrategy,
+)
 
 
 class PatchEvaluationStrategyRegistry:
@@ -20,6 +23,7 @@ class PatchEvaluationStrategyRegistry:
             "openai": OpenAIEvaluationStrategy(**kwargs),
             "google": GoogleEvaluationStrategy(**kwargs),
             "openrouter": OpenRouterEvaluationStrategy(**kwargs),
+            "anthropic": AnthropicEvaluationStrategy(**kwargs),
         }
 
     def get_evaluation(self, name: str) -> PatchEvaluationStrategy:

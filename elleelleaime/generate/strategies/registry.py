@@ -14,6 +14,9 @@ from elleelleaime.generate.strategies.models.huggingface.codellama.codellama_ins
 from elleelleaime.generate.strategies.models.openrouter.openrouter import (
     OpenRouterModels,
 )
+from elleelleaime.generate.strategies.models.anthropic.anthropic import (
+    AnthropicModels,
+)
 
 from typing import Tuple
 
@@ -31,6 +34,7 @@ class PatchGenerationStrategyRegistry:
         "openrouter": (OpenRouterModels, ("model_name",)),
         "codellama-infilling": (CodeLLaMAInfilling, ("model_name",)),
         "codellama-instruct": (CodeLLaMAIntruct, ("model_name",)),
+        "anthropic": (AnthropicModels, ("model_name", "max_tokens")),
     }
 
     @classmethod
