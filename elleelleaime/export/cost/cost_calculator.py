@@ -1,7 +1,7 @@
 from .strategies.openai import OpenAICostStrategy
 from .strategies.google import GoogleCostStrategy
 from .strategies.openrouter import OpenRouterCostStrategy
-
+from .strategies.anthropic import AnthropicCostStrategy
 from typing import Optional
 
 
@@ -11,6 +11,7 @@ class CostCalculator:
         "openai-chatcompletion": OpenAICostStrategy,
         "google": GoogleCostStrategy,
         "openrouter": OpenRouterCostStrategy,
+        "anthropic": AnthropicCostStrategy,
     }
 
     @staticmethod
