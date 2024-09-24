@@ -2,7 +2,7 @@ from typing import Optional
 from .cost_strategy import CostStrategy
 
 import tqdm
-
+import logging
 
 class AnthropicCostStrategy(CostStrategy):
 
@@ -32,7 +32,7 @@ class AnthropicCostStrategy(CostStrategy):
             if sample["generation"]:
                 for g in sample["generation"]:
                     if "usage" not in g:
-                        logger.warning(
+                        logging.warning(
                             f"No usage found for sample: {sample['identifier']}"
                         )
                         continue
