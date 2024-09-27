@@ -4,8 +4,8 @@ Framework to use LLMs for automated program repair.
 
 Supported benchmarks: 
   * Defects4J
-  * HumanEval-Java
   * GitBug-Java
+  * HumanEval-Java
   * QuixBugs
 
 If you use this code, please cite
@@ -46,23 +46,19 @@ python generate_samples.py defects4j instruct
 
 Example of how to generate patches for the samples:
 ```bash
-python generate_patches.py samples_defects4j_instruct_.jsonl gpt-4o-mini --n_workers 1 --num_return_sequences 10
+python generate_patches.py samples_defects4j_instruct_.jsonl gpt-4o-mini --n_workers 1 --num_return_sequences 10 --temperature 1.0
 ```
 ---
 
 Example of how to evaluate the generated patches:
 ```bash
-python evaluate_patches.py defects4j candidates_defects4j_instruct_gpt-4o-mini.jsonl.gz --correctness
+python evaluate_patches.py defects4j candidates_defects4j_instruct_gpt-4o-mini.jsonl.gz --strategy openai
 ```
-The option `--correctness`, enabled by default, enables compilation and test execution of the generated patches.
 
----
-
-Example of how to generate statistical reports and export patches:
+Example of how to export the evaluated patches:
 ```bash
-python evaluate_patches.py defects4j evaluation_defects4j_instruct_gpt-4o-mini.jsonl.gz --correctness False --statistics --export
+python export_results.py defects4j evaluation_defects4j_instruct_openai.jsonl --model_name gpt-4o-mini
 ```
-Note: This command will output the reports and patches to the same directory of the evaluation file
 
 
 ## Development
@@ -75,4 +71,5 @@ pytest -s tests/
 ## Check out the results
 
 We store all the results (prompts, patches, evaluation) in a separate repository.
-Please visit https://github.com/ASSERT-KTH/elle-elle-aime-results for these.
+
+Please visit https://github.com/ASSERT-KTH/repairbench for these.
