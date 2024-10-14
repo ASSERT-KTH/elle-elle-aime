@@ -12,12 +12,12 @@ If you use this code, please cite
 
 ```bibtex
 @techreport{repairbench,
-      title={RepairBench: Leaderboard of Frontier Models for Program Repair}, 
-      author={André Silva and Martin Monperrus},
-      year={2024},
-      url={https://arxiv.org/abs/2409.18952}, 
-      number = {2409.18952},
-      institution = {arXiv},
+  title={RepairBench: Leaderboard of Frontier Models for Program Repair}, 
+  author={André Silva and Martin Monperrus},
+  year={2024},
+  url={https://arxiv.org/abs/2409.18952}, 
+  number = {2409.18952},
+  institution = {arXiv},
 }
 ```
   
