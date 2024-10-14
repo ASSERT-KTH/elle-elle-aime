@@ -4,6 +4,7 @@ from .cost_strategy import CostStrategy
 import tqdm
 import logging
 
+
 class AnthropicCostStrategy(CostStrategy):
 
     __COST_PER_MILLION_TOKENS = {
