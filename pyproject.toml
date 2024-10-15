@@ -32,5 +32,5 @@ google-generativeai = "^0.7.2"
 anthropic = "^0.34.2"
 
 [tool.poetry.group.dev.dependencies]
-pytest = "^7.3.1"
+pytest = "^8.0.0"
 mypy = "^1.2.0"
