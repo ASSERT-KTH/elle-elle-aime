@@ -7,16 +7,24 @@ import tqdm
 class GoogleCostStrategy(CostStrategy):
 
     __COST_PER_MILLION_TOKENS = {
-        "gemini-1.5-pro": {
+        "gemini-1.5-pro-001": {
             "prompt": 3.50,
             "completion": 10.50,
+        },
+        "gemini-1.5-pro-002": {
+            "prompt": 1.25,
+            "completion": 5.00,
         }
     }
 
     __COST_PER_MILLION_TOKENS_OVER_128K = {
-        "gemini-1.5-pro": {
+        "gemini-1.5-pro-001": {
             "prompt": 7.00,
             "completion": 21.00,
+        },
+        "gemini-1.5-pro-002": {
+            "prompt": 2.50,
+            "completion": 10.00,
         }
     }
 
