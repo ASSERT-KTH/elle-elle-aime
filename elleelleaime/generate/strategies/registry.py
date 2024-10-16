@@ -17,6 +17,9 @@ from elleelleaime.generate.strategies.models.openrouter.openrouter import (
 from elleelleaime.generate.strategies.models.anthropic.anthropic import (
     AnthropicModels,
 )
+from elleelleaime.generate.strategies.models.nvidia.nvidia import (
+    NvidiaModels,
+)
 
 from typing import Tuple
 
@@ -35,6 +38,7 @@ class PatchGenerationStrategyRegistry:
         "codellama-infilling": (CodeLLaMAInfilling, ("model_name",)),
         "codellama-instruct": (CodeLLaMAIntruct, ("model_name",)),
         "anthropic": (AnthropicModels, ("model_name", "max_tokens")),
+        "nvidia": (NvidiaModels, ("model_name",)),
     }
 
     @classmethod
