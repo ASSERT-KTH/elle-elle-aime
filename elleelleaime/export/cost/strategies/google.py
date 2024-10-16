@@ -14,7 +14,7 @@ class GoogleCostStrategy(CostStrategy):
         "gemini-1.5-pro-002": {
             "prompt": 1.25,
             "completion": 5.00,
-        }
+        },
     }
 
     __COST_PER_MILLION_TOKENS_OVER_128K = {
@@ -25,7 +25,7 @@ class GoogleCostStrategy(CostStrategy):
         "gemini-1.5-pro-002": {
             "prompt": 2.50,
             "completion": 10.00,
-        }
+        },
     }
 
     @staticmethod
