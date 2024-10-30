@@ -12,6 +12,10 @@ class AnthropicCostStrategy(CostStrategy):
             "prompt": 3,
             "completion": 15,
         },
+        "claude-3-5-sonnet-20241022": {
+            "prompt": 3,
+            "completion": 15,
+        },
         "claude-3-haiku-20240307": {
             "prompt": 0.25,
             "completion": 1.25,
