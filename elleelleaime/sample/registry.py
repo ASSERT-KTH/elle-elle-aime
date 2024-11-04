@@ -1,6 +1,8 @@
 from .strategy import PromptingStrategy
 from .strategies.infilling import InfillingPrompting
 from .strategies.instruct import InstructPrompting
+from .strategies.sigonly_infilling import SigOnlyInfillingPrompting
+from .strategies.sigonly_instruct import SigOnlyInstructPrompting
 
 
 class PromptStrategyRegistry:
@@ -11,6 +13,8 @@ class PromptStrategyRegistry:
     __STRATEGIES: dict[str, type] = {
         "infilling": InfillingPrompting,
         "instruct": InstructPrompting,
+        "sigonly-infilling": SigOnlyInfillingPrompting,
+        "sigonly-instruct": SigOnlyInstructPrompting,
     }
 
     @classmethod
