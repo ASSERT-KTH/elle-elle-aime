@@ -27,7 +27,7 @@ class OpenRouterCostStrategy(CostStrategy):
         "llama-3.1-nemotron-70b-instruct": {
             "prompt": 0.35,
             "completion": 0.4,
-        }
+        },
     }
 
     @staticmethod
