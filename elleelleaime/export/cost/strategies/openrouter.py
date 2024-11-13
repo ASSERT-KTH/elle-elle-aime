@@ -28,6 +28,10 @@ class OpenRouterCostStrategy(CostStrategy):
             "prompt": 0.35,
             "completion": 0.4,
         },
+        "qwen-2.5-coder-32b-instruct": {
+            "prompt": 0.2,
+            "completion": 0.2,
+        },
     }
 
     @staticmethod
