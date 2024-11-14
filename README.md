@@ -1,4 +1,4 @@
-# elle-elle-aime ❤️
+# repairbench-framework ❤️
 
 Framework to use LLMs for automated program repair.
 
@@ -25,7 +25,7 @@ If you use this code, please cite
 
 Requires python3.11 (or latest) and python-poetry.
 
-To setup elle-elle-aime, run the following command:
+To setup repairbench-framework, run the following command:
 ```bash
 ./setup.sh
 ```
