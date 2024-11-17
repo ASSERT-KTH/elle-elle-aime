@@ -59,7 +59,7 @@ class PatchEvaluationStrategy(ABC):
         :return: A dictionary containing the evaluation results.
         """
         # Implements the logic common to all generation strategies
-        if sample["generation"] is None:
+        if "generation" not in sample or sample["generation"] is None:
             return self.__handle_none()
 
         return self._evaluate_impl(bug, sample)
