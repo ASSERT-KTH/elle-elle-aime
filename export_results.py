@@ -106,7 +106,7 @@ def compute_statistics(samples: list) -> dict:
         if sample["prompt"]:
             statistics["num_bugs_with_prompt"] += 1
 
-        if sample["generation"]:
+        if "generation" in sample and sample["generation"]:
             statistics["num_bugs_with_patches"] += 1
             statistics["num_patches"] += len(sample["evaluation"])
 
@@ -205,9 +205,13 @@ def export_patches(samples: list, dir_path: str) -> None:
         shutil.rmtree(patches_dir)
 
     for sample in tqdm.tqdm(samples, "Exporting patches..."):
-        if not sample["generation"] or all(
-            candidate["generation"] is None if candidate is not None else None
-            for candidate in sample["evaluation"]
+        if (
+            "generation" not in sample
+            or not sample["generation"]
+            or all(
+                candidate["generation"] is None if candidate is not None else None
+                for candidate in sample["evaluation"]
+            )
         ):
             continue
 
@@ -274,7 +278,8 @@ def export_bugs(samples, dir_path):
         [
             sample["identifier"]
             for sample in samples
-            if sample["generation"] is not None
+            if "generation" in sample
+            and sample["generation"] is not None
             and len(sample["generation"]) > 0
             and not all(
                 candidate["generation"] is None if candidate is not None else None
@@ -297,7 +302,7 @@ def export_cache(samples: list, cache_path: str, benchmark: str):
     cache = Cache(cache_path)
 
     for sample in samples:
-        if sample["generation"] is not None:
+        if "generation" in sample and sample["generation"] is not None:
             for evaluation in sample["evaluation"]:
                 if evaluation is not None and evaluation["generation"] is not None:
                     cache.save_to_cache(

@@ -2,10 +2,11 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from elleelleaime.core.utils.jsonl import stream_jsonl, write_jsonl
 from elleelleaime.generate.strategies.registry import PatchGenerationStrategyRegistry
 
-from typing import List
+from typing import List, Optional
 from pathlib import Path
 import fire
 import sys
+import os
 import tqdm
 import logging
 
@@ -19,11 +20,16 @@ def generate_candidate(chunk: List[dict], strategy_name: str, **kwargs) -> List[
         strategy_name, **kwargs
     )
 
-    non_empty_chunk = [sample for sample in chunk if sample["prompt"]]
-    non_empty_prompt_chunk = [sample["prompt"] for sample in non_empty_chunk]
+    chunk_to_generate = [
+        sample
+        for sample in chunk
+        if sample["prompt"]
+        and not ("generation" in sample and sample["generation"] is not None)
+    ]
+    non_empty_prompt_chunk = [sample["prompt"] for sample in chunk_to_generate]
     generations = generation_strategy.generate(non_empty_prompt_chunk)
 
-    for generation, sample in zip(generations, non_empty_chunk):
+    for generation, sample in zip(generations, chunk_to_generate):
         sample["generation"] = generation
 
     for sample in chunk:
@@ -37,6 +43,7 @@ def entry_point(
     samples_path: str,
     strategy_name: str,
     n_workers: int = 1,
+    output_dir: Optional[str] = None,
     **kwargs,
 ):
     """
@@ -65,8 +72,10 @@ def entry_point(
             results.extend(future.result())
 
     # Write results to jsonl file
-    benchmark = samples_path.split("_")[1]
-    prompt_strategy = samples_path.split("_")[2].split(".")[0]
+    samples_file_name = os.path.basename(samples_path)
+    dir_path = output_dir or os.path.dirname(samples_path)
+    benchmark = samples_file_name.split("_")[1]
+    prompt_strategy = samples_file_name.split("_")[2].split(".")[0]
 
     # FIXME: This is a hack to shorten the kwargs string
     for key in kwargs:
@@ -76,7 +85,10 @@ def entry_point(
     kwargs_str = "_".join([f"{k}={v}" for k, v in kwargs.items()])
     kwargs_str = kwargs_str.replace("/", ":")
     write_jsonl(
-        f"candidates_{benchmark}_{prompt_strategy}_{strategy_name}_{kwargs_str}.jsonl",
+        os.path.join(
+            dir_path,
+            f"candidates_{benchmark}_{prompt_strategy}_{strategy_name}_{kwargs_str}.jsonl",
+        ),
         results,
     )
 
