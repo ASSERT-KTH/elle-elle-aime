@@ -9,6 +9,7 @@ from elleelleaime.evaluate.strategies.openrouter.openrouter import (
 from elleelleaime.evaluate.strategies.anthropic.anthropic import (
     AnthropicEvaluationStrategy,
 )
+from elleelleaime.evaluate.strategies.mistral.mistral import MistralEvaluationStrategy
 
 
 class PatchEvaluationStrategyRegistry:
@@ -24,6 +25,7 @@ class PatchEvaluationStrategyRegistry:
             "google": GoogleEvaluationStrategy(**kwargs),
             "openrouter": OpenRouterEvaluationStrategy(**kwargs),
             "anthropic": AnthropicEvaluationStrategy(**kwargs),
+            "mistral": MistralEvaluationStrategy(**kwargs),
         }
 
     def get_evaluation(self, name: str) -> PatchEvaluationStrategy:
