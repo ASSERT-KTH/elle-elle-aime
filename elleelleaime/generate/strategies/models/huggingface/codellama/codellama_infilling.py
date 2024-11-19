@@ -16,9 +16,9 @@ class GenerateSettings:
     do_sample: bool = False
     temperature: float = 1.0
     num_beams: int = 1
-    early_stopping: bool = False
     num_return_sequences: int = 10
     max_length: int = 4096
+    early_stopping: bool = False
 
 
 class CodeLLaMAInfilling(PatchGenerationStrategy):
@@ -119,6 +119,7 @@ class CodeLLaMAInfilling(PatchGenerationStrategy):
                 early_stopping=self.generate_settings.early_stopping,
                 do_sample=self.generate_settings.do_sample,
                 temperature=self.generate_settings.temperature,
+                use_cache=True,
             )
 
         fillings_ids = generated_ids[:, input_len:]

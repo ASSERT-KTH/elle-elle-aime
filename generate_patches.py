@@ -83,7 +83,7 @@ def entry_point(
             kwargs[key] = Path(kwargs[key]).name
 
     kwargs_str = "_".join([f"{k}={v}" for k, v in kwargs.items()])
-    kwargs_str = kwargs_str.replace("/", ":")
+    kwargs_str = kwargs_str.replace("/", "-")
     write_jsonl(
         os.path.join(
             dir_path,
