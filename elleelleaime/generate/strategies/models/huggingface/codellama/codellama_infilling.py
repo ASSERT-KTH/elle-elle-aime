@@ -67,7 +67,7 @@ class CodeLLaMAInfilling(PatchGenerationStrategy):
         self.generate_settings.temperature = kwargs.get(
             "temperature", GenerateSettings.temperature
         )
-        self.__load_model(**kwargs)
+        self.__load_model()
 
     def __load_model(self):
         # Setup environment
@@ -101,7 +101,7 @@ class CodeLLaMAInfilling(PatchGenerationStrategy):
             )
             return None
 
-        inputs = self.__TOKENIZER(prompt, return_tensors="pt")
+        inputs = self.__TOKENIZER(prompt, return_tensors="pt").to(self.device)
 
         input_len = inputs["input_ids"].shape[1]
         if input_len >= self.context_size:
