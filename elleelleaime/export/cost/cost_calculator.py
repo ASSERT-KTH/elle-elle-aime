@@ -2,6 +2,7 @@ from .strategies.openai import OpenAICostStrategy
 from .strategies.google import GoogleCostStrategy
 from .strategies.openrouter import OpenRouterCostStrategy
 from .strategies.anthropic import AnthropicCostStrategy
+from .strategies.mistral import MistralCostStrategy
 from typing import Optional
 
 
@@ -12,6 +13,7 @@ class CostCalculator:
         "google": GoogleCostStrategy,
         "openrouter": OpenRouterCostStrategy,
         "anthropic": AnthropicCostStrategy,
+        "mistral": MistralCostStrategy,
     }
 
     @staticmethod
