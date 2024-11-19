@@ -17,6 +17,9 @@ from elleelleaime.generate.strategies.models.openrouter.openrouter import (
 from elleelleaime.generate.strategies.models.anthropic.anthropic import (
     AnthropicModels,
 )
+from elleelleaime.generate.strategies.models.mistral.mistral import (
+    MistralModels,
+)
 
 from typing import Tuple
 
@@ -35,6 +38,7 @@ class PatchGenerationStrategyRegistry:
         "codellama-infilling": (CodeLLaMAInfilling, ("model_name",)),
         "codellama-instruct": (CodeLLaMAIntruct, ("model_name",)),
         "anthropic": (AnthropicModels, ("model_name", "max_tokens")),
+        "mistral": (MistralModels, ("model_name",)),
     }
 
     @classmethod
