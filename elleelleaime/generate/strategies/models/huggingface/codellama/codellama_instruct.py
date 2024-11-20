@@ -17,7 +17,7 @@ class GenerateSettings:
     num_beams: int = 1
     num_return_sequences: int = 10
     max_length: int = 16384
-    early_stopping: bool = False
+    early_stopping: bool = True
 
 
 class CodeLLaMAIntruct(PatchGenerationStrategy):
