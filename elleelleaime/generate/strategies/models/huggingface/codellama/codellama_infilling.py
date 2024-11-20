@@ -23,6 +23,10 @@ class GenerateSettings:
 
 class CodeLLaMAInfilling(PatchGenerationStrategy):
     __SUPPORTED_MODELS = {
+        "codellama/CodeLlama-7b-hf",
+        "codellama/CodeLlama-13b-hf",
+        "codellama/CodeLlama-34b-hf",
+        "codellama/CodeLlama-70b-hf",
         "meta-llama/CodeLlama-7b-hf",
         "meta-llama/CodeLlama-13b-hf",
         "meta-llama/CodeLlama-34b-hf",
