@@ -70,6 +70,11 @@ How to run tests:
 pytest -s tests/
 ```
 
+How to lint your code:
+```bash
+black elleelleaime tests *.py
+```
+
 ## Check out the results
 
 We store all the results (prompts, patches, evaluation) in a separate repository.
