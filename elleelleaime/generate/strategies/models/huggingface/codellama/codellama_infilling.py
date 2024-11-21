@@ -36,7 +36,7 @@ class CodeLLaMAInfilling(PatchGenerationStrategy):
     __GENERATION_STRATEGIES = {
         "beam_search": GenerateSettings(
             name="beam_search",
-            early_stopping=False,
+            early_stopping=True,
         ),
         "sampling": GenerateSettings(
             name="sampling",
