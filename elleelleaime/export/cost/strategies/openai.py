@@ -11,6 +11,10 @@ class OpenAICostStrategy(CostStrategy):
             "prompt": 2.5,
             "completion": 10,
         },
+        "gpt-4o-2024-11-20": {
+            "prompt": 2.5,
+            "completion": 10,
+        },
         "o1-preview-2024-09-12": {
             "prompt": 15,
             "completion": 60,
