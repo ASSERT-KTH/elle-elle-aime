@@ -48,13 +48,13 @@ python generate_samples.py defects4j instruct
 
 Example of how to generate patches for the samples:
 ```bash
-python generate_patches.py samples_defects4j_instruct_.jsonl gpt-4o-mini --n_workers 1 --num_return_sequences 10 --temperature 1.0
+python generate_patches.py samples_defects4j_instruct_.jsonl openai-chatcompletion --model-name gpt-4o-mini --n_workers 1 --num_return_sequences 10 --temperature 1.0
 ```
 ---
 
 Example of how to evaluate the generated patches:
 ```bash
-python evaluate_patches.py defects4j candidates_defects4j_instruct_gpt-4o-mini.jsonl.gz --strategy openai
+python evaluate_patches.py defects4j candidates_defects4j_instruct_gpt-4o-mini.jsonl.gz openai
 ```
 
 Example of how to export the evaluated patches:
