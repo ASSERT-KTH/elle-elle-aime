@@ -7,8 +7,9 @@ import re
 
 class InstructEvaluationStrategy(ReplaceEvaluationStrategy):
 
-    def __init__(self, **kwargs):
+    def __init__(self, reverse: bool = False, **kwargs):
         super().__init__(**kwargs)
+        self.reverse = reverse
 
     def extract_patch_from_message(self, message: str) -> Optional[str]:
         """
@@ -27,8 +28,11 @@ class InstructEvaluationStrategy(ReplaceEvaluationStrategy):
             code = match.group(2)  # Capture the code block content
             code_blocks.append((language, code))
 
-        # Return the first code block if any
-        return code_blocks[0][1] if code_blocks else None
+        # Return the first or last code block depending on the reverse flag
+        if self.reverse:
+            return code_blocks[-1][1] if code_blocks else None
+        else:
+            return code_blocks[0][1] if code_blocks else None
 
     def _evaluate_impl(self, bug: Bug, sample: dict) -> Optional[List[dict]]:
         """

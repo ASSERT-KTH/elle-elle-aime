@@ -32,6 +32,10 @@ class OpenRouterCostStrategy(CostStrategy):
             "prompt": 0.2,
             "completion": 0.2,
         },
+        "qwq-32b-preview": {
+            "prompt": 0.2,
+            "completion": 0.2,
+        }
     }
 
     @staticmethod
