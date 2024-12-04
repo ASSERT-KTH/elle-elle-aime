@@ -1325,13 +1325,13 @@ files = [
 
 [[package]]
 name = "mistralai"
-version = "1.2.3"
+version = "1.2.4"
 description = "Python Client SDK for the Mistral AI API."
 optional = false
 python-versions = "<4.0,>=3.8"
 files = [
-    {file = "mistralai-1.2.3-py3-none-any.whl", hash = "sha256:23902852829d1961f73cf1ecd387e8940f909f5b507c5f7fd32c7dae1a033119"},
-    {file = "mistralai-1.2.3.tar.gz", hash = "sha256:096b1406f62d8262d06d3f2f826714b2da87540c9e8d829864702918149c3615"},
+    {file = "mistralai-1.2.4-py3-none-any.whl", hash = "sha256:411419cbccab07e7706080b4a51b0082e215ef9f50b215f295948688c225cda0"},
+    {file = "mistralai-1.2.4.tar.gz", hash = "sha256:1d7bb63391c9270fbc58aa7d2cc62167cc08118614e40bd7f5060687fc7753cc"},
 ]
 
 [package.dependencies]
@@ -1339,7 +1339,7 @@ eval-type-backport = ">=0.2.0,<0.3.0"
 httpx = ">=0.27.0,<0.28.0"
 jsonpath-python = ">=1.0.6,<2.0.0"
 pydantic = ">=2.9.0,<3.0.0"
-python-dateutil = "2.8.2"
+python-dateutil = ">=2.8.2,<3.0.0"
 typing-inspect = ">=0.9.0,<0.10.0"
 
 [package.extras]
