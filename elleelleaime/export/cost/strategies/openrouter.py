@@ -36,6 +36,10 @@ class OpenRouterCostStrategy(CostStrategy):
             "prompt": 0.15,
             "completion": 0.6,
         },
+        "llama-3.3-70b-instruct": {
+            "prompt": 0.13,
+            "completion": 0.4,
+        },
     }
 
     @staticmethod
