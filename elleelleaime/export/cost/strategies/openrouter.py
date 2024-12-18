@@ -40,6 +40,10 @@ class OpenRouterCostStrategy(CostStrategy):
             "prompt": 0.13,
             "completion": 0.4,
         },
+        "grok-2-1212": {
+            "prompt": 2.0,
+            "completion": 10.0,
+        },
     }
 
     @staticmethod
