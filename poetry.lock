@@ -255,22 +255,23 @@ files = [
 
 [[package]]
 name = "bitsandbytes"
-version = "0.43.3"
+version = "0.45.0"
 description = "k-bit optimizers and matrix multiplication routines."
 optional = false
 python-versions = "*"
 files = [
-    {file = "bitsandbytes-0.43.3-py3-none-manylinux_2_24_x86_64.whl", hash = "sha256:cc99507c352be0715098b2c7577b690dd158972dc4ea10c7495bac104c7c79f0"},
-    {file = "bitsandbytes-0.43.3-py3-none-win_amd64.whl", hash = "sha256:257f6552f2144748a84e6c44e1f7a98f3da888f675ed74e18fd7f7eb13c6cafa"},
+    {file = "bitsandbytes-0.45.0-py3-none-manylinux_2_24_x86_64.whl", hash = "sha256:0f0323de1ff1fdf8383e79bdad1283516a4c05a6fd2b44a363bf4e059422305b"},
+    {file = "bitsandbytes-0.45.0-py3-none-win_amd64.whl", hash = "sha256:ebbf96e0ecb466716a65ecdeaef3fa1983575447b9ab66b74e5211892507c6ff"},
 ]
 
 [package.dependencies]
 numpy = "*"
 torch = "*"
+typing_extensions = ">=4.8.0"
 
 [package.extras]
 benchmark = ["matplotlib", "pandas"]
-test = ["scipy"]
+test = ["lion_pytorch", "scipy"]
 
 [[package]]
 name = "black"
@@ -3423,4 +3424,4 @@ propcache = ">=0.2.0"
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.9,<3.13"
-content-hash = "8e3becd07f366b8b091fca86254dfaea4ff2f55e7f86c335f8c53fe9c1f1843f"
+content-hash = "fc09f1b26404afccdfaee9909e2625d62c528df88dc777953c0e5c5ee9019e07"
